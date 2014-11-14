@@ -22,7 +22,7 @@ public class SW extends Instruction {
 			int address = regB.get_value() + imm;
 			simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
-			System.out.println("Wrong immediate" + imm);
+			System.err.println("Wrong immediate" + imm);
 		}
 	}
 

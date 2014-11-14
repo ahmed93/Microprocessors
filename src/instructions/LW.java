@@ -21,7 +21,7 @@ public class LW extends Instruction {
 			int address = regB.get_value() + imm;
 			regA.set_value(simulator.getMemory().getData(address));
 		} else {
-			System.out.println("Wrong immediate" + imm);
+			System.err.println("Wrong immediate" + imm);
 		}
 	}
 
