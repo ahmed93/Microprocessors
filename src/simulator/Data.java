@@ -5,6 +5,10 @@ import interfaces.Word;
 public class Data implements Word {
 	int value;
 	
+	public Data(int value){
+		this.value = value;
+	}
+	
 	public void set_value(int value){
 		this.value = value;
 	}

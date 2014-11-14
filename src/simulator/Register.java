@@ -4,10 +4,11 @@ import java.util.HashMap;
 
 public class Register {
 	int value;
-	boolean can_change;
+	boolean immutable;
 	
-	public Register(int value){
+	public Register(int value, boolean immutable){
 		this.value = value;
+		this.immutable = immutable;
 	}
 	
 	public int get_value(){
