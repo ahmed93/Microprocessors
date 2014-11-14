@@ -5,8 +5,8 @@ import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class NAND extends Instruction {
-	public NAND(Simulator simulator, String instruction, String command,
-			Register regA, Register regB, Register regC) {
+	public NAND(Simulator simulator, String instruction, Register regA,
+			Register regB, Register regC) {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;

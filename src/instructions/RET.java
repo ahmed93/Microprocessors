@@ -5,8 +5,8 @@ import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class RET extends Instruction {
-	public RET(Simulator simulator, String instruction, String command,
-			Register regA, Register regB, int imm) {
+	public RET(Simulator simulator, String instruction, Register regA,
+			Register regB, int imm) {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;
