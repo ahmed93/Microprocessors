@@ -10,7 +10,6 @@ public class SW extends Instruction {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;
-		this.command = command;
 		this.regA = regA;
 		this.regB = regB;
 		this.imm = imm;
@@ -18,10 +17,10 @@ public class SW extends Instruction {
 
 	@Override
 	public void execute() {
-		
+
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
-			simulator.getMemory().storeDataAtAddress(regA.get_value(),address);
+			simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
 			System.out.println("Wrong immediate" + imm);
 		}
