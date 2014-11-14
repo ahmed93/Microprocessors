@@ -11,12 +11,11 @@ public class Simulator {
 	
 	static Simulator simulator_instance;
 	Cache[] caches;
-	Memory memory;
-	public static int pc;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
-	
 	static final int REGISTERS_NUMBER = 8;
+	private Memory memory;
+	public static int pc;
 	
 	private Simulator(){}
 	
@@ -53,7 +52,6 @@ public class Simulator {
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
 	}
-	
 	public void runInstructions(){}
 	
 	public void initializeRegisters(){
@@ -64,4 +62,7 @@ public class Simulator {
 		
 	}
 	
+	public Memory getMemory() {
+		return memory;
+	}	
 }

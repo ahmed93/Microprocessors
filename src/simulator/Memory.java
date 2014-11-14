@@ -25,6 +25,7 @@ public class Memory {
 			memory_instance = new Memory();
 		return memory_instance;
 	}
+
 	public void storeDataAtAddress(int data, int address){
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE){
 			this.cells[address] = new Data(data); 
@@ -45,4 +46,10 @@ public class Memory {
 	public void storeInstruction(Instruction instruction){
 		this.cells[i++] = instruction;
 	}
+
+	public int getData(int address) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }
