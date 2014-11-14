@@ -4,14 +4,13 @@ import simulator.Register;
 import simulator.Simulator;
 
 public abstract class Instruction implements Word {
-	Simulator simulator;
+	protected Simulator simulator;
 	String instruction;
 	String command;
 	Register regA;
 	Register regB;
 	Register regC;
 	int imm;
-	
 	public abstract void execute();
 
 }
