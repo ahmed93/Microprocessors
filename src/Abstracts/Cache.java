@@ -1,3 +1,6 @@
+package Abstracts;
+import simulator.Block;
+
 public abstract class Cache {
 	Block[] instructions;
 	Block[] data;
@@ -16,6 +19,6 @@ public abstract class Cache {
 	public boolean writeThrough;
 	public boolean writeAllocate;
 	
-	abstract int search(String item, boolean type);
+	public abstract int search(String item, boolean type);
 	
 }
