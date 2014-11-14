@@ -52,4 +52,12 @@ public class Memory {
 		return 0;
 	}
 
+	public void setInstructionIndex(int i){
+		this.i = i;
+	}
+	
+	public void setDataIndex(int d){
+		this.d = d;
+	}
+
 }
