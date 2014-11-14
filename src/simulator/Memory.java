@@ -21,5 +21,14 @@ public class Memory {
 	}
 	public void store_data(String data, int address){}
 
-	public void store_instruction(Instruction instruction, int address){}	
+	public void store_instruction(Instruction instruction, int address){}
+
+	public int getData(int address) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void setData(int value, int address) {
+		// TODO Auto-generated method stub
+	}	
 }

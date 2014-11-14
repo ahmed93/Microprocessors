@@ -5,8 +5,8 @@ public class Simulator {
 	
 	Simulator simulator_instance;
 	Cache[] caches;
-	Memory memory;
-	static int pc;
+	private Memory memory;
+	public static int pc;
 	Register[] registers;
 	
 	private Simulator(){}
@@ -24,5 +24,8 @@ public class Simulator {
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
 	}
-	
+
+	public Memory getMemory() {
+		return memory;
+	}	
 }
