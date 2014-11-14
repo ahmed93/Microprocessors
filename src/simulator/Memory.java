@@ -19,7 +19,7 @@ public class Memory {
 			memory_instance = new Memory();
 		return memory_instance;
 	}
-	public void store_date(String data, int address){}
+	public void store_data(String data, int address){}
 
 	public void store_instruction(Instruction instruction, int address){}	
 }
