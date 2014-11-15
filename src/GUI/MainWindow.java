@@ -7,8 +7,6 @@ import java.awt.GridLayout;
 import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,25 +14,33 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 
-public class MainWindow {
+public class MainWindow implements DocumentListener {
 
-	private JFrame frame;
-	private JTextArea codeInput;
 	private Vector<String> list;
 	private String FilePath;
 	private boolean modifid;
+
+	private JFrame frame;
+	private JTextArea codeInput;
+	private JTable registerTB;
+	
 
 	/**
 	 * Launch the application.
@@ -106,6 +112,33 @@ public class MainWindow {
 		}
 	}
 
+	private String columnNames[];
+	private String dataValues[][];
+
+	private void initData() {
+		CreateColumns();
+		CreateData();
+	}
+
+	public void CreateColumns() {
+		// Create column string labels
+		columnNames = new String[2];
+
+		for (int iCtr = 0; iCtr < 2; iCtr++)
+			columnNames[iCtr] = "Col:" + iCtr;
+	}
+
+	public void CreateData() {
+		// Create data for each element
+		dataValues = new String[8][2];
+
+		for (int iY = 0; iY < 8; iY++) {
+			for (int iX = 0; iX < 2; iX++) {
+				dataValues[iY][iX] = "" + iX + "," + iY;
+			}
+		}
+	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -122,15 +155,6 @@ public class MainWindow {
 		JLayeredPane consolePannel = new JLayeredPane();
 		bottomPart.addTab("Console", null, consolePannel, null);
 
-		TextArea console = new TextArea();
-		console.setBackground(Color.WHITE);
-		console.setEnabled(false);
-		console.setColumns(100);
-		console.setRows(100);
-		console.setEditable(false);
-		console.setBounds(0, 0, 1002, 135);
-		consolePannel.add(console);
-
 		JLayeredPane layeredPane_1 = new JLayeredPane();
 		bottomPart.addTab("New tab", null, layeredPane_1, null);
 
@@ -144,28 +168,9 @@ public class MainWindow {
 
 		codeInput = new JTextArea();
 		codeInput.setColumns(1);
-		codeInput.addKeyListener(new KeyListener() {
-			
-			@Override
-			public void keyTyped(KeyEvent arg0) {
-				modifid = true;
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		
+		codeInput.getDocument().addDocumentListener(this);
+
 		InputPanel.add(codeInput);
-		
 
 		JScrollPane scroll = new JScrollPane(codeInput,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -183,6 +188,15 @@ public class MainWindow {
 
 		JLayeredPane RegisterPane = new JLayeredPane();
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
+		initData();
+		registerTB = new JTable(dataValues, columnNames);
+		registerTB.setBounds(6, 6, 213, 430);
+		// registerTB.add
+		JScrollPane tableScroller = new JScrollPane(registerTB,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		RegisterPane.add(tableScroller);
+		RegisterPane.add(registerTB);
 
 		JLayeredPane CashePane = new JLayeredPane();
 		tabbedPane.addTab("Cashes", null, CashePane, null);
@@ -226,5 +240,22 @@ public class MainWindow {
 		JPanel panel = new JPanel();
 		panel.setBounds(771, 56, 246, 56);
 		frame.getContentPane().add(panel);
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent arg0) {
+		modifid = true;
+		JOptionPane.showMessageDialog(frame,
+				"Eggs are not supposed to be green.");
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent arg0) {
+		// TODO Auto-generated method stub
 	}
 }
