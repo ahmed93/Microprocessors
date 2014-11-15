@@ -10,7 +10,6 @@ public class RET extends Instruction {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;
-		this.command = command;
 		this.regA = regA;
 	}
 
