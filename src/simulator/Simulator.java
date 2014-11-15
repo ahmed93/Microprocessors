@@ -21,6 +21,7 @@ public class Simulator {
 	public static int pc;
 
 	int instruction_starting_address;
+	int instructions_ending_address;
 	Vector<String> data;
 	Vector<String> instructions;
 
@@ -37,7 +38,6 @@ public class Simulator {
 		this.initializeRegisters();
 		// Prompt user to enter instructions, and starting address
 		// Use Instruction factory to create instructions
-		this.pc = instruction_starting_address;
 		this.storeUserInstructions();
 		this.storeUserData();
 		this.runInstructions();
@@ -52,6 +52,7 @@ public class Simulator {
 			memory.setInstructionIndex(instruction_starting_address);
 			memory.storeInstruction(new_instruction);
 		}
+		this.instructions_ending_address = memory.getInstructionIndex()-1;
 	}
 
 	public void storeUserData() {
@@ -64,6 +65,9 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
+		for (int i = instruction_starting_address; i<= instructions_ending_address; i++){
+			memory.getInstructionAt(i).execute();
+		}
 	}
 
 	public void initializeRegisters() {
@@ -77,5 +81,14 @@ public class Simulator {
 
 	public Memory getMemory() {
 		return memory;
+	}
+	
+	public Register getRegister(String key) {
+		if (this.registers.containsKey(key))
+			return this.registers.get(key);
+		else {
+			System.err.println("Error: Register " + key + " not found");
+			return null;
+		}
 	}
 }

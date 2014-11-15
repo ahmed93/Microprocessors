@@ -19,7 +19,7 @@ public class LW extends Instruction {
 	public void execute() {
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
-			regA.set_value(simulator.getMemory().getData(address));
+			regA.set_value(simulator.getMemory().getDataAt(address));
 		} else {
 			System.err.println("Wrong immediate" + imm);
 		}
