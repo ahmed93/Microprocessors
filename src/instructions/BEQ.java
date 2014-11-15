@@ -5,8 +5,8 @@ import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class BEQ extends Instruction {
-	public BEQ(Simulator simulator, String instruction, String command,
-			Register regA, Register regB, int imm) {
+	public BEQ(Simulator simulator, String instruction, Register regA,
+			Register regB, int imm) {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;

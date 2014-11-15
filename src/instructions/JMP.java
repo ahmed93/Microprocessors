@@ -5,8 +5,7 @@ import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class JMP extends Instruction {
-	public JMP(Simulator simulator, String instruction, String command,
-			Register regA, int imm) {
+	public JMP(Simulator simulator, String instruction, Register regA, int imm) {
 		super();
 		this.simulator = simulator;
 		this.instruction = instruction;
