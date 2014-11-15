@@ -82,4 +82,13 @@ public class Simulator {
 	public Memory getMemory() {
 		return memory;
 	}
+	
+	public Register getRegister(String key) {
+		if (this.registers.containsKey(key))
+			return this.registers.get(key);
+		else {
+			System.err.println("Error: Register " + key + " not found");
+			return null;
+		}
+	}
 }
