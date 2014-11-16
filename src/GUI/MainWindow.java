@@ -24,6 +24,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -51,8 +52,6 @@ public class MainWindow implements DocumentListener {
 	private JButton loadBT, saveBT, runBT;
 	private JPanel debuging;
 	private DefaultTableModel dataModel;
-	private String columnNames[] = { "register", "values" };
-	private String dataValues[][];
 	private JTable memoryTB;
 	private JComboBox casheLevelsCB;
 	private JTextField startAdressTF, l2CashSizeTF, l2BlockLengthTF,
@@ -64,10 +63,16 @@ public class MainWindow implements DocumentListener {
 	 **    Data Variables 	 **
 	 ****************************/
 	private boolean modified;
-	private Vector<String> list;
+//	private Vector<String> list;
 	private String FilePath;
 	private Simulator simulator;
-	private HashMap<String, Integer> REGISTER;
+	private String columnNames[] = { "register", "values" };
+	private String dataValues[][];
+//	private HashMap<String, Integer> REGISTER;
+	private Vector<String> data= new Vector<>();
+	private Vector<String> instructions = new Vector<>();
+	private int dataLine = 0;
+	private int instructionsLine = 0;
 	
 	/*******************************
 	 **    Static Variables 	 **
@@ -179,12 +184,9 @@ public class MainWindow implements DocumentListener {
 				runBT = new JButton("Run");
 				runBT.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-//				if (modified) JOptionPane.showMessageDialog(frame,	"Save File Then Run ... !");
-//						codeInput.setText(dataModel.getDataVector().toString());
-//						dataModel.setValueAt(200, 3, 1);
-//						System.out.println(codeInput.getText().toCharArray()[2]);
-						getStartingAddress();
-						
+						runBT.setEnabled(false);
+						onClickrunBT();
+						runBT.setEnabled(true);	
 					}
 				});
 				OptionsPanel.add(runBT);
@@ -408,6 +410,7 @@ public class MainWindow implements DocumentListener {
 		}
 	}
 	
+	
 	private void EnableCasheLevel(int level, boolean status)  {
 		switch (level) {
 		case 1:
@@ -451,6 +454,7 @@ public class MainWindow implements DocumentListener {
 
 		codeInput = new JTextArea();
 		codeInput.setColumns(1);
+		codeInput.setTabSize(2);
 		codeInput.getDocument().addDocumentListener(this);
 		codeInput.setLineWrap(true);
 		InputPanel.add(codeInput);
@@ -552,13 +556,13 @@ public class MainWindow implements DocumentListener {
 	 *	return: none
 	 * */
 	private void readFile(String path) {
-		list = new Vector<String>();
 		File file = new File(path);
 		BufferedReader reader = null;
+		codeInput.setText("");
 		try {
 			reader = new BufferedReader(new FileReader(file));
 			while (reader.ready()) 
-				list.add(reader.readLine());
+			codeInput.append(reader.readLine() + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -569,13 +573,34 @@ public class MainWindow implements DocumentListener {
 				e.printStackTrace();
 			}
 		}
-		InitTextArea();
 	}
-
-	private void InitTextArea() {
-		codeInput.setText("");
-		for (String line : list)
-			codeInput.append(line + "\n");
+	
+	private void onClickrunBT() {
+		if (!modified) {
+			JOptionPane.showMessageDialog(frame,	"Save File Then Run ... !");
+		}else {
+			
+			int instruction_starting_address = getStartingAddress();
+			if (getStartingAddress() < 0) {
+				JOptionPane.showMessageDialog(frame,	"Wrong start Address .. !");
+				return;
+			}
+			setSimulatorVectors();
+			simulator = new Simulator(data, instructions, instruction_starting_address);
+			
+			System.out.println(data);
+			System.out.println(instructions);
+			try {
+				simulator.Initialize();
+//				simulator.runInstructions();
+//				simulator.printMemroy();
+//				simulator.printRegisters();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 	}
 
 	/**
@@ -599,9 +624,30 @@ public class MainWindow implements DocumentListener {
 		return data.matches("[0-9]+")?Integer.parseInt(data) : -1;
 	}
 	
-	private boolean setSimulatorVectorData() {
-//		for (String line : textArea.getText().split("\\n")) doStuffWithLine(line);
-		return true;
+	private void setSimulatorVectors() {
+		boolean dataFound = false, instructionFound = false;
+		int counter = 0;
+		for (String line : codeInput.getText().split("\\n")) {
+			if (line.toLowerCase().contains("#data")){ 
+				dataLine = counter;
+				dataFound = true;
+				instructionFound = false;
+				continue;
+			}
+			else if (line.toLowerCase().contains("#instructions")) {
+				instructionsLine = counter;
+				instructionFound = true;
+				dataFound = false;
+				continue;
+			}
+			if (dataFound) {
+				data.add(line);
+			}
+			if (instructionFound) {
+				instructions.add(line);
+			}
+			counter++;
+		}
 	}
 	
 	public void CreateData() {

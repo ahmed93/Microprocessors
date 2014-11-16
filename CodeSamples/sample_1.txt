@@ -1,0 +1,8 @@
+data:
+
+instructions:
+	ADDI R1, R1, 2
+	ADDI R2, R2, 3
+	NAND R3, R1, R2
+	SW R2, R0, 2
+	LW R4, R0, 2
