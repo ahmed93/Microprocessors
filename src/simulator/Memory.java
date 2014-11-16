@@ -16,19 +16,21 @@ public class Memory {
 
 	private Memory() {
 		this.cells = new Word[SIZE];
-		this.d = percentage / 100 * SIZE;
+		this.d = 100;
 		this.DATA_STARTING_ADDRESS = d;
 		this.i = 0;
 	}
 
-	public Memory get_instance() {
+	public static Memory getInstance() {
 		if (memory_instance == null)
 			memory_instance = new Memory();
 		return memory_instance;
 	}
 
 	public void storeDataAtAddress(int data, int address) {
+		address += DATA_STARTING_ADDRESS;
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
+//			System.out.println("Storing " + data + " At address " + address);
 			this.cells[address] = new Data(data);
 		}
 	}
@@ -44,10 +46,12 @@ public class Memory {
 	}
 
 	public void storeInstruction(Instruction instruction) {
+//		System.out.println("Adding instruction at address " + i);
 		this.cells[i++] = instruction;
 	}
 
 	public Instruction getInstructionAt(int address) {
+//		System.out.println("Data Starting address" + DATA_STARTING_ADDRESS);
 		if (address >= 0 && address < DATA_STARTING_ADDRESS) {
 			return (Instruction) this.cells[address];
 		}
@@ -55,8 +59,15 @@ public class Memory {
 	}
 
 	public int getDataAt(int address) {
+		address += DATA_STARTING_ADDRESS;
+//		System.out.println("Getting data at " + address);
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
-			return ((Data)this.cells[address]).get_value();
+			Data data = (Data)this.cells[address];
+			if ( data != null){
+				return data.value;
+			}else {
+				return 0;
+			}
 		}
 		return -1;
 	}

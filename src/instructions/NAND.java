@@ -17,7 +17,7 @@ public class NAND extends Instruction {
 
 	@Override
 	public void execute() {
-		regA.set_value((~(regB.get_value() & regC.get_value())));
+		regA.set_value(~((regB.get_value() & regC.get_value())));
 	}
 
 }

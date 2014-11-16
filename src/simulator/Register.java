@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 
 public class Register {
-	int value;
+	private int value;
 	boolean immutable;
 	
 	public Register(int value, boolean immutable){

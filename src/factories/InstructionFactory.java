@@ -67,6 +67,7 @@ public class InstructionFactory {
 		// Returns an object that corresponds to the instruction specified in
 		// the parameter.
 
+		System.out.println("Error Creating Instruction");
 		return null;
 	}
 
