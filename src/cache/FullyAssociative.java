@@ -16,5 +16,17 @@ public class FullyAssociative extends Cache {
 		return 0;
 	}
 
+	@Override
+	public int existsData(int address) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int existsInstruction(int address) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 
 }

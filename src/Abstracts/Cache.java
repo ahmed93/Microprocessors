@@ -2,14 +2,16 @@ package Abstracts;
 import simulator.Block;
 
 public abstract class Cache {
-	Block[] instructions;
-	Block[] data;
+	protected Block[] instructions;
+	protected Block[] data;
+	
+	protected int hits = 0;
+	protected  int misses = 0;
 	
 	
-	
-	int blockSize;
-	int cacheSize;
-	int associativity;
+	protected int blockSize;
+	protected int cacheSize;
+	protected int associativity;
 	
 	public boolean writeBack;
 	public boolean writeAround;
@@ -18,5 +20,8 @@ public abstract class Cache {
 	
 	public abstract int searchData(int address);
 	public abstract int searchInstruction(int address);
+	
+	public abstract int existsData(int address);
+	public abstract int existsInstruction(int address);
 	
 }
