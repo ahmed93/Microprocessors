@@ -1,13 +1,22 @@
 package cache;
 
+import simulator.Data;
 import Abstracts.Cache;
+import Abstracts.Instruction;
 
 public class FullyAssociative extends Cache {
 
 	@Override
-	public int search(String item, boolean type) {
+	public Data searchData(int address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
 	}
+
+	@Override
+	public Instruction searchInstruction(int address) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }
