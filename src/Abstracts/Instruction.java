@@ -11,7 +11,12 @@ public abstract class Instruction implements Word {
 	protected Register regB;
 	protected Register regC;
 	protected int imm;
+	protected int address;
 
 	public abstract void execute();
+
+	public void setAddress(int address) {
+		this.address = address;
+	}
 
 }

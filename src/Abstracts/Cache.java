@@ -11,14 +11,12 @@ public abstract class Cache {
 	int cacheSize;
 	int associativity;
 	
-	public static final boolean DATA = true;
-	public static final boolean INSTRUCTION = false;
-	
 	public boolean writeBack;
 	public boolean writeAround;
 	public boolean writeThrough;
 	public boolean writeAllocate;
 	
-	public abstract int search(String item, boolean type);
+	public abstract int searchData(int address);
+	public abstract int searchInstruction(int address);
 	
 }
