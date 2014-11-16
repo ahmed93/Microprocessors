@@ -19,6 +19,7 @@ public abstract class Cache {
 	public boolean writeThrough;
 	public boolean writeAllocate;
 	
-	public abstract int search(String item, boolean type);
+	public abstract int searchData(int address);
+	public abstract int searchInstruction(int address);
 	
 }
