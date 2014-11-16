@@ -1,5 +1,6 @@
 package instructions;
 
+import simulator.Data;
 import simulator.Register;
 import simulator.Simulator;
 import Abstracts.Instruction;
@@ -20,7 +21,8 @@ public class SW extends Instruction {
 
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
-			simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
+			// Write Policy
+			this.simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
 			System.err.println("Wrong immediate" + imm);
 		}

@@ -12,7 +12,7 @@ import factories.InstructionFactory;
 
 public class Simulator {
 
-	Cache[] caches;
+	public Cache[] caches;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
 	static final int REGISTERS_NUMBER = 8;
@@ -23,6 +23,8 @@ public class Simulator {
 	int instructions_ending_address;
 	Vector<String> data;
 	Vector<String> instructions;
+
+	Vector<Integer> instructions_addresses;
 
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			int instruction_starting_address) {
@@ -50,8 +52,9 @@ public class Simulator {
 			Instruction new_instruction = InstructionFactory
 					.create_instruction(instruction, this);
 			memory.storeInstruction(new_instruction);
+			this.instructions_addresses.add(new_instruction.getAddress());
 		}
-		this.instructions_ending_address = memory.getInstructionIndex()-1;
+		this.instructions_ending_address = memory.getInstructionIndex() - 1;
 	}
 
 	public void storeUserData() {
@@ -64,10 +67,23 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		for (int i = instruction_starting_address; i<= instructions_ending_address; i++){
-//			System.out.println("Getting instruction at " + i + " : " + memory.getInstructionAt(i));
-			memory.getInstructionAt(i).execute();
+		for (int i = 0; i < this.instructions_addresses.size(); i++) {
+			Instruction instruction = null;
+			for (int j = 0; j < this.caches.length; i++) {
+				instruction = caches[i]
+						.searchInstruction(this.instructions_addresses.get(i));
+				if (instruction != null) {
+					break;
+				}
+			}
+			instruction.execute();
 		}
+		// for (int i = instruction_starting_address; i<=
+		// instructions_ending_address; i++){
+		// System.out.println("Getting instruction at " + i + " : " +
+		// memory.getInstructionAt(i));
+		// memory.getInstructionAt(i).execute();
+		// }
 	}
 
 	public void initializeRegisters() {
@@ -82,7 +98,7 @@ public class Simulator {
 	public Memory getMemory() {
 		return memory;
 	}
-	
+
 	public Register getRegister(String key) {
 		if (this.registers.containsKey(key))
 			return this.registers.get(key);
@@ -91,20 +107,34 @@ public class Simulator {
 			return null;
 		}
 	}
-	
-	public void printRegisters(){
-		for (Entry<String, Register> entry : registers.entrySet()){
-			System.out.println(entry.getKey() + ": " + entry.getValue().get_value());
+
+	public void printRegisters() {
+		for (Entry<String, Register> entry : registers.entrySet()) {
+			System.out.println(entry.getKey() + ": "
+					+ entry.getValue().get_value());
 		}
 	}
-	
-	public void printMemroy(){
-		for (int i = 0; i < 10; i++){
+
+	public void printMemroy() {
+		for (int i = 0; i < 10; i++) {
 			System.out.println(i + " : " + this.memory.getInstructionAt(i));
 		}
 		System.out.println("#################");
-		for (int i = memory.DATA_STARTING_ADDRESS; i <= memory.DATA_STARTING_ADDRESS+10; i++){
+		for (int i = memory.DATA_STARTING_ADDRESS; i <= memory.DATA_STARTING_ADDRESS + 10; i++) {
 			System.out.println(i + " : " + this.memory.getDataAt(i));
 		}
+	}
+
+	public Data getCachedOrMemoryData(int address) {
+		Data data = null;
+		// Search Caches for data
+		for (int i = 0; i < caches.length; i++) {
+			data = caches[i].searchData(address);
+			if (data != null) {
+				return data;
+			}
+		}
+		// Follow write policy
+		return null;
 	}
 }

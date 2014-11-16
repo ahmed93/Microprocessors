@@ -1,5 +1,6 @@
 package instructions;
 
+import simulator.Data;
 import simulator.Register;
 import simulator.Simulator;
 import Abstracts.Instruction;
@@ -19,7 +20,8 @@ public class LW extends Instruction {
 	public void execute() {
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
-			regA.set_value(simulator.getMemory().getDataAt(address));
+			Data data = this.simulator.getCachedOrMemoryData(address);
+			regA.set_value(data.get_value());
 		} else {
 			System.err.println("Wrong immediate" + imm);
 		}
