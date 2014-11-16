@@ -47,6 +47,7 @@ public class Memory {
 
 	public void storeInstruction(Instruction instruction) {
 //		System.out.println("Adding instruction at address " + i);
+		instruction.setAddress(i);
 		this.cells[i++] = instruction;
 	}
 
