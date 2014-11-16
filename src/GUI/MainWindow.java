@@ -204,7 +204,7 @@ public class MainWindow implements DocumentListener {
 				tabbedPane.addTab("Memory", null, MemoryPane, null);
 				
 				memoryTB = new JTable();
-				memoryTB.setBounds(6, 6, 214, 496);
+				memoryTB.setBounds(6, 6, 214, 438);
 				MemoryPane.add(memoryTB);
 				
 				JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
@@ -579,7 +579,6 @@ public class MainWindow implements DocumentListener {
 		if (!modified) {
 			JOptionPane.showMessageDialog(frame,	"Save File Then Run ... !");
 		}else {
-			
 			int instruction_starting_address = getStartingAddress();
 			if (getStartingAddress() < 0) {
 				JOptionPane.showMessageDialog(frame,	"Wrong start Address .. !");
@@ -587,20 +586,26 @@ public class MainWindow implements DocumentListener {
 			}
 			setSimulatorVectors();
 			simulator = new Simulator(data, instructions, instruction_starting_address);
-			
-			System.out.println(data);
-			System.out.println(instructions);
 			try {
 				simulator.Initialize();
-//				simulator.runInstructions();
-//				simulator.printMemroy();
-//				simulator.printRegisters();
+				simulator.runInstructions();
+				simulator.printMemroy();
+				simulator.printRegisters();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
 		}
+	}
+	
+	private void changeMemoryTB(){
+//		for (int i = 0; i < 10; i++) {
+//			System.out.println(i + " : " + simulator.getMemory().getInstructionAt(i));
+//		}
+//		System.out.println("#################");
+//		for (int i = simulator.getMemory().DATA_STARTING_ADDRESS; i <= simulator.getMemory().DATA_STARTING_ADDRESS + 10; i++) {
+//			System.out.println(i + " : " + this.simulator.getMemory().getDataAt(i));
+//		}
 	}
 
 	/**
@@ -609,7 +614,6 @@ public class MainWindow implements DocumentListener {
 	 * */
 	private void initData() {
 		CreateData();
-		
 		dataModel = new DefaultTableModel(); 
 		dataModel.addColumn("Registers");
 		dataModel.addColumn("Values");
@@ -622,6 +626,32 @@ public class MainWindow implements DocumentListener {
 	private int getStartingAddress() {
 		String data = startAdressTF.getText();
 		return data.matches("[0-9]+")?Integer.parseInt(data) : -1;
+	}
+	
+	private HashMap<String, Integer> getCasheSettings(int cacheLevel) {
+		HashMap<String, Integer> tmp = new HashMap<>();
+		switch (cacheLevel) {
+		case 1:
+			tmp.put("size", Integer.parseInt(l1CashSizeTF.getText()));
+			tmp.put("length", Integer.parseInt(l1BlockLengthTF.getText()));
+			tmp.put("assoc", Integer.parseInt(l1AssociativityTF.getText()));
+			break;
+		case 2:
+			tmp.put("size", Integer.parseInt(l2CashSizeTF.getText()));
+			tmp.put("length", Integer.parseInt(l2BlockLengthTF.getText()));
+			tmp.put("assoc", Integer.parseInt(l2AssociativityTF.getText()));
+			break;
+		case 3:
+			tmp.put("size", Integer.parseInt(l3CashSizeTF.getText()));
+			tmp.put("length", Integer.parseInt(l3BlockLengthTF.getText()));
+			tmp.put("assoc", Integer.parseInt(l3AssociativityTF.getText()));
+			break;
+		}
+		return tmp;
+	}
+	
+	private void setRegisterData(HashMap<String, Integer> data) {
+		
 	}
 	
 	private void setSimulatorVectors() {
