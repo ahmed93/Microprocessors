@@ -15,6 +15,10 @@ public abstract class Instruction implements Word {
 
 	public abstract void execute();
 
+	public int getAddress() {
+		return address;
+	}
+
 	public void setAddress(int address) {
 		this.address = address;
 	}

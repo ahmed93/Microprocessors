@@ -23,4 +23,7 @@ public abstract class Cache {
 	public abstract Data searchData(int address);
 	public abstract Instruction searchInstruction(int address);
 	
+	public abstract Data insertData(int address);
+	public abstract Instruction insertInstruction(int address);
+	
 }

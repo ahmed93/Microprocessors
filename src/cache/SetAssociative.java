@@ -17,8 +17,20 @@ public class SetAssociative extends Cache {
 
 	@Override
 	public Instruction searchInstruction(int address) {
-		// TODO Auto-generated method stub
-		return null;
+		int num_of_words_in_set = blockSize * associativity;
+		//int word_offset_in_set = address % num_of_words_in_set;
+		int set_index = address / num_of_words_in_set;
+		int block_offset_in_set = address % associativity;
+		int word_offset_in_block = address % blockSize;
+		Instruction word = (Instruction) instructions[set_index * associativity + block_offset_in_set].words[word_offset_in_block];
+		if (word.getAddress() == address) {
+			hits++;
+			return word;
+		}
+		else {
+			misses++;
+			return null;
+		}
 	}
 
 	@Override
@@ -37,6 +49,18 @@ public class SetAssociative extends Cache {
 			misses++;
 			return null;
 		}
+	}
+
+	@Override
+	public Data insertData(int address) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Instruction insertInstruction(int address) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
