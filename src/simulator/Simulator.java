@@ -1,15 +1,14 @@
 package simulator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
-import factories.InstructionFactory;
 import Abstracts.Cache;
 import Abstracts.Instruction;
+import factories.InstructionFactory;
 
 public class Simulator {
 
@@ -27,6 +26,7 @@ public class Simulator {
 
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			int instruction_starting_address) {
+		this.memory = Memory.getInstance();
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
@@ -38,9 +38,9 @@ public class Simulator {
 		this.initializeRegisters();
 		// Prompt user to enter instructions, and starting address
 		// Use Instruction factory to create instructions
+		memory.setInstructionIndex(instruction_starting_address);
 		this.storeUserInstructions();
 		this.storeUserData();
-		this.runInstructions();
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
 	}
@@ -49,7 +49,6 @@ public class Simulator {
 		for (String instruction : this.instructions) {
 			Instruction new_instruction = InstructionFactory
 					.create_instruction(instruction, this);
-			memory.setInstructionIndex(instruction_starting_address);
 			memory.storeInstruction(new_instruction);
 		}
 		this.instructions_ending_address = memory.getInstructionIndex()-1;
@@ -66,6 +65,7 @@ public class Simulator {
 
 	public void runInstructions() {
 		for (int i = instruction_starting_address; i<= instructions_ending_address; i++){
+//			System.out.println("Getting instruction at " + i + " : " + memory.getInstructionAt(i));
 			memory.getInstructionAt(i).execute();
 		}
 	}
@@ -89,6 +89,22 @@ public class Simulator {
 		else {
 			System.err.println("Error: Register " + key + " not found");
 			return null;
+		}
+	}
+	
+	public void printRegisters(){
+		for (Entry<String, Register> entry : registers.entrySet()){
+			System.out.println(entry.getKey() + ": " + entry.getValue().get_value());
+		}
+	}
+	
+	public void printMemroy(){
+		for (int i = 0; i < 10; i++){
+			System.out.println(i + " : " + this.memory.getInstructionAt(i));
+		}
+		System.out.println("#################");
+		for (int i = memory.DATA_STARTING_ADDRESS; i <= memory.DATA_STARTING_ADDRESS+10; i++){
+			System.out.println(i + " : " + this.memory.getDataAt(i));
 		}
 	}
 }
