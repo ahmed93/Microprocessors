@@ -1,7 +1,6 @@
 package GUI;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -13,12 +12,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -28,10 +27,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.filechooser.FileView;
 import javax.swing.table.DefaultTableModel;
 
 import simulator.Simulator;
+import java.awt.Component;
+import javax.swing.Box;
+import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 public class MainWindow implements DocumentListener {
 
@@ -41,7 +42,6 @@ public class MainWindow implements DocumentListener {
 	private JButton loadBT, saveBT, runBT;
 	private JPanel debuging;
 	private DefaultTableModel dataModel;
-	
 	
 	/****************************
 	 **    Data Variables 	 **
@@ -102,12 +102,6 @@ public class MainWindow implements DocumentListener {
 
 		JLayeredPane consolePannel = new JLayeredPane();
 		bottomPart.addTab("Console", null, consolePannel, null);
-
-		JLayeredPane layeredPane_1 = new JLayeredPane();
-		bottomPart.addTab("New tab", null, layeredPane_1, null);
-
-		JLayeredPane layeredPane_2 = new JLayeredPane();
-		bottomPart.addTab("New tab", null, layeredPane_2, null);
 		
 		/***********************************************
 		 **          InputPanel: CodeInput   	 **
@@ -127,7 +121,7 @@ public class MainWindow implements DocumentListener {
 	
 	private void createOptionPanel() {
 		JPanel OptionsPanel = new JPanel();
-		OptionsPanel.setBounds(771, 5, 246, 39);
+		OptionsPanel.setBounds(771, 5, 503, 39);
 		frame.getContentPane().add(OptionsPanel);
 		OptionsPanel.setLayout(new GridLayout(1, 0, 0, 0));
 
@@ -147,7 +141,7 @@ public class MainWindow implements DocumentListener {
 			}
 		});
 		OptionsPanel.add(loadBT);
-		
+
 		// Save Button
 		saveBT = new JButton("Save");
 		saveBT.addActionListener(new ActionListener() {
@@ -157,20 +151,26 @@ public class MainWindow implements DocumentListener {
 		});
 		OptionsPanel.add(saveBT);
 		
-		// Run Button
-		runBT = new JButton("Run");
-		runBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		Component verticalStrut = Box.createVerticalStrut(1);
+		OptionsPanel.add(verticalStrut);
+		
+		JButton btnDebug = new JButton("Debug");
+		OptionsPanel.add(btnDebug);
+		
+				// Run Button
+				runBT = new JButton("Run");
+				runBT.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 //				if (modified) JOptionPane.showMessageDialog(frame,	"Save File Then Run ... !");
-				codeInput.setText(dataModel.getDataVector().toString());
-				dataModel.setValueAt(200, 3, 1);
-			}
-		});
-		OptionsPanel.add(runBT);
+						codeInput.setText(dataModel.getDataVector().toString());
+						dataModel.setValueAt(200, 3, 1);
+					}
+				});
+				OptionsPanel.add(runBT);
+				OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{loadBT, saveBT, runBT}));
 	}
 
-	
-	private void onClickSaveBT(){
+	private void onClickSaveBT() {
 		if(FilePath != null && !FilePath.equals(" ")){
 			saveBT.setSelected(false);
 			File file = new File(FilePath);
@@ -198,7 +198,7 @@ public class MainWindow implements DocumentListener {
 		codeInput = new JTextArea();
 		codeInput.setColumns(1);
 		codeInput.getDocument().addDocumentListener(this);
-
+		
 		InputPanel.add(codeInput);
 
 		JScrollPane scroll = new JScrollPane(codeInput,
@@ -210,7 +210,7 @@ public class MainWindow implements DocumentListener {
 	
 	private void createRegisterPanel()	{
 		debuging = new JPanel();
-		debuging.setBounds(771, 47, 246, 488);
+		debuging.setBounds(771, 200, 246, 204);
 		frame.getContentPane().add(debuging);
 		debuging.setLayout(new BorderLayout(0, 0));
 
@@ -219,17 +219,16 @@ public class MainWindow implements DocumentListener {
 
 		JLayeredPane RegisterPane = new JLayeredPane();
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
+		tabbedPane.setEnabledAt(0, true);
 		initData();
 		
 		registerTB = new JTable(dataModel);
-		registerTB.setBounds(6, 6, 213, 430);
+		registerTB.setSurrendersFocusOnKeystroke(true);
+		registerTB.setBounds(6, 6, 213, 146);
 		registerTB.setFillsViewportHeight(true);
 		registerTB.setEnabled(false);
-		registerTB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		registerTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		RegisterPane.add(registerTB);
-
-		JLayeredPane CashePane = new JLayeredPane();
-		tabbedPane.addTab("Cashes", null, CashePane, null);
 	}
 	
 	/***************************************************************
@@ -284,12 +283,9 @@ public class MainWindow implements DocumentListener {
 			}
 			else return false;
 		}
-		
 		return true;
 	}
-	
-	
-	
+
 	/**
 	 *	readFile: Reading a Text File and add it to the Editor
 	 *	parameters: path: The File Path
@@ -332,11 +328,10 @@ public class MainWindow implements DocumentListener {
 		CreateColumns();
 		CreateData();
 
-		dataModel = new DefaultTableModel();
+		dataModel = new DefaultTableModel(); 
+		dataModel.addColumn("Registers");
+		dataModel.addColumn("Values");
 		
-		for (int col = 0; col < columnNames.length; col++) {
-		dataModel.addColumn(columnNames[col]);
-		}
 		for (int row = 0; row < dataValues.length; row++) {
 		dataModel.addRow(dataValues[row]);
 		}	
@@ -348,7 +343,8 @@ public class MainWindow implements DocumentListener {
 
 		for (int iCtr = 0; iCtr < 2; iCtr++)
 			columnNames[iCtr] = "Col:" + iCtr;
-	}	
+	}
+	
 	public void CreateData() {
 		// Create data for each element
 		dataValues = new String[8][2];
