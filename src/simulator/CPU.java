@@ -1,6 +1,7 @@
 package simulator;
 
 public class CPU {
+	int[] instruction_indices;
 	//read array of instructions
 	//call search on loop for caches (address instruction)
 	//call search on loop for caches (address data)

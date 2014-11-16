@@ -65,7 +65,7 @@ public class Memory {
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
 			Data data = (Data)this.cells[address];
 			if ( data != null){
-				return data.value;
+				return data.get_value();
 			}else {
 				return 0;
 			}

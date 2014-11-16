@@ -16,8 +16,8 @@ public class JALR extends Instruction {
 
 	@Override
 	public void execute() {
-		regA.set_value(simulator.pc);
-		simulator.pc = regB.get_value();
+		this.regA.set_value(this.simulator.pc);
+		this.simulator.pc = this.regB.get_value();
 
 	}
 }
