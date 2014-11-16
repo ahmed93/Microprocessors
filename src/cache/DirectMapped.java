@@ -17,15 +17,15 @@ public class DirectMapped extends Cache {
 	}
 
 	@Override
-	public int existsData(int address) {
+	public boolean existsData(int address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return false;
 	}
 
 	@Override
-	public int existsInstruction(int address) {
+	public boolean existsInstruction(int address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return false;
 	}
 
 

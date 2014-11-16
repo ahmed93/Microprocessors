@@ -21,7 +21,7 @@ public abstract class Cache {
 	public abstract int searchData(int address);
 	public abstract int searchInstruction(int address);
 	
-	public abstract int existsData(int address);
-	public abstract int existsInstruction(int address);
+	public abstract boolean existsData(int address);
+	public abstract boolean existsInstruction(int address);
 	
 }
