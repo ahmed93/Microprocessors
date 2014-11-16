@@ -1,5 +1,6 @@
 package Abstracts;
 import simulator.Block;
+import simulator.Data;
 
 public abstract class Cache {
 	protected Block[] instructions;
@@ -18,10 +19,8 @@ public abstract class Cache {
 	public boolean writeThrough;
 	public boolean writeAllocate;
 	
-	public abstract int searchData(int address);
-	public abstract int searchInstruction(int address);
 	
-	public abstract boolean existsData(int address);
-	public abstract boolean existsInstruction(int address);
+	public abstract Data searchData(int address);
+	public abstract Instruction searchInstruction(int address);
 	
 }

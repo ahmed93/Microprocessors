@@ -1,32 +1,23 @@
 package cache;
 
+import simulator.Data;
 import Abstracts.Cache;
+import Abstracts.Instruction;
 
 public class DirectMapped extends Cache {
 
 	@Override
-	public int searchData(int address) {
+	public Data searchData(int address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
 	}
 
 	@Override
-	public int searchInstruction(int address) {
+	public Instruction searchInstruction(int address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
 	}
 
-	@Override
-	public boolean existsData(int address) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean existsInstruction(int address) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 
 }

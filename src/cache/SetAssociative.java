@@ -1,7 +1,9 @@
 package cache;
 
 import simulator.Block;
+import simulator.Data;
 import Abstracts.Cache;
+import Abstracts.Instruction;
 
 public class SetAssociative extends Cache {
 
@@ -14,27 +16,27 @@ public class SetAssociative extends Cache {
 	}
 
 	@Override
-	public int searchData(int address) {
-		//int index = (address/blockSize)%
-		return 0;
+	public Instruction searchInstruction(int address) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public int searchInstruction(int address) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int existsData(int address) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int existsInstruction(int address) {
-		// TODO Auto-generated method stub
-		return 0;
+	public Data searchData(int address) {
+		int num_of_words_in_set = blockSize * associativity;
+		//int word_offset_in_set = address % num_of_words_in_set;
+		int set_index = address / num_of_words_in_set;
+		int block_offset_in_set = address % associativity;
+		int word_offset_in_block = address % blockSize;
+		Data word = (Data) data[set_index * associativity + block_offset_in_set].words[word_offset_in_block];
+		if (word.getAddress() == address) {
+			hits++;
+			return word;
+		}
+		else {
+			misses++;
+			return null;
+		}
 	}
 
 }
