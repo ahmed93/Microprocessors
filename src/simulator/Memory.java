@@ -59,18 +59,18 @@ public class Memory {
 		return null;
 	}
 
-	public int getDataAt(int address) {
+	public Data getDataAt(int address) {
 		address += DATA_STARTING_ADDRESS;
 //		System.out.println("Getting data at " + address);
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
 			Data data = (Data)this.cells[address];
 			if ( data != null){
-				return data.get_value();
+				return data;
 			}else {
-				return 0;
+				return null;
 			}
 		}
-		return -1;
+		return null;
 	}
 
 	public void setInstructionIndex(int i) {

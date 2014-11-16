@@ -26,12 +26,14 @@ public class Simulator {
 
 	Vector<Integer> instructions_addresses;
 
-	public Simulator(Vector<String> data, Vector<String> instructions,
+	public Simulator(Vector<String> data, Vector<String> instructions, Cache[] caches,
 			int instruction_starting_address) {
 		this.memory = Memory.getInstance();
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
+		this.instructions_addresses = new Vector<Integer>();
+		this.caches = caches;
 	}
 
 	public void Initialize() throws IOException {
@@ -69,12 +71,18 @@ public class Simulator {
 	public void runInstructions() {
 		for (int i = 0; i < this.instructions_addresses.size(); i++) {
 			Instruction instruction = null;
-			for (int j = 0; j < this.caches.length; i++) {
-				instruction = caches[i]
+			for (int j = 0; j < this.caches.length; j++) {
+				instruction = caches[j]
 						.searchInstruction(this.instructions_addresses.get(i));
 				if (instruction != null) {
+					// hit
 					break;
 				}
+			}
+			if (instruction == null){
+				// miss
+				instruction = this.memory.getInstructionAt(this.instructions_addresses.get(i));
+				// Follow write Policy
 			}
 			instruction.execute();
 		}
@@ -120,8 +128,8 @@ public class Simulator {
 			System.out.println(i + " : " + this.memory.getInstructionAt(i));
 		}
 		System.out.println("#################");
-		for (int i = memory.DATA_STARTING_ADDRESS; i <= memory.DATA_STARTING_ADDRESS + 10; i++) {
-			System.out.println(i + " : " + this.memory.getDataAt(i));
+		for (int i = 0; i <= 10; i++) {
+			System.out.println(this.memory.DATA_STARTING_ADDRESS +i + " : " + this.memory.getDataAt(i));
 		}
 	}
 
@@ -134,7 +142,10 @@ public class Simulator {
 				return data;
 			}
 		}
+		data = this.memory.getDataAt(address);
 		// Follow write policy
-		return null;
+		return data;
 	}
+	
+//	public void 
 }
