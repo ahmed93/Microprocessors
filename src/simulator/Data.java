@@ -4,7 +4,7 @@ import interfaces.Word;
 
 public class Data implements Word {
 	int value;
-	int address;
+	private int address;
 	
 	public Data(int value){
 		this.value = value;
@@ -16,5 +16,13 @@ public class Data implements Word {
 	
 	public int get_value(){
 		return this.value;
+	}
+
+	public int getAddress() {
+		return address;
+	}
+
+	public void setAddress(int address) {
+		this.address = address;
 	}
 }

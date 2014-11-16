@@ -1,9 +1,11 @@
 package GUI;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -13,23 +15,31 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
+
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.filechooser.FileView;
 import javax.swing.table.DefaultTableModel;
+
+import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 
@@ -41,7 +51,14 @@ public class MainWindow implements DocumentListener {
 	private JButton loadBT, saveBT, runBT;
 	private JPanel debuging;
 	private DefaultTableModel dataModel;
-	
+	private String columnNames[] = { "register", "values" };
+	private String dataValues[][];
+	private JTable memoryTB;
+	private JComboBox casheLevelsCB;
+	private JTextField startAdressTF, l2CashSizeTF, l2BlockLengthTF,
+	l2AssociativityTF, l1CashSizeTF, l1BlockLengthTF,
+	l1AssociativityTF, l3CashSizeTF, l3BlockLengthTF,
+	l3AssociativityTF;
 	
 	/****************************
 	 **    Data Variables 	 **
@@ -78,6 +95,7 @@ public class MainWindow implements DocumentListener {
 	 * Create the application.
 	 */
 	public MainWindow() {
+//		simulator = new Simulator(data, , getStartingAddress());
 		initialize();
 	}
 
@@ -102,12 +120,6 @@ public class MainWindow implements DocumentListener {
 
 		JLayeredPane consolePannel = new JLayeredPane();
 		bottomPart.addTab("Console", null, consolePannel, null);
-
-		JLayeredPane layeredPane_1 = new JLayeredPane();
-		bottomPart.addTab("New tab", null, layeredPane_1, null);
-
-		JLayeredPane layeredPane_2 = new JLayeredPane();
-		bottomPart.addTab("New tab", null, layeredPane_2, null);
 		
 		/***********************************************
 		 **          InputPanel: CodeInput   	 **
@@ -127,7 +139,7 @@ public class MainWindow implements DocumentListener {
 	
 	private void createOptionPanel() {
 		JPanel OptionsPanel = new JPanel();
-		OptionsPanel.setBounds(771, 5, 246, 39);
+		OptionsPanel.setBounds(771, 5, 503, 39);
 		frame.getContentPane().add(OptionsPanel);
 		OptionsPanel.setLayout(new GridLayout(1, 0, 0, 0));
 
@@ -147,7 +159,7 @@ public class MainWindow implements DocumentListener {
 			}
 		});
 		OptionsPanel.add(loadBT);
-		
+
 		// Save Button
 		saveBT = new JButton("Save");
 		saveBT.addActionListener(new ActionListener() {
@@ -157,20 +169,227 @@ public class MainWindow implements DocumentListener {
 		});
 		OptionsPanel.add(saveBT);
 		
-		// Run Button
-		runBT = new JButton("Run");
-		runBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		Component verticalStrut = Box.createVerticalStrut(1);
+		OptionsPanel.add(verticalStrut);
+		
+		JButton btnDebug = new JButton("Debug");
+		OptionsPanel.add(btnDebug);
+		
+				// Run Button
+				runBT = new JButton("Run");
+				runBT.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
 //				if (modified) JOptionPane.showMessageDialog(frame,	"Save File Then Run ... !");
-				codeInput.setText(dataModel.getDataVector().toString());
-				dataModel.setValueAt(200, 3, 1);
-			}
-		});
-		OptionsPanel.add(runBT);
+//						codeInput.setText(dataModel.getDataVector().toString());
+//						dataModel.setValueAt(200, 3, 1);
+//						System.out.println(codeInput.getText().toCharArray()[2]);
+						getStartingAddress();
+						
+					}
+				});
+				OptionsPanel.add(runBT);
+				OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{loadBT, saveBT, runBT}));
+				
+				Panel panel = new Panel();
+				panel.setBounds(1023, 50, 247, 496);
+				frame.getContentPane().add(panel);
+				panel.setLayout(new BorderLayout(0, 0));
+				
+				JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+				panel.add(tabbedPane, BorderLayout.CENTER);
+				
+				JLayeredPane MemoryPane = new JLayeredPane();
+				tabbedPane.addTab("Memory", null, MemoryPane, null);
+				
+				memoryTB = new JTable();
+				memoryTB.setBounds(6, 6, 214, 496);
+				MemoryPane.add(memoryTB);
+				
+				JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+				tabbedPane_1.setBounds(771, 50, 246, 556);
+				frame.getContentPane().add(tabbedPane_1);
+				
+				JLayeredPane layeredPane = new JLayeredPane();
+				tabbedPane_1.addTab("Settings", null, layeredPane, null);
+				
+				startAdressTF = new JTextField();
+				startAdressTF.setColumns(10);
+				startAdressTF.setBounds(111, 41, 108, 28);
+				layeredPane.add(startAdressTF);
+				
+				JLabel label = new JLabel("Start Address");
+				label.setBounds(6, 47, 93, 16);
+				layeredPane.add(label);
+				
+				JLabel label_1 = new JLabel("Memory Settings");
+				label_1.setHorizontalAlignment(SwingConstants.CENTER);
+				label_1.setBounds(54, 13, 112, 16);
+				layeredPane.add(label_1);
+				
+				JLabel label_2 = new JLabel("Cashe Settings");
+				label_2.setHorizontalAlignment(SwingConstants.CENTER);
+				label_2.setBounds(54, 75, 103, 16);
+				layeredPane.add(label_2);
+				
+				Vector<String> items = new Vector<>();
+				items.add("select");
+				items.add("one");
+				items.add("two");
+				items.add("three");
+				casheLevelsCB = new JComboBox(items);
+				casheLevelsCB.setBounds(126, 103, 93, 27);
+				casheLevelsCB.addActionListener (new ActionListener () {
+				    public void actionPerformed(ActionEvent e) {
+				    	switch (casheLevelsCB.getSelectedIndex()) {
+							case 1:
+								EnableCasheLevel(1, true);
+								EnableCasheLevel(2, false);
+								EnableCasheLevel(3, false);
+							break;
+							case 2:
+								EnableCasheLevel(1, true);
+								EnableCasheLevel(2, true);
+								EnableCasheLevel(3, false);
+							break;
+							case 3:
+								EnableCasheLevel(1, true);
+								EnableCasheLevel(2, true);
+								EnableCasheLevel(3, true);
+							break;
+							default:
+								EnableCasheLevel(1, false);
+								EnableCasheLevel(2, false);
+								EnableCasheLevel(3, false);
+							break;
+						}
+				    }
+				});
+
+				layeredPane.add(casheLevelsCB);
+
+				JLabel label_3 = new JLabel("Number Of Levels");
+				label_3.setBounds(6, 107, 121, 16);
+				layeredPane.add(label_3);
+				
+				JPanel panel_1 = new JPanel();
+				panel_1.setLayout(null);
+				panel_1.setBounds(6, 246, 213, 106);
+				layeredPane.add(panel_1);
+				
+				JLabel label_4 = new JLabel("L2-Cashe");
+				label_4.setBounds(6, 6, 69, 16);
+				panel_1.add(label_4);
+				
+				l2CashSizeTF = new JTextField();
+				l2CashSizeTF.setEnabled(false);
+				l2CashSizeTF.setColumns(10);
+				l2CashSizeTF.setBounds(94, 20, 113, 28);
+				panel_1.add(l2CashSizeTF);
+				
+				l2BlockLengthTF = new JTextField();
+				l2BlockLengthTF.setEnabled(false);
+				l2BlockLengthTF.setColumns(10);
+				l2BlockLengthTF.setBounds(94, 44, 113, 28);
+				panel_1.add(l2BlockLengthTF);
+				
+				l2AssociativityTF = new JTextField();
+				l2AssociativityTF.setEnabled(false);
+				l2AssociativityTF.setColumns(10);
+				l2AssociativityTF.setBounds(94, 71, 113, 28);
+				panel_1.add(l2AssociativityTF);
+				
+				JLabel label_5 = new JLabel("Cashe Size");
+				label_5.setBounds(6, 26, 89, 16);
+				panel_1.add(label_5);
+				
+				JLabel label_6 = new JLabel("Block Length");
+				label_6.setBounds(6, 50, 89, 16);
+				panel_1.add(label_6);
+				
+				JLabel label_7 = new JLabel("Associativity");
+				label_7.setBounds(6, 77, 89, 16);
+				panel_1.add(label_7);
+				
+				JPanel panel_2 = new JPanel();
+				panel_2.setLayout(null);
+				panel_2.setBounds(6, 135, 213, 106);
+				layeredPane.add(panel_2);
+				
+				JLabel label_8 = new JLabel("L1-Cashe");
+				label_8.setBounds(6, 6, 69, 16);
+				panel_2.add(label_8);
+				
+				l1CashSizeTF = new JTextField();
+				l1CashSizeTF.setEnabled(false);
+				l1CashSizeTF.setColumns(10);
+				l1CashSizeTF.setBounds(94, 20, 113, 28);
+				panel_2.add(l1CashSizeTF);
+				
+				l1BlockLengthTF = new JTextField();
+				l1BlockLengthTF.setEnabled(false);
+				l1BlockLengthTF.setColumns(10);
+				l1BlockLengthTF.setBounds(94, 44, 113, 28);
+				panel_2.add(l1BlockLengthTF);
+				
+				l1AssociativityTF = new JTextField();
+				l1AssociativityTF.setEnabled(false);
+				l1AssociativityTF.setColumns(10);
+				l1AssociativityTF.setBounds(94, 71, 113, 28);
+				panel_2.add(l1AssociativityTF);
+				
+				JLabel label_9 = new JLabel("Cashe Size");
+				label_9.setBounds(6, 26, 89, 16);
+				panel_2.add(label_9);
+				
+				JLabel label_10 = new JLabel("Block Length");
+				label_10.setBounds(6, 50, 89, 16);
+				panel_2.add(label_10);
+				
+				JLabel label_11 = new JLabel("Associativity");
+				label_11.setBounds(6, 77, 89, 16);
+				panel_2.add(label_11);
+				
+				JPanel panel_3 = new JPanel();
+				panel_3.setLayout(null);
+				panel_3.setBounds(6, 360, 213, 106);
+				layeredPane.add(panel_3);
+				
+				JLabel label_12 = new JLabel("L3-Cashe");
+				label_12.setBounds(6, 6, 69, 16);
+				panel_3.add(label_12);
+				
+				l3CashSizeTF = new JTextField();
+				l3CashSizeTF.setEnabled(false);
+				l3CashSizeTF.setColumns(10);
+				l3CashSizeTF.setBounds(94, 20, 113, 28);
+				panel_3.add(l3CashSizeTF);
+				
+				l3BlockLengthTF = new JTextField();
+				l3BlockLengthTF.setEnabled(false);
+				l3BlockLengthTF.setColumns(10);
+				l3BlockLengthTF.setBounds(94, 44, 113, 28);
+				panel_3.add(l3BlockLengthTF);
+				
+				l3AssociativityTF = new JTextField();
+				l3AssociativityTF.setEnabled(false);
+				l3AssociativityTF.setColumns(10);
+				l3AssociativityTF.setBounds(94, 71, 113, 28);
+				panel_3.add(l3AssociativityTF);
+				
+				JLabel label_13 = new JLabel("Cashe Size");
+				label_13.setBounds(6, 26, 89, 16);
+				panel_3.add(label_13);
+				
+				JLabel label_14 = new JLabel("Block Length");
+				label_14.setBounds(6, 50, 89, 16);
+				panel_3.add(label_14);
+				
+				JLabel label_15 = new JLabel("Associativity");
+				label_15.setBounds(6, 77, 89, 16);
+				panel_3.add(label_15);
 	}
 
-	
-	private void onClickSaveBT(){
+	private void onClickSaveBT() {
 		if(FilePath != null && !FilePath.equals(" ")){
 			saveBT.setSelected(false);
 			File file = new File(FilePath);
@@ -189,6 +408,41 @@ public class MainWindow implements DocumentListener {
 		}
 	}
 	
+	private void EnableCasheLevel(int level, boolean status)  {
+		switch (level) {
+		case 1:
+			l1CashSizeTF.setEnabled(status); 
+			l1BlockLengthTF .setEnabled(status);
+			l1AssociativityTF.setEnabled(status);
+			if(!status) {
+				l1CashSizeTF.setText(""); 
+				l1BlockLengthTF.setText("");
+				l1AssociativityTF.setText("");
+			}
+			break;
+		case 2:
+			l2CashSizeTF.setEnabled(status); 
+			l2BlockLengthTF .setEnabled(status);
+			l2AssociativityTF.setEnabled(status);
+			if(!status) {
+				l2CashSizeTF.setText(""); 
+				l2BlockLengthTF.setText("");
+				l2AssociativityTF.setText("");
+			}
+			break;
+		case 3:
+			l3CashSizeTF.setEnabled(status); 
+			l3BlockLengthTF .setEnabled(status);
+			l3AssociativityTF.setEnabled(status);
+			if(!status) {
+				l3CashSizeTF.setText(""); 
+				l3BlockLengthTF.setText("");
+				l3AssociativityTF.setText("");
+			}
+			break;
+		}
+	}
+	
 	private void createInputPanel() {
 		JPanel InputPanel = new JPanel();
 		InputPanel.setBounds(6, 6, 761, 593);
@@ -198,7 +452,7 @@ public class MainWindow implements DocumentListener {
 		codeInput = new JTextArea();
 		codeInput.setColumns(1);
 		codeInput.getDocument().addDocumentListener(this);
-
+		codeInput.setLineWrap(true);
 		InputPanel.add(codeInput);
 
 		JScrollPane scroll = new JScrollPane(codeInput,
@@ -210,7 +464,7 @@ public class MainWindow implements DocumentListener {
 	
 	private void createRegisterPanel()	{
 		debuging = new JPanel();
-		debuging.setBounds(771, 47, 246, 488);
+		debuging.setBounds(1025, 560, 246, 204);
 		frame.getContentPane().add(debuging);
 		debuging.setLayout(new BorderLayout(0, 0));
 
@@ -219,17 +473,22 @@ public class MainWindow implements DocumentListener {
 
 		JLayeredPane RegisterPane = new JLayeredPane();
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
+		tabbedPane.setEnabledAt(0, true);
 		initData();
 		
-		registerTB = new JTable(dataModel);
-		registerTB.setBounds(6, 6, 213, 430);
+		registerTB = new JTable(dataValues, columnNames);
+		Border headerBorder = UIManager.getBorder("TableHeader.cellBorder");
+		registerTB.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		registerTB.setGridColor(Color.BLACK);
+		registerTB.setSurrendersFocusOnKeystroke(true);
+		registerTB.setBounds(6, 6, 213, 146);
 		registerTB.setFillsViewportHeight(true);
 		registerTB.setEnabled(false);
-		registerTB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		registerTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			
 		RegisterPane.add(registerTB);
-
-		JLayeredPane CashePane = new JLayeredPane();
-		tabbedPane.addTab("Cashes", null, CashePane, null);
+		
 	}
 	
 	/***************************************************************
@@ -284,12 +543,9 @@ public class MainWindow implements DocumentListener {
 			}
 			else return false;
 		}
-		
 		return true;
 	}
-	
-	
-	
+
 	/**
 	 *	readFile: Reading a Text File and add it to the Editor
 	 *	parameters: path: The File Path
@@ -326,29 +582,28 @@ public class MainWindow implements DocumentListener {
 	 *	Creating and initializing the data for the rows and columns of the Registers Table.
 	 *	initData: Calls the methods for init the table
 	 * */
-	private String columnNames[];
-	private String dataValues[][];
 	private void initData() {
-		CreateColumns();
 		CreateData();
-
-		dataModel = new DefaultTableModel();
 		
-		for (int col = 0; col < columnNames.length; col++) {
-		dataModel.addColumn(columnNames[col]);
-		}
+		dataModel = new DefaultTableModel(); 
+		dataModel.addColumn("Registers");
+		dataModel.addColumn("Values");
+		
 		for (int row = 0; row < dataValues.length; row++) {
 		dataModel.addRow(dataValues[row]);
 		}	
 	}
-
-	public void CreateColumns() {
-		// Create column string labels
-		columnNames = new String[2];
-
-		for (int iCtr = 0; iCtr < 2; iCtr++)
-			columnNames[iCtr] = "Col:" + iCtr;
-	}	
+	
+	private int getStartingAddress() {
+		String data = startAdressTF.getText();
+		return data.matches("[0-9]+")?Integer.parseInt(data) : -1;
+	}
+	
+	private boolean setSimulatorVectorData() {
+//		for (String line : textArea.getText().split("\\n")) doStuffWithLine(line);
+		return true;
+	}
+	
 	public void CreateData() {
 		// Create data for each element
 		dataValues = new String[8][2];
