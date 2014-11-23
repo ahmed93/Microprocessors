@@ -57,6 +57,7 @@ public class DirectMapped extends Cache {
 			return word;
 		}
 		else {
+			System.out.println("MISS");
 			misses++;
 			return null;
 		}

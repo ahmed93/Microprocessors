@@ -57,6 +57,7 @@ public class SetAssociative extends Cache {
 			return word;
 		}
 		else {
+			System.out.println("MISS");
 			misses++;
 			return null;
 		}

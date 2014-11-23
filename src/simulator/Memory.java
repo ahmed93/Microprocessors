@@ -12,7 +12,7 @@ public class Memory {
 	int percentage;
 	int d; // Data Index
 	int i; // Instruction Index
-	final int DATA_STARTING_ADDRESS;
+	public final int DATA_STARTING_ADDRESS;
 
 	private Memory() {
 		this.cells = new Word[SIZE];
@@ -28,7 +28,7 @@ public class Memory {
 	}
 
 	public void storeDataAtAddress(int data, int address) {
-		address += DATA_STARTING_ADDRESS;
+		address+= DATA_STARTING_ADDRESS;
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
 //			System.out.println("Storing " + data + " At address " + address);
 			this.cells[address] = new Data(data);

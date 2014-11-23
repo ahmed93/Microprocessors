@@ -1,5 +1,7 @@
 package simulator;
 
+import instructions.NOP;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,14 +95,14 @@ public class Simulator {
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j]
 						.searchInstruction(this.instructions_addresses.get(i));
-				if (instruction != null) {
+				if (instruction != null && instruction.getClass() != NOP.class) {
 					updateInstructionInHigherCaches(j,
 							this.instructions_addresses.get(i));
 					// place instruction in higher cache levels(j)
 					break;
 				}
 			}
-			if (instruction == null) {
+			if (instruction == null || instruction.getClass() == NOP.class) {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
@@ -163,7 +165,7 @@ public class Simulator {
 		}
 	}
 
-	public void printMemroy() {
+	public void printMemory() {
 		for (int i = 0; i < 10; i++) {
 			System.out.println(i + " : " + this.memory.getInstructionAt(i));
 		}
@@ -211,6 +213,11 @@ public class Simulator {
 	}
 
 	public void writeDataWithPolicies(int address, int data_value) {
+		if(caches.length == 0)
+		{
+			this.memory.storeDataAtAddress(data_value, address);
+			return;
+		}
 		String WritePolicy = "";
 		for (int i = 0; i < caches.length; i++) {
 			Data dataWord = caches[i].searchData(address);
@@ -240,6 +247,10 @@ public class Simulator {
 			insertInHigherLevels(caches.length, dataWord, false); // With
 																	// marking
 																	// bit
+		}
+		else {
+			Data dataWord = this.memory.getDataAt(address);
+			this.memory.storeDataAtAddress(data_value, address);
 		}
 	}
 
