@@ -15,7 +15,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -38,13 +41,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 import Abstracts.Cache;
 import factories.CacheFactory;
-import javax.swing.JRadioButton;
 
 public class Window {
 
@@ -56,7 +62,8 @@ public class Window {
 	private JPanel debuging;
 	private DefaultTableModel dataModel;
 	private JTable memoryTB;
-	private JComboBox cacheLevelsCB;
+	private JComboBox cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
+			Hit3CB;
 	private JTextField startAdressTF, l2CashSizeTF, l2BlockLengthTF,
 			l2AssociativityTF, l1CashSizeTF, l1BlockLengthTF,
 			l1AssociativityTF, l3CashSizeTF, l3BlockLengthTF,
@@ -79,6 +86,8 @@ public class Window {
 	private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
 	private static final String FILE_TYPE_Viewed = "TEXT-File";
 	private static final String FILE_TYPE = "txt";
+	private Vector<String> HITPOLISYS = new Vector<String>();
+	private Vector<String> MISSPOLISYS = new Vector<String>();
 
 	/**
 	 * Launch the application.
@@ -107,6 +116,10 @@ public class Window {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		HITPOLISYS.add("WB");
+		HITPOLISYS.add("WT");
+		MISSPOLISYS.add("WA");
+		MISSPOLISYS.add("WL");
 		/*************************************
 		 ** Initializing the Frame **
 		 *************************************/
@@ -188,6 +201,7 @@ public class Window {
 
 		JButton stioBT = new JButton("Stop");
 		stioBT.setBounds(309, 3, 85, 30);
+		stioBT.setEnabled(false);
 		OptionsPanel.add(stioBT);
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
@@ -225,7 +239,9 @@ public class Window {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
+				if (startAdressTF.getText().matches(NUMBERS_ONLY_REGIX)) {
+
+				}
 			}
 
 			@Override
@@ -322,6 +338,24 @@ public class Window {
 		label_7.setBounds(6, 77, 89, 16);
 		panel_1.add(label_7);
 
+		JLabel label_1 = new JLabel("HitP");
+		label_1.setBounds(6, 104, 26, 16);
+		panel_1.add(label_1);
+
+		Hit2CB = new JComboBox(HITPOLISYS);
+		Hit2CB.setBounds(37, 101, 76, 25);
+		Hit2CB.setEnabled(false);
+		panel_1.add(Hit2CB);
+
+		Miss2CB = new JComboBox(MISSPOLISYS);
+		Miss2CB.setBounds(155, 102, 82, 23);
+		Miss2CB.setEnabled(false);
+		panel_1.add(Miss2CB);
+
+		JLabel label_16 = new JLabel("MissP");
+		label_16.setBounds(114, 104, 42, 16);
+		panel_1.add(label_16);
+
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
 		panel_2.setBounds(6, 90, 243, 132);
@@ -360,26 +394,28 @@ public class Window {
 		JLabel label_11 = new JLabel("Associativity");
 		label_11.setBounds(6, 77, 89, 16);
 		panel_2.add(label_11);
-		
+
 		JLabel lblHitp = new JLabel("HitP");
 		lblHitp.setBounds(6, 105, 26, 16);
 		panel_2.add(lblHitp);
-		
-		JComboBox comboBox = new JComboBox();
-		comboBox.setBounds(37, 102, 76, 25);
-		panel_2.add(comboBox);
-		
-		JComboBox comboBox_1 = new JComboBox();
-		comboBox_1.setBounds(155, 103, 82, 23);
-		panel_2.add(comboBox_1);
-		
+
+		Hit1CB = new JComboBox(HITPOLISYS);
+		Hit1CB.setBounds(37, 102, 76, 25);
+		Hit1CB.setEnabled(false);
+		panel_2.add(Hit1CB);
+
+		Miss1CB = new JComboBox(MISSPOLISYS);
+		Miss1CB.setBounds(155, 103, 82, 23);
+		Miss1CB.setEnabled(false);
+		panel_2.add(Miss1CB);
+
 		JLabel lblMissp = new JLabel("MissP");
 		lblMissp.setBounds(114, 105, 42, 16);
 		panel_2.add(lblMissp);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
-		panel_3.setBounds(6, 370, 243, 132);
+		panel_3.setBounds(6, 361, 243, 132);
 		layeredPane.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
@@ -415,6 +451,24 @@ public class Window {
 		JLabel label_15 = new JLabel("Associativity");
 		label_15.setBounds(6, 77, 89, 16);
 		panel_3.add(label_15);
+
+		JLabel label_17 = new JLabel("HitP");
+		label_17.setBounds(6, 104, 26, 16);
+		panel_3.add(label_17);
+
+		Hit3CB = new JComboBox(HITPOLISYS);
+		Hit3CB.setBounds(37, 101, 76, 25);
+		Hit3CB.setEnabled(false);
+		panel_3.add(Hit3CB);
+
+		Miss3CB = new JComboBox(MISSPOLISYS);
+		Miss3CB.setBounds(155, 102, 82, 23);
+		Miss3CB.setEnabled(false);
+		panel_3.add(Miss3CB);
+
+		JLabel label_18 = new JLabel("MissP");
+		label_18.setBounds(114, 104, 42, 16);
+		panel_3.add(label_18);
 	}
 
 	private void onClickSaveBT() {
@@ -432,8 +486,7 @@ public class Window {
 				FilePath = fileChooser.getSelectedFile().getPath();
 				if (!FilePath.toLowerCase().endsWith(".txt"))
 					FilePath += "." + FILE_TYPE;
-				if (saveFile())
-					modified = false;
+				if (saveFile()) modified = false;
 			}
 		}
 	}
@@ -444,30 +497,42 @@ public class Window {
 			l1CashSizeTF.setEnabled(status);
 			l1BlockLengthTF.setEnabled(status);
 			l1AssociativityTF.setEnabled(status);
+			Miss1CB.setEnabled(true);
+			Hit1CB.setEnabled(true);
 			if (!status) {
 				l1CashSizeTF.setText("");
 				l1BlockLengthTF.setText("");
 				l1AssociativityTF.setText("");
+				Miss1CB.setEnabled(false);
+				Hit1CB.setEnabled(false);
 			}
 			break;
 		case 2:
 			l2CashSizeTF.setEnabled(status);
 			l2BlockLengthTF.setEnabled(status);
 			l2AssociativityTF.setEnabled(status);
+			Miss2CB.setEnabled(true);
+			Hit2CB.setEnabled(true);
 			if (!status) {
 				l2CashSizeTF.setText("");
 				l2BlockLengthTF.setText("");
 				l2AssociativityTF.setText("");
+				Miss2CB.setEnabled(false);
+				Hit2CB.setEnabled(false);
 			}
 			break;
 		case 3:
 			l3CashSizeTF.setEnabled(status);
 			l3BlockLengthTF.setEnabled(status);
 			l3AssociativityTF.setEnabled(status);
+			Miss3CB.setEnabled(true);
+			Hit3CB.setEnabled(true);
 			if (!status) {
 				l3CashSizeTF.setText("");
 				l3BlockLengthTF.setText("");
 				l3AssociativityTF.setText("");
+				Miss3CB.setEnabled(false);
+				Hit3CB.setEnabled(false);
 			}
 			break;
 		}
@@ -483,6 +548,7 @@ public class Window {
 		consolePannel.setLayout(new BorderLayout(0, 0));
 
 		consoleTP = new JTextPane();
+		consoleTP.setBackground(Color.DARK_GRAY);
 		consoleTP.setEditable(false);
 		consolePannel.add(consoleTP);
 		JScrollPane consoleScroll = new JScrollPane(consoleTP,
@@ -491,16 +557,38 @@ public class Window {
 		consolePannel.add(consoleScroll);
 	}
 
-	public static void printE() {
-
+	public void printE(String message) {
+		StyledDocument doc = consoleTP.getStyledDocument();
+		Style style = consoleTP.addStyle(message, null);
+		StyleConstants.setForeground(style, Color.RED);
+		try {
+			doc.insertString(doc.getLength(), message + "\n", style);
+		} catch (BadLocationException ex) {
+		}
 	}
 
-	public static void printW() {
+	public void printW(String message) {
+		StyledDocument doc = consoleTP.getStyledDocument();
+		String stru = "Warrning: " + message + "\n";
+		Style style = consoleTP.addStyle(stru, null);
+		StyleConstants.setForeground(style, Color.DARK_GRAY);
 
+		try {
+			doc.insertString(doc.getLength(), stru, style);
+		} catch (BadLocationException ex) {
+		}
 	}
 
-	public static void printM(String message) {
+	public void printM(String message) {
+		StyledDocument doc = consoleTP.getStyledDocument();
 
+		Style style = consoleTP.addStyle(message, null);
+		StyleConstants.setForeground(style, Color.WHITE);
+
+		try {
+			doc.insertString(doc.getLength(), message + "\n", style);
+		} catch (BadLocationException ex) {
+		}
 	}
 
 	private void createInputPanel() {
@@ -560,18 +648,22 @@ public class Window {
 		initData();
 
 		registerTB = new JTable(dataValues, columnNames);
-		registerTB.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		registerTB.setGridColor(Color.BLACK);
+		registerTB.setCellSelectionEnabled(true);
+		registerTB.setColumnSelectionAllowed(true);
+//		registerTB.setBorder(UIManager.);
+		registerTB.setGridColor(Color.LIGHT_GRAY);
 		registerTB.setSurrendersFocusOnKeystroke(true);
-		registerTB.setBounds(6, 6, 213, 146);
+		registerTB.setBounds(6, 18, 213, 128);
 		registerTB.setFillsViewportHeight(true);
+		
+		registerTB.setTableHeader(registerTB.getTableHeader());
+		registerTB.add(registerTB.getTableHeader(), BorderLayout.PAGE_START);
 		registerTB.setEnabled(false);
-		registerTB
-				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		
+		registerTB.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		RegisterPane.add(registerTB);
-
 	}
 
 	/*************************************
@@ -629,32 +721,41 @@ public class Window {
 	}
 
 	private void onClickrunBT() {
-		int instruction_starting_address = -1;
-		if (!modified) {
-			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-		} else {
-			instruction_starting_address = getStartingAddress();
-			if (instruction_starting_address < 0) {
-				JOptionPane
-						.showMessageDialog(frame, "Wrong start Address .. !");
-				return;
-			}
-			setSimulatorVectors();
-			simulator = new Simulator(data, instructions, getCacheSettings(),
-					instruction_starting_address);
-
-			System.out.println(data + "\n" + instructions + "\n"
-					+ instruction_starting_address);
-			try {
-				simulator.Initialize();
-				simulator.runInstructions();
-				simulator.printMemroy();
-				simulator.printRegisters();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		consoleTP.setText("");
+		dataModel.setValueAt("123", 3, 1);
+		printE("baaaaad");
+//		dataModel.
+//		int instruction_starting_address = -1;
+//		if (!modified) {
+//			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
+//		} else {
+//			instruction_starting_address = getStartingAddress();
+//			if (instruction_starting_address < 0) {
+//				JOptionPane
+//						.showMessageDialog(frame, "Wrong start Address .. !");
+//				return;
+//			}
+//			setSimulatorVectors();
+//			simulator = new Simulator(data, instructions, getCacheSettings(),
+//					instruction_starting_address);
+//
+//			System.out.println(data + "\n" + instructions + "\n"
+//					+ instruction_starting_address);
+//			try {
+//				simulator.Initialize();
+//				simulator.runInstructions();
+//				simulator.printMemroy();
+//				simulator.printRegisters();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+		
+//		HashMap<Integer, Integer> sss = new HashMap<Integer, Integer>();
+//		sss.put(2, 200);
+//		sss.put(1, 500);
+//		setRegisterData(sss);
 	}
 
 	private void changeMemoryTB() {
@@ -685,8 +786,16 @@ public class Window {
 		}
 	}
 
-	private void setRegisterData(HashMap<String, Integer> data) {
-
+	private void setRegisterData(HashMap<Integer, Integer> data) {
+		Iterator<?> it = data.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)it.next();
+	        registerTB.setValueAt((int)pairs.getValue(), (int) pairs.getKey(), 1);
+	        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+	        it.remove(); // avoids a ConcurrentModificationException
+	    }
+	    
+	    dataModel.fireTableDataChanged();
 	}
 
 	public void CreateData() {
@@ -754,15 +863,18 @@ public class Window {
 		boolean[] polisys = { false, false, false, false };
 		switch (cache_Level) {
 		case 1:
-
+			if (Hit1CB.getSelectedIndex() == 1)
+				polisys[0] = true;
+			else if (Hit1CB.getSelectedIndex() == 2)
+				polisys[2] = true;
+			if (Miss1CB.getSelectedIndex() == 1)
+				polisys[0] = true;
 			break;
 		case 2:
 
 			break;
 		case 3:
 
-			break;
-		default:
 			break;
 		}
 
