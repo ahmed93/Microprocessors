@@ -1,5 +1,6 @@
 package cache;
 
+import interfaces.Word;
 import simulator.Block;
 import simulator.Data;
 import Abstracts.Cache;
@@ -14,14 +15,26 @@ public class DirectMapped extends Cache {
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
 	}
-
-	@Override
-	public Instruction searchInstruction(int address) {
+	
+	
+	public Word getWordAtAddress(int address, String type)
+	{
 		int num_of_words_in_set = blockSize * associativity;
 		//int word_offset_in_set = address % num_of_words_in_set;
 		int index = (address / blockSize) % (cacheSize/blockSize);
 		int word_offset_in_block = address % blockSize;
-		Instruction word = (Instruction) instructions[index * associativity].words[word_offset_in_block];
+		Word word;
+		if(type == INSTRUCTION)
+			 word = instructions[index * associativity].words[word_offset_in_block];
+		else 
+			word =  data[index * associativity].words[word_offset_in_block];
+		return word;
+		
+	}
+
+	@Override
+	public Instruction searchInstruction(int address) {
+		Instruction word  = (Instruction) getWordAtAddress(address, INSTRUCTION);
 		if (word.getAddress() == address) {
 			hits++;
 			return word;
@@ -34,31 +47,14 @@ public class DirectMapped extends Cache {
 
 	@Override
 	public Data searchData(int address) {
-		int num_of_words_in_set = blockSize * associativity;
-		//int word_offset_in_set = address % num_of_words_in_set;
-		int index = (address / blockSize) % (cacheSize/blockSize);
-		int word_offset_in_block = address % blockSize;
-		Data word = (Data) data[index * associativity].words[word_offset_in_block];
+		Data word  = (Data) getWordAtAddress(address, DATA);
 		if (word.getAddress() == address) {
 			hits++;
-			return word;
+			return (Data) word;
 		}
 		else {
 			misses++;
 			return null;
 		}
 	}
-
-	@Override
-	public Data insertData(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Instruction insertInstruction(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

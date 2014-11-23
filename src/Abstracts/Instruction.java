@@ -12,6 +12,7 @@ public abstract class Instruction implements Word {
 	protected Register regC;
 	protected int imm;
 	protected int address;
+	protected boolean dirtyBit;
 
 	public abstract void execute();
 
@@ -23,4 +24,14 @@ public abstract class Instruction implements Word {
 		this.address = address;
 	}
 
+	public boolean isDirtyBit() {
+		return dirtyBit;
+	}
+
+	public void setDirtyBit(boolean dirtyBit) {
+		this.dirtyBit = dirtyBit;
+	}
+
+
+	
 }
