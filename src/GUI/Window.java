@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,6 +27,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -38,18 +40,21 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.TabSet;
+import javax.swing.text.TabStop;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
-import Abstracts.Cache;
 import GUI.DocumentFilter.NumbersFilter;
-import factories.CacheFactory;
 
 public class Window {
 
@@ -231,8 +236,8 @@ public class Window {
 		startAdressTF.setColumns(10);
 		startAdressTF.setBounds(141, 6, 108, 28);
 		PlainDocument doc = (PlainDocument) startAdressTF.getDocument();
-	    doc.setDocumentFilter(new NumbersFilter());
-	    
+		doc.setDocumentFilter(new NumbersFilter());
+
 		startAdressTF.addKeyListener(new KeyListener() {
 
 			@Override
@@ -625,7 +630,26 @@ public class Window {
 				}
 			}
 		});
-		// codeInput.setLineWrap(true);
+		
+		codeInput.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				
+			}
+		});
 		InputPanel.add(codeInput);
 
 		JScrollPane scroll = new JScrollPane(codeInput,
@@ -653,7 +677,7 @@ public class Window {
 		registerTB = new JTable(dataValues, columnNames);
 		registerTB.setCellSelectionEnabled(true);
 		registerTB.setColumnSelectionAllowed(true);
-		// registerTB.setBorder(UIManager.);
+
 		registerTB.setGridColor(Color.LIGHT_GRAY);
 		registerTB.setSurrendersFocusOnKeystroke(true);
 		registerTB.setBounds(6, 18, 213, 128);
@@ -710,12 +734,9 @@ public class Window {
 		codeInput.setText("");
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			while (reader.ready()) {
-				// Come Here
-
-			}
-			// codeInput.set
-			// codeInput.append(reader.readLine() + "\n");
+			
+			while (reader.ready())
+				appendCode(reader.readLine());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -729,45 +750,43 @@ public class Window {
 	}
 
 	private void appendCode(String line) {
-
+		StyledDocument doc = codeInput.getStyledDocument();
+		Style style = consoleTP.addStyle(line, null);
+		StyleConstants.setForeground(style, Color.BLACK);
+		try {
+			doc.insertString(doc.getLength(), line + "\n", style);
+		} catch (BadLocationException ex) {
+		}
 	}
 
 	private void onClickrunBT() {
-		consoleTP.setText("");
-		dataModel.setValueAt("123", 3, 1);
-		printE("baaaaad");
-		// dataModel.
-		// int instruction_starting_address = -1;
-		// if (!modified) {
-		// JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-		// } else {
-		// instruction_starting_address = getStartingAddress();
-		// if (instruction_starting_address < 0) {
-		// JOptionPane
-		// .showMessageDialog(frame, "Wrong start Address .. !");
-		// return;
-		// }
-		// setSimulatorVectors();
-		// simulator = new Simulator(data, instructions, getCacheSettings(),
-		// instruction_starting_address);
-		//
-		// System.out.println(data + "\n" + instructions + "\n"
-		// + instruction_starting_address);
-		// try {
-		// simulator.Initialize();
-		// simulator.runInstructions();
-		// simulator.printMemroy();
-		// simulator.printRegisters();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
+		System.out.println(getCaches().toArray());
 
-		// HashMap<Integer, Integer> sss = new HashMap<Integer, Integer>();
-		// sss.put(2, 200);
-		// sss.put(1, 500);
-		// setRegisterData(sss);
+		int instruction_starting_address = -1;
+		if (!modified) {
+			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
+		} else {
+			instruction_starting_address = getStartingAddress();
+			if (instruction_starting_address < 0) {
+				JOptionPane
+						.showMessageDialog(frame, "Wrong start Address .. !");
+				return;
+			}
+			setSimulatorVectors();
+			simulator = new Simulator(data, instructions, getCaches(),
+					getStartingAddress());
+
+			try {
+				simulator.Initialize();
+				simulator.runInstructions();
+				simulator.printMemroy();
+				simulator.printRegisters();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	private void changeMemoryTB() {
@@ -824,7 +843,7 @@ public class Window {
 	 * **/
 	private int getStartingAddress() {
 		String data = startAdressTF.getText();
-		return data.matches(NUMBERS_ONLY_REGIX) ? Integer.parseInt(data) : -1;
+		return Integer.parseInt(data);
 	}
 
 	/**
@@ -854,53 +873,63 @@ public class Window {
 	 * Cache Settings initCache all three caches : Init the cache Array with the
 	 * Three Level Cache return Array of Caches
 	 * **/
-	private Cache initCache(JTextField associativityTF, JTextField blockSizeTF,
-			JTextField cacheSizeTF, int cache_Level) {
-		String tmpData = associativityTF.getText().toString();
-		int associativity = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : -1;
-		tmpData = blockSizeTF.getText().toString();
-		int blockSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : -1;
-		tmpData = cacheSizeTF.getText().toString();
-		int cacheSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : -1;
-
-		return associativity == -1 || blockSize == -1 || cacheSize == -1 ? null
-				: CacheFactory.createCache(associativity, blockSize, cacheSize,
-						setPolisy(cache_Level));
-	}
-
-	private boolean[] setPolisy(int cache_Level) {
-		boolean[] polisys = { false, false, false, false };
+	private HashMap<String, Integer> initCache(int cache_Level) {
+		HashMap<String, Integer> cache = new HashMap<String, Integer>();
+		int wb = -1, wa = -1;
 		switch (cache_Level) {
 		case 1:
-			if (Hit1CB.getSelectedIndex() == 1)
-				polisys[0] = true;
-			else if (Hit1CB.getSelectedIndex() == 2)
-				polisys[2] = true;
-			if (Miss1CB.getSelectedIndex() == 1)
-				polisys[0] = true;
+			cache.put("associativity",
+					Integer.parseInt(l1AssociativityTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l1CashSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l1BlockLengthTF.getText()));
+			wb = Hit1CB.getSelectedIndex();
+			cache.put("writeBack", wb == 0 ? 1 : 0);
+			cache.put("writeThrough", wb == 1 ? 1 : 0);
+			wa = Miss1CB.getSelectedIndex();
+			cache.put("writeAllocate", wa == 1 ? 1 : 0);
+			cache.put("writeAround", wa == 0 ? 1 : 0);
 			break;
 		case 2:
-
+			cache.put("associativity",
+					Integer.parseInt(l2AssociativityTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l2CashSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l2BlockLengthTF.getText()));
+			wb = Hit2CB.getSelectedIndex();
+			cache.put("writeBack", wb == 0 ? 1 : 0);
+			cache.put("writeThrough", wb == 1 ? 1 : 0);
+			wa = Miss2CB.getSelectedIndex();
+			cache.put("writeAllocate", wa == 1 ? 1 : 0);
+			cache.put("writeAround", wa == 0 ? 1 : 0);
 			break;
 		case 3:
-
+			cache.put("associativity",
+					Integer.parseInt(l3AssociativityTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l3CashSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l3BlockLengthTF.getText()));
+			wb = Hit3CB.getSelectedIndex();
+			cache.put("writeBack", wb == 0 ? 1 : 0);
+			cache.put("writeThrough", wb == 1 ? 1 : 0);
+			wa = Miss3CB.getSelectedIndex();
+			cache.put("writeAllocate", wa == 1 ? 1 : 0);
+			cache.put("writeAround", wa == 0 ? 1 : 0);
 			break;
 		}
 
-		return polisys;
+		return cache;
 	}
 
-	private Cache[] getCacheSettings() {
-		Cache[] tmp = new Cache[3];
-		// / L1 - Cache
-		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF, 1);
-		// / L2 - Cache
-		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF, 2);
-		// / L3 - Cache
-		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF, 3);
+	private ArrayList<HashMap<String, Integer>> getCaches() {
+		ArrayList<HashMap<String, Integer>> tmp = new ArrayList<HashMap<String, Integer>>();
+		// L1 - Cache
+		if (cacheLevelsCB.getSelectedIndex() > 0)
+			tmp.add(initCache(1));
+		// L2 - Cache
+		if (cacheLevelsCB.getSelectedIndex() > 1)
+			tmp.add(initCache(2));
+		// L3 - Cache
+		if (cacheLevelsCB.getSelectedIndex() > 2)
+			tmp.add(initCache(3));
+
 		return tmp;
 	}
 }
