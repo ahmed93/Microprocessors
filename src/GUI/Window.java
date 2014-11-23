@@ -44,12 +44,13 @@ import org.eclipse.wb.swing.FocusTraversalOnArray;
 import simulator.Simulator;
 import Abstracts.Cache;
 import factories.CacheFactory;
+import javax.swing.JRadioButton;
 
 public class Window {
 
 	private JFrame frame;
 	private JTextArea codeInput;
-	private static JTextPane consoleTP;
+	private JTextPane consoleTP;
 	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT;
 	private JPanel debuging;
@@ -137,7 +138,7 @@ public class Window {
 	 *************************************/
 	private void createOptionPanel() {
 		JPanel OptionsPanel = new JPanel();
-		OptionsPanel.setBounds(771, 5, 503, 39);
+		OptionsPanel.setBounds(741, 5, 533, 39);
 		frame.getContentPane().add(OptionsPanel);
 
 		// Load Button
@@ -191,13 +192,13 @@ public class Window {
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
 
-		Panel panel = new Panel();
-		panel.setBounds(1023, 50, 247, 496);
-		frame.getContentPane().add(panel);
-		panel.setLayout(new BorderLayout(0, 0));
+		Panel MemoryPanel = new Panel();
+		MemoryPanel.setBounds(1025, 50, 245, 496);
+		frame.getContentPane().add(MemoryPanel);
+		MemoryPanel.setLayout(new BorderLayout(0, 0));
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		panel.add(tabbedPane, BorderLayout.CENTER);
+		MemoryPanel.add(tabbedPane, BorderLayout.CENTER);
 
 		JLayeredPane MemoryPane = new JLayeredPane();
 		tabbedPane.addTab("Memory", null, MemoryPane, null);
@@ -207,7 +208,7 @@ public class Window {
 		MemoryPane.add(memoryTB);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		SettingsTabbedPane.setBounds(771, 50, 246, 556);
+		SettingsTabbedPane.setBounds(741, 50, 276, 556);
 		frame.getContentPane().add(SettingsTabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
@@ -215,7 +216,7 @@ public class Window {
 
 		startAdressTF = new JTextField();
 		startAdressTF.setColumns(10);
-		startAdressTF.setBounds(111, 41, 108, 28);
+		startAdressTF.setBounds(141, 6, 108, 28);
 		startAdressTF.addKeyListener(new KeyListener() {
 
 			@Override
@@ -234,17 +235,12 @@ public class Window {
 		layeredPane.add(startAdressTF);
 
 		JLabel label = new JLabel("Start Address");
-		label.setBounds(6, 47, 93, 16);
+		label.setBounds(6, 12, 93, 16);
 		layeredPane.add(label);
-
-		JLabel label_1 = new JLabel("Memory Settings");
-		label_1.setHorizontalAlignment(SwingConstants.CENTER);
-		label_1.setBounds(54, 13, 112, 16);
-		layeredPane.add(label_1);
 
 		JLabel label_2 = new JLabel("Cache Settings");
 		label_2.setHorizontalAlignment(SwingConstants.CENTER);
-		label_2.setBounds(63, 75, 103, 16);
+		label_2.setBounds(72, 40, 112, 16);
 		layeredPane.add(label_2);
 
 		Vector<String> items = new Vector<>();
@@ -253,7 +249,7 @@ public class Window {
 		items.add("two");
 		items.add("three");
 		cacheLevelsCB = new JComboBox(items);
-		cacheLevelsCB.setBounds(126, 103, 93, 27);
+		cacheLevelsCB.setBounds(156, 58, 93, 27);
 		cacheLevelsCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switch (cacheLevelsCB.getSelectedIndex()) {
@@ -284,12 +280,12 @@ public class Window {
 		layeredPane.add(cacheLevelsCB);
 
 		JLabel label_3 = new JLabel("Number Of Levels");
-		label_3.setBounds(6, 107, 121, 16);
+		label_3.setBounds(6, 62, 121, 16);
 		layeredPane.add(label_3);
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setLayout(null);
-		panel_1.setBounds(6, 246, 213, 106);
+		panel_1.setBounds(6, 226, 243, 132);
 		layeredPane.add(panel_1);
 
 		JLabel label_4 = new JLabel("L2-Cache");
@@ -328,7 +324,7 @@ public class Window {
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
-		panel_2.setBounds(6, 135, 213, 106);
+		panel_2.setBounds(6, 90, 243, 132);
 		layeredPane.add(panel_2);
 
 		JLabel label_8 = new JLabel("L1-Cache");
@@ -364,10 +360,26 @@ public class Window {
 		JLabel label_11 = new JLabel("Associativity");
 		label_11.setBounds(6, 77, 89, 16);
 		panel_2.add(label_11);
+		
+		JLabel lblHitp = new JLabel("HitP");
+		lblHitp.setBounds(6, 105, 26, 16);
+		panel_2.add(lblHitp);
+		
+		JComboBox comboBox = new JComboBox();
+		comboBox.setBounds(37, 102, 76, 25);
+		panel_2.add(comboBox);
+		
+		JComboBox comboBox_1 = new JComboBox();
+		comboBox_1.setBounds(155, 103, 82, 23);
+		panel_2.add(comboBox_1);
+		
+		JLabel lblMissp = new JLabel("MissP");
+		lblMissp.setBounds(114, 105, 42, 16);
+		panel_2.add(lblMissp);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
-		panel_3.setBounds(6, 360, 213, 106);
+		panel_3.setBounds(6, 370, 243, 132);
 		layeredPane.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
@@ -479,21 +491,21 @@ public class Window {
 		consolePannel.add(consoleScroll);
 	}
 
-	public static void printError() {
+	public static void printE() {
 
 	}
 
-	public static void printWarnning() {
+	public static void printW() {
 
 	}
 
-	public static void printOutput(String message) {
+	public static void printM(String message) {
 
 	}
 
 	private void createInputPanel() {
 		JPanel InputPanel = new JPanel();
-		InputPanel.setBounds(6, 6, 761, 593);
+		InputPanel.setBounds(6, 6, 723, 593);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
 
@@ -722,7 +734,7 @@ public class Window {
 	 * Three Level Cache return Array of Caches
 	 * **/
 	private Cache initCache(JTextField associativityTF, JTextField blockSizeTF,
-			JTextField cacheSizeTF,int cache_Level) {
+			JTextField cacheSizeTF, int cache_Level) {
 		String tmpData = associativityTF.getText().toString();
 		int associativity = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
 				.parseInt(tmpData) : -1;
@@ -734,14 +746,15 @@ public class Window {
 				.parseInt(tmpData) : -1;
 
 		return associativity == -1 || blockSize == -1 || cacheSize == -1 ? null
-				: CacheFactory.createCache(associativity, blockSize, cacheSize, setPolisy(cache_Level));
+				: CacheFactory.createCache(associativity, blockSize, cacheSize,
+						setPolisy(cache_Level));
 	}
 
 	private boolean[] setPolisy(int cache_Level) {
 		boolean[] polisys = { false, false, false, false };
 		switch (cache_Level) {
 		case 1:
-			
+
 			break;
 		case 2:
 
