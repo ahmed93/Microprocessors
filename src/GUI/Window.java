@@ -321,6 +321,22 @@ public class Window {
 		JLabel label_7 = new JLabel("Associativity");
 		label_7.setBounds(6, 77, 89, 16);
 		panel_1.add(label_7);
+		
+		JLabel label_1 = new JLabel("HitP");
+		label_1.setBounds(6, 104, 26, 16);
+		panel_1.add(label_1);
+		
+		JComboBox comboBox_2 = new JComboBox();
+		comboBox_2.setBounds(37, 101, 76, 25);
+		panel_1.add(comboBox_2);
+		
+		JComboBox comboBox_3 = new JComboBox();
+		comboBox_3.setBounds(155, 102, 82, 23);
+		panel_1.add(comboBox_3);
+		
+		JLabel label_16 = new JLabel("MissP");
+		label_16.setBounds(114, 104, 42, 16);
+		panel_1.add(label_16);
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
@@ -415,6 +431,22 @@ public class Window {
 		JLabel label_15 = new JLabel("Associativity");
 		label_15.setBounds(6, 77, 89, 16);
 		panel_3.add(label_15);
+		
+		JLabel label_17 = new JLabel("HitP");
+		label_17.setBounds(6, 104, 26, 16);
+		panel_3.add(label_17);
+		
+		JComboBox comboBox_4 = new JComboBox();
+		comboBox_4.setBounds(37, 101, 76, 25);
+		panel_3.add(comboBox_4);
+		
+		JComboBox comboBox_5 = new JComboBox();
+		comboBox_5.setBounds(155, 102, 82, 23);
+		panel_3.add(comboBox_5);
+		
+		JLabel label_18 = new JLabel("MissP");
+		label_18.setBounds(114, 104, 42, 16);
+		panel_3.add(label_18);
 	}
 
 	private void onClickSaveBT() {
