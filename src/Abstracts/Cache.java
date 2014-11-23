@@ -75,4 +75,15 @@ public abstract class Cache {
 		this.writeAllocate = writeAllocate;
 	}
 	
+	public Data insertData(Data data) {
+		Data destination = (Data) getWordAtAddress(data.getAddress(), DATA);
+		if (destination.isDirtyBit())
+			return destination;
+		else {
+			destination.set_value(data.get_value());
+			destination.setDirtyBit(data.isDirtyBit());
+			return null;
+		}
+	}
+	
 }
