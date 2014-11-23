@@ -6,13 +6,21 @@ import cache.SetAssociative;
 import Abstracts.Cache;
 
 public class CacheFactory {
+
 	public static Cache createCache(int associativity, int blockSize,
-			int cacheSize) {
+			int cacheSize, boolean[] writePolicies) {
+		Cache cache;
 		if (associativity == cacheSize / blockSize)
-			return new FullyAssociative(blockSize, cacheSize);
+			cache = new FullyAssociative(blockSize, cacheSize);
 		else if (associativity == 1)
-			return new DirectMapped(blockSize, cacheSize);
+			cache = new DirectMapped(blockSize, cacheSize);
 		else
-			return new SetAssociative(blockSize, cacheSize, associativity);
+			cache = new SetAssociative(blockSize, cacheSize, associativity);
+		cache.setWriteBack(writePolicies[0]);
+		cache.setWriteAround(writePolicies[1]);
+		cache.setWriteThrough(writePolicies[2]);
+		cache.setWriteAllocate(writePolicies[3]);
+		return cache;
 	}
+
 }
