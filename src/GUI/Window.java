@@ -722,7 +722,7 @@ public class Window {
 	 * Three Level Cache return Array of Caches
 	 * **/
 	private Cache initCache(JTextField associativityTF, JTextField blockSizeTF,
-			JTextField cacheSizeTF) {
+			JTextField cacheSizeTF,int cache_Level) {
 		String tmpData = associativityTF.getText().toString();
 		int associativity = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
 				.parseInt(tmpData) : -1;
@@ -734,13 +734,14 @@ public class Window {
 				.parseInt(tmpData) : -1;
 
 		return associativity == -1 || blockSize == -1 || cacheSize == -1 ? null
-				: CacheFactory.createCache(associativity, blockSize, cacheSize);
+				: CacheFactory.createCache(associativity, blockSize, cacheSize, setPolisy(cache_Level));
 	}
 
 	private boolean[] setPolisy(int cache_Level) {
 		boolean[] polisys = { false, false, false, false };
 		switch (cache_Level) {
 		case 1:
+			
 			break;
 		case 2:
 
@@ -758,11 +759,11 @@ public class Window {
 	private Cache[] getCacheSettings() {
 		Cache[] tmp = new Cache[3];
 		// / L1 - Cache
-		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF);
+		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF, 1);
 		// / L2 - Cache
-		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF);
+		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF, 2);
 		// / L3 - Cache
-		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF);
+		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF, 3);
 		return tmp;
 	}
 }
