@@ -63,12 +63,11 @@ public class Memory {
 		address += DATA_STARTING_ADDRESS;
 //		System.out.println("Getting data at " + address);
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
-			Data data = (Data)this.cells[address];
-			if ( data != null){
-				return data;
-			}else {
-				return null;
+			if(this.cells[address]==null){
+				cells[address] = new Data(0);
 			}
+			Data data = (Data)this.cells[address];
+				return data;
 		}
 		return null;
 	}

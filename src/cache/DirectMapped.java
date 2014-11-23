@@ -15,7 +15,9 @@ public class DirectMapped extends Cache {
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
 		for (int i =0 ; i< data.length; i++){
-			data[i].initialize(blockSize, Cache.INSTRUCTION);
+			data[i] =  new Block(blockSize, Cache.DATA);
+			data[i].initialize(blockSize, Cache.DATA);
+			instructions[i] =  new Block(blockSize, Cache.INSTRUCTION);
 			
 		}
 	}

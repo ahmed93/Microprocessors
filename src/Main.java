@@ -15,9 +15,9 @@ public class Main {
 		ArrayList<HashMap<String, Integer>> cache_information = new ArrayList<>(); 
 		//HashMap<String, Integer> cache_information = new HashMap<>()[4];
 		for(int i=0;i<3;i++)
-		{ 
+		{
 			HashMap<String,Integer>cache = new HashMap<String,Integer>();
-			cache.put("associativity", 2);
+			cache.put("associativity", 1);
 			cache.put("cacheSize", 32);
 			cache.put("blockSize",4);
 			cache.put("writeBack", 1);

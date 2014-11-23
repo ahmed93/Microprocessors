@@ -54,7 +54,7 @@ public class Simulator {
 
 	public void initializeCaches(ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];
-		for (int i = 0; i <= input_caches.size(); i++) {
+		for (int i = 0; i < input_caches.size(); i++) {
 			HashMap<String, Integer> input_cache = input_caches.get(i);
 			boolean[] associativity = new boolean[4];
 			associativity[0] = (input_cache.get("writeBack") != 0);
@@ -105,6 +105,7 @@ public class Simulator {
 				// caches)
 				// miss
 				int instruction_address = this.instructions_addresses.get(i);
+				instruction =this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
@@ -169,7 +170,7 @@ public class Simulator {
 		System.out.println("#################");
 		for (int i = 0; i <= 10; i++) {
 			System.out.println(this.memory.DATA_STARTING_ADDRESS + i + " : "
-					+ this.memory.getDataAt(i));
+					+ this.memory.getDataAt(i).get_value());
 		}
 	}
 
@@ -213,7 +214,7 @@ public class Simulator {
 		String WritePolicy = "";
 		for (int i = 0; i < caches.length; i++) {
 			Data dataWord = caches[i].searchData(address);
-			if (data != null) {
+			if (dataWord != null) {
 				// write hit
 				caches[i].setDataValue(dataWord, data_value);
 				if (caches[i].isWriteThrough()) {
