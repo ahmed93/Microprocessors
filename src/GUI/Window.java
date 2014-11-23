@@ -10,14 +10,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -45,9 +43,7 @@ import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 import Abstracts.Cache;
-import cache.DirectMapped;
-import cache.FullyAssociative;
-import cache.SetAssociative;
+import factories.CacheFactory;
 
 public class Window {
 
@@ -188,7 +184,7 @@ public class Window {
 			}
 		});
 		OptionsPanel.add(runBT);
-		
+
 		JButton stioBT = new JButton("Stop");
 		stioBT.setBounds(309, 3, 85, 30);
 		OptionsPanel.add(stioBT);
@@ -464,8 +460,8 @@ public class Window {
 			break;
 		}
 	}
-	
-	private void createConsolePanel(){
+
+	private void createConsolePanel() {
 		JTabbedPane bottomPart = new JTabbedPane(JTabbedPane.TOP);
 		bottomPart.setBounds(0, 598, 1023, 181);
 		frame.getContentPane().add(bottomPart);
@@ -473,25 +469,26 @@ public class Window {
 		JLayeredPane consolePannel = new JLayeredPane();
 		bottomPart.addTab("Console", null, consolePannel, null);
 		consolePannel.setLayout(new BorderLayout(0, 0));
-		
+
 		consoleTP = new JTextPane();
 		consoleTP.setEditable(false);
 		consolePannel.add(consoleTP);
-		JScrollPane consoleScroll = new JScrollPane(consoleTP,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		JScrollPane consoleScroll = new JScrollPane(consoleTP,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		consolePannel.add(consoleScroll);
 	}
-	
+
 	public static void printError() {
-		
+
 	}
-	
+
 	public static void printWarnning() {
-		
+
 	}
-	
-	public static void printOutput() {
-		
+
+	public static void printOutput(String message) {
+
 	}
 
 	private void createInputPanel() {
@@ -620,35 +617,32 @@ public class Window {
 	}
 
 	private void onClickrunBT() {
-//		int instruction_starting_address = -1;
-//		if (!modified) {
-//			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-//		} else {
-//			instruction_starting_address = getStartingAddress();
-//			if (instruction_starting_address < 0) {
-//				JOptionPane
-//						.showMessageDialog(frame, "Wrong start Address .. !");
-//				return;
-//			}
-//			setSimulatorVectors();
-//			simulator = new Simulator(data, instructions, getCacheSettings(),
-//					instruction_starting_address);
-//
-//			System.out.println(data + "\n" + instructions + "\n"
-//					+ instruction_starting_address);
-//			try {
-//				simulator.Initialize();
-//				simulator.runInstructions();
-//				simulator.printMemroy();
-//				simulator.printRegisters();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-		System.out.println(l1AssociativityTF.getText().toString());
-		System.out.println(l1BlockLengthTF.getText().toString());
-		System.out.println(l1CashSizeTF.getText().toString());
+		int instruction_starting_address = -1;
+		if (!modified) {
+			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
+		} else {
+			instruction_starting_address = getStartingAddress();
+			if (instruction_starting_address < 0) {
+				JOptionPane
+						.showMessageDialog(frame, "Wrong start Address .. !");
+				return;
+			}
+			setSimulatorVectors();
+			simulator = new Simulator(data, instructions, getCacheSettings(),
+					instruction_starting_address);
+
+			System.out.println(data + "\n" + instructions + "\n"
+					+ instruction_starting_address);
+			try {
+				simulator.Initialize();
+				simulator.runInstructions();
+				simulator.printMemroy();
+				simulator.printRegisters();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void changeMemoryTB() {
@@ -686,12 +680,10 @@ public class Window {
 	public void CreateData() {
 		// Create data for each element
 		dataValues = new String[8][2];
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++)
 			dataValues[i][0] = "R" + i;
-		}
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++)
 			dataValues[i][1] = "0";
-		}
 	}
 
 	/**
@@ -731,43 +723,46 @@ public class Window {
 	 * **/
 	private Cache initCache(JTextField associativityTF, JTextField blockSizeTF,
 			JTextField cacheSizeTF) {
-		Cache tmp = null;
-		String tmpData = associativityTF.getText();
+		String tmpData = associativityTF.getText().toString();
 		int associativity = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : 0;
-		tmpData = blockSizeTF.getText();
+				.parseInt(tmpData) : -1;
+		tmpData = blockSizeTF.getText().toString();
 		int blockSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : 0;
-		tmpData = cacheSizeTF.getText();
+				.parseInt(tmpData) : -1;
+		tmpData = cacheSizeTF.getText().toString();
 		int cacheSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
-				.parseInt(tmpData) : 0;
-		switch (associativity) {
-		case 0:
-			tmp = new DirectMapped(blockSize, cacheSize);
-			break;
+				.parseInt(tmpData) : -1;
+
+		return associativity == -1 || blockSize == -1 || cacheSize == -1 ? null
+				: CacheFactory.createCache(associativity, blockSize, cacheSize);
+	}
+
+	private boolean[] setPolisy(int cache_Level) {
+		boolean[] polisys = { false, false, false, false };
+		switch (cache_Level) {
 		case 1:
-			tmp = new FullyAssociative(blockSize, cacheSize);
 			break;
 		case 2:
-			tmp = new SetAssociative(blockSize, cacheSize, associativity);
+
+			break;
+		case 3:
+
+			break;
+		default:
 			break;
 		}
-		return tmp;
+
+		return polisys;
 	}
 
 	private Cache[] getCacheSettings() {
 		Cache[] tmp = new Cache[3];
-		
-		System.out.println(l1AssociativityTF.getText().toString());
-		System.out.println(l1BlockLengthTF.getText().toString());
-		System.out.println(l1CashSizeTF.getText().toString());
-		
-//		// / L1 - Cache
-//		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF);
-//		// / L2 - Cache
-//		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF);
-//		// / L3 - Cache
-//		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF);
+		// / L1 - Cache
+		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF);
+		// / L2 - Cache
+		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF);
+		// / L3 - Cache
+		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF);
 		return tmp;
 	}
 }
