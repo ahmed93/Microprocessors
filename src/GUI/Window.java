@@ -4,11 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.GridLayout;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,7 +18,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -31,10 +32,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -48,16 +49,17 @@ import cache.DirectMapped;
 import cache.FullyAssociative;
 import cache.SetAssociative;
 
-public class Window implements DocumentListener {
+public class Window {
 
 	private JFrame frame;
 	private JTextArea codeInput;
+	private static JTextPane consoleTP;
 	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT;
 	private JPanel debuging;
 	private DefaultTableModel dataModel;
 	private JTable memoryTB;
-	private JComboBox casheLevelsCB;
+	private JComboBox cacheLevelsCB;
 	private JTextField startAdressTF, l2CashSizeTF, l2BlockLengthTF,
 			l2AssociativityTF, l1CashSizeTF, l1BlockLengthTF,
 			l1AssociativityTF, l3CashSizeTF, l3BlockLengthTF,
@@ -67,18 +69,17 @@ public class Window implements DocumentListener {
 	 ** Data Variables **
 	 ****************************/
 	private boolean modified;
-	// private Vector<String> list;
 	private String FilePath;
 	private Simulator simulator;
 	private String columnNames[] = { "register", "values" };
 	private String dataValues[][];
-	// private HashMap<String, Integer> REGISTER;
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
 
-	/*******************************
+	/*************************
 	 ** Static Variables **
-	 *******************************/
+	 *************************/
+	private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
 	private static final String FILE_TYPE_Viewed = "TEXT-File";
 	private static final String FILE_TYPE = "txt";
 
@@ -120,12 +121,7 @@ public class Window implements DocumentListener {
 		/*******************************************
 		 ** JTabbedPane: Tabs-Console **
 		 *******************************************/
-		JTabbedPane bottomPart = new JTabbedPane(JTabbedPane.TOP);
-		bottomPart.setBounds(0, 598, 1023, 181);
-		frame.getContentPane().add(bottomPart);
-
-		JLayeredPane consolePannel = new JLayeredPane();
-		bottomPart.addTab("Console", null, consolePannel, null);
+		createConsolePanel();
 
 		/**********************************
 		 ** InputPanel: CodeInput **
@@ -133,24 +129,24 @@ public class Window implements DocumentListener {
 		createInputPanel();
 
 		/*****************************************************
-		 ** DebuggingPanel: Registers/Cashes/.. **
+		 ** DebuggingPanel: Registers/Caches/.. **
 		 *****************************************************/
 		createRegisterPanel();
 
-		/*************************************
-		 ** Buttons Settings Options **
-		 *************************************/
 		createOptionPanel();
 	}
 
+	/*************************************
+	 ** Buttons Settings Options **
+	 *************************************/
 	private void createOptionPanel() {
 		JPanel OptionsPanel = new JPanel();
 		OptionsPanel.setBounds(771, 5, 503, 39);
 		frame.getContentPane().add(OptionsPanel);
-		OptionsPanel.setLayout(new GridLayout(1, 0, 0, 0));
 
 		// Load Button
 		loadBT = new JButton("Load");
+		loadBT.setBounds(6, 4, 85, 29);
 		loadBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				JFileChooser chooser = new JFileChooser();
@@ -164,10 +160,12 @@ public class Window implements DocumentListener {
 				}
 			}
 		});
+		OptionsPanel.setLayout(null);
 		OptionsPanel.add(loadBT);
 
 		// Save Button
 		saveBT = new JButton("Save");
+		saveBT.setBounds(103, 4, 85, 29);
 		saveBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				onClickSaveBT();
@@ -175,14 +173,13 @@ public class Window implements DocumentListener {
 		});
 		OptionsPanel.add(saveBT);
 
-		Component verticalStrut = Box.createVerticalStrut(1);
-		OptionsPanel.add(verticalStrut);
-
-		JButton btnDebug = new JButton("Debug");
-		OptionsPanel.add(btnDebug);
+		JButton debugBT = new JButton("Debug");
+		debugBT.setBounds(202, 4, 85, 29);
+		OptionsPanel.add(debugBT);
 
 		// Run Button
 		runBT = new JButton("Run");
+		runBT.setBounds(406, 4, 85, 29);
 		runBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				runBT.setEnabled(false);
@@ -191,6 +188,10 @@ public class Window implements DocumentListener {
 			}
 		});
 		OptionsPanel.add(runBT);
+		
+		JButton stioBT = new JButton("Stop");
+		stioBT.setBounds(309, 3, 85, 30);
+		OptionsPanel.add(stioBT);
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
 
@@ -209,16 +210,31 @@ public class Window implements DocumentListener {
 		memoryTB.setBounds(6, 6, 214, 438);
 		MemoryPane.add(memoryTB);
 
-		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setBounds(771, 50, 246, 556);
-		frame.getContentPane().add(tabbedPane_1);
+		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		SettingsTabbedPane.setBounds(771, 50, 246, 556);
+		frame.getContentPane().add(SettingsTabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
-		tabbedPane_1.addTab("Settings", null, layeredPane, null);
+		SettingsTabbedPane.addTab("Settings", null, layeredPane, null);
 
 		startAdressTF = new JTextField();
 		startAdressTF.setColumns(10);
 		startAdressTF.setBounds(111, 41, 108, 28);
+		startAdressTF.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
 		layeredPane.add(startAdressTF);
 
 		JLabel label = new JLabel("Start Address");
@@ -230,46 +246,46 @@ public class Window implements DocumentListener {
 		label_1.setBounds(54, 13, 112, 16);
 		layeredPane.add(label_1);
 
-		JLabel label_2 = new JLabel("Cashe Settings");
+		JLabel label_2 = new JLabel("Cache Settings");
 		label_2.setHorizontalAlignment(SwingConstants.CENTER);
-		label_2.setBounds(54, 75, 103, 16);
+		label_2.setBounds(63, 75, 103, 16);
 		layeredPane.add(label_2);
 
 		Vector<String> items = new Vector<>();
-		items.add("select");
+		items.add("none");
 		items.add("one");
 		items.add("two");
 		items.add("three");
-		casheLevelsCB = new JComboBox(items);
-		casheLevelsCB.setBounds(126, 103, 93, 27);
-		casheLevelsCB.addActionListener(new ActionListener() {
+		cacheLevelsCB = new JComboBox(items);
+		cacheLevelsCB.setBounds(126, 103, 93, 27);
+		cacheLevelsCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				switch (casheLevelsCB.getSelectedIndex()) {
+				switch (cacheLevelsCB.getSelectedIndex()) {
 				case 1:
-					EnableCasheLevel(1, true);
-					EnableCasheLevel(2, false);
-					EnableCasheLevel(3, false);
+					EnableCacheLevel(1, true);
+					EnableCacheLevel(2, false);
+					EnableCacheLevel(3, false);
 					break;
 				case 2:
-					EnableCasheLevel(1, true);
-					EnableCasheLevel(2, true);
-					EnableCasheLevel(3, false);
+					EnableCacheLevel(1, true);
+					EnableCacheLevel(2, true);
+					EnableCacheLevel(3, false);
 					break;
 				case 3:
-					EnableCasheLevel(1, true);
-					EnableCasheLevel(2, true);
-					EnableCasheLevel(3, true);
+					EnableCacheLevel(1, true);
+					EnableCacheLevel(2, true);
+					EnableCacheLevel(3, true);
 					break;
 				default:
-					EnableCasheLevel(1, false);
-					EnableCasheLevel(2, false);
-					EnableCasheLevel(3, false);
+					EnableCacheLevel(1, false);
+					EnableCacheLevel(2, false);
+					EnableCacheLevel(3, false);
 					break;
 				}
 			}
 		});
 
-		layeredPane.add(casheLevelsCB);
+		layeredPane.add(cacheLevelsCB);
 
 		JLabel label_3 = new JLabel("Number Of Levels");
 		label_3.setBounds(6, 107, 121, 16);
@@ -280,7 +296,7 @@ public class Window implements DocumentListener {
 		panel_1.setBounds(6, 246, 213, 106);
 		layeredPane.add(panel_1);
 
-		JLabel label_4 = new JLabel("L2-Cashe");
+		JLabel label_4 = new JLabel("L2-Cache");
 		label_4.setBounds(6, 6, 69, 16);
 		panel_1.add(label_4);
 
@@ -302,7 +318,7 @@ public class Window implements DocumentListener {
 		l2AssociativityTF.setBounds(94, 71, 113, 28);
 		panel_1.add(l2AssociativityTF);
 
-		JLabel label_5 = new JLabel("Cashe Size");
+		JLabel label_5 = new JLabel("Cache Size");
 		label_5.setBounds(6, 26, 89, 16);
 		panel_1.add(label_5);
 
@@ -319,7 +335,7 @@ public class Window implements DocumentListener {
 		panel_2.setBounds(6, 135, 213, 106);
 		layeredPane.add(panel_2);
 
-		JLabel label_8 = new JLabel("L1-Cashe");
+		JLabel label_8 = new JLabel("L1-Cache");
 		label_8.setBounds(6, 6, 69, 16);
 		panel_2.add(label_8);
 
@@ -341,7 +357,7 @@ public class Window implements DocumentListener {
 		l1AssociativityTF.setBounds(94, 71, 113, 28);
 		panel_2.add(l1AssociativityTF);
 
-		JLabel label_9 = new JLabel("Cashe Size");
+		JLabel label_9 = new JLabel("Cache Size");
 		label_9.setBounds(6, 26, 89, 16);
 		panel_2.add(label_9);
 
@@ -358,7 +374,7 @@ public class Window implements DocumentListener {
 		panel_3.setBounds(6, 360, 213, 106);
 		layeredPane.add(panel_3);
 
-		JLabel label_12 = new JLabel("L3-Cashe");
+		JLabel label_12 = new JLabel("L3-Cache");
 		label_12.setBounds(6, 6, 69, 16);
 		panel_3.add(label_12);
 
@@ -380,7 +396,7 @@ public class Window implements DocumentListener {
 		l3AssociativityTF.setBounds(94, 71, 113, 28);
 		panel_3.add(l3AssociativityTF);
 
-		JLabel label_13 = new JLabel("Cashe Size");
+		JLabel label_13 = new JLabel("Cache Size");
 		label_13.setBounds(6, 26, 89, 16);
 		panel_3.add(label_13);
 
@@ -414,7 +430,7 @@ public class Window implements DocumentListener {
 		}
 	}
 
-	private void EnableCasheLevel(int level, boolean status) {
+	private void EnableCacheLevel(int level, boolean status) {
 		switch (level) {
 		case 1:
 			l1CashSizeTF.setEnabled(status);
@@ -448,6 +464,35 @@ public class Window implements DocumentListener {
 			break;
 		}
 	}
+	
+	private void createConsolePanel(){
+		JTabbedPane bottomPart = new JTabbedPane(JTabbedPane.TOP);
+		bottomPart.setBounds(0, 598, 1023, 181);
+		frame.getContentPane().add(bottomPart);
+
+		JLayeredPane consolePannel = new JLayeredPane();
+		bottomPart.addTab("Console", null, consolePannel, null);
+		consolePannel.setLayout(new BorderLayout(0, 0));
+		
+		consoleTP = new JTextPane();
+		consoleTP.setEditable(false);
+		consolePannel.add(consoleTP);
+		JScrollPane consoleScroll = new JScrollPane(consoleTP,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		consolePannel.add(consoleScroll);
+	}
+	
+	public static void printError() {
+		
+	}
+	
+	public static void printWarnning() {
+		
+	}
+	
+	public static void printOutput() {
+		
+	}
 
 	private void createInputPanel() {
 		JPanel InputPanel = new JPanel();
@@ -458,7 +503,28 @@ public class Window implements DocumentListener {
 		codeInput = new JTextArea();
 		codeInput.setColumns(1);
 		codeInput.setTabSize(2);
-		codeInput.getDocument().addDocumentListener(this);
+		codeInput.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				modified = true;
+				saveBT.setSelected(true);
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+				// TODO Auto-generated method stub
+				if (codeInput.getText().equals("")) {
+					modified = false;
+					saveBT.setSelected(false);
+				}
+			}
+		});
 		codeInput.setLineWrap(true);
 		InputPanel.add(codeInput);
 
@@ -473,9 +539,10 @@ public class Window implements DocumentListener {
 		debuging = new JPanel();
 		debuging.setBounds(1025, 560, 246, 204);
 		frame.getContentPane().add(debuging);
-		debuging.setLayout(new BorderLayout(0, 0));
+		debuging.setLayout(null);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(0, 0, 246, 204);
 		debuging.add(tabbedPane);
 
 		JLayeredPane RegisterPane = new JLayeredPane();
@@ -484,7 +551,6 @@ public class Window implements DocumentListener {
 		initData();
 
 		registerTB = new JTable(dataValues, columnNames);
-		Border headerBorder = UIManager.getBorder("TableHeader.cellBorder");
 		registerTB.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		registerTB.setGridColor(Color.BLACK);
 		registerTB.setSurrendersFocusOnKeystroke(true);
@@ -497,30 +563,6 @@ public class Window implements DocumentListener {
 
 		RegisterPane.add(registerTB);
 
-	}
-
-	/****************************************************
-	 ** Overriding the Editor Change Events **
-	 ****************************************************/
-	@Override
-	public void changedUpdate(DocumentEvent arg0) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void insertUpdate(DocumentEvent arg0) {
-		modified = true;
-
-		saveBT.setSelected(true);
-	}
-
-	@Override
-	public void removeUpdate(DocumentEvent arg0) {
-		// TODO Auto-generated method stub
-		if (codeInput.getText().equals("")) {
-			modified = false;
-			saveBT.setSelected(false);
-		}
 	}
 
 	/*************************************
@@ -578,28 +620,35 @@ public class Window implements DocumentListener {
 	}
 
 	private void onClickrunBT() {
-		if (modified) {
-			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-		} else {
-			int instruction_starting_address = getStartingAddress();
-			if (getStartingAddress() < 0) {
-				JOptionPane
-						.showMessageDialog(frame, "Wrong start Address .. !");
-				return;
-			}
-			setSimulatorVectors();
-			simulator = new Simulator(data, instructions, getCacheSettings(),
-					instruction_starting_address);
-			try {
-				simulator.Initialize();
-				simulator.runInstructions();
-				simulator.printMemroy();
-				simulator.printRegisters();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+//		int instruction_starting_address = -1;
+//		if (!modified) {
+//			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
+//		} else {
+//			instruction_starting_address = getStartingAddress();
+//			if (instruction_starting_address < 0) {
+//				JOptionPane
+//						.showMessageDialog(frame, "Wrong start Address .. !");
+//				return;
+//			}
+//			setSimulatorVectors();
+//			simulator = new Simulator(data, instructions, getCacheSettings(),
+//					instruction_starting_address);
+//
+//			System.out.println(data + "\n" + instructions + "\n"
+//					+ instruction_starting_address);
+//			try {
+//				simulator.Initialize();
+//				simulator.runInstructions();
+//				simulator.printMemroy();
+//				simulator.printRegisters();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+		System.out.println(l1AssociativityTF.getText().toString());
+		System.out.println(l1BlockLengthTF.getText().toString());
+		System.out.println(l1CashSizeTF.getText().toString());
 	}
 
 	private void changeMemoryTB() {
@@ -650,7 +699,7 @@ public class Window implements DocumentListener {
 	 * **/
 	private int getStartingAddress() {
 		String data = startAdressTF.getText();
-		return data.matches("[0-9]+") ? Integer.parseInt(data) : -1;
+		return data.matches(NUMBERS_ONLY_REGIX) ? Integer.parseInt(data) : -1;
 	}
 
 	/**
@@ -683,9 +732,15 @@ public class Window implements DocumentListener {
 	private Cache initCache(JTextField associativityTF, JTextField blockSizeTF,
 			JTextField cacheSizeTF) {
 		Cache tmp = null;
-		int associativity = Integer.parseInt(associativityTF.getText());
-		int blockSize = Integer.parseInt(blockSizeTF.getText());
-		int cacheSize = Integer.parseInt(cacheSizeTF.getText());
+		String tmpData = associativityTF.getText();
+		int associativity = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
+				.parseInt(tmpData) : 0;
+		tmpData = blockSizeTF.getText();
+		int blockSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
+				.parseInt(tmpData) : 0;
+		tmpData = cacheSizeTF.getText();
+		int cacheSize = tmpData.matches(NUMBERS_ONLY_REGIX) ? Integer
+				.parseInt(tmpData) : 0;
 		switch (associativity) {
 		case 0:
 			tmp = new DirectMapped(blockSize, cacheSize);
@@ -702,13 +757,17 @@ public class Window implements DocumentListener {
 
 	private Cache[] getCacheSettings() {
 		Cache[] tmp = new Cache[3];
-		// / L1 - Cache
-		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF);
-		// / L2 - Cache
-		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF);
-		// / L3 - Cache
-		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF);
-
+		
+		System.out.println(l1AssociativityTF.getText().toString());
+		System.out.println(l1BlockLengthTF.getText().toString());
+		System.out.println(l1CashSizeTF.getText().toString());
+		
+//		// / L1 - Cache
+//		tmp[0] = initCache(l1AssociativityTF, l1BlockLengthTF, l1CashSizeTF);
+//		// / L2 - Cache
+//		tmp[1] = initCache(l2AssociativityTF, l2BlockLengthTF, l2CashSizeTF);
+//		// / L3 - Cache
+//		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF);
 		return tmp;
 	}
 }
