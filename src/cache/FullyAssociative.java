@@ -34,6 +34,7 @@ public class FullyAssociative extends Cache {
 			}
 		}
 		misses++;
+		System.out.println("MISS");
 		return null;
 	}
 	

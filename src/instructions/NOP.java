@@ -5,9 +5,8 @@ import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class NOP extends Instruction {
-	public NOP(Simulator simulator, String instruction) {
+	public NOP(String instruction) {
 		super();
-		this.simulator = simulator;
 		this.instruction = instruction;
 	}
 

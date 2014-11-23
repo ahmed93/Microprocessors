@@ -1,5 +1,7 @@
 package simulator;
 
+import instructions.NOP;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +56,7 @@ public class Simulator {
 
 	public void initializeCaches(ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];
-		for (int i = 0; i <= input_caches.size(); i++) {
+		for (int i = 0; i < input_caches.size(); i++) {
 			HashMap<String, Integer> input_cache = input_caches.get(i);
 			boolean[] associativity = new boolean[4];
 			associativity[0] = (input_cache.get("writeBack") != 0);
@@ -93,18 +95,19 @@ public class Simulator {
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j]
 						.searchInstruction(this.instructions_addresses.get(i));
-				if (instruction != null) {
+				if (instruction != null && instruction.getClass() != NOP.class) {
 					updateInstructionInHigherCaches(j,
 							this.instructions_addresses.get(i));
 					// place instruction in higher cache levels(j)
 					break;
 				}
 			}
-			if (instruction == null) {
+			if (instruction == null || instruction.getClass() == NOP.class) {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
 				int instruction_address = this.instructions_addresses.get(i);
+				instruction =this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
@@ -162,14 +165,14 @@ public class Simulator {
 		}
 	}
 
-	public void printMemroy() {
+	public void printMemory() {
 		for (int i = 0; i < 10; i++) {
 			System.out.println(i + " : " + this.memory.getInstructionAt(i));
 		}
 		System.out.println("#################");
 		for (int i = 0; i <= 10; i++) {
 			System.out.println(this.memory.DATA_STARTING_ADDRESS + i + " : "
-					+ this.memory.getDataAt(i));
+					+ this.memory.getDataAt(i).get_value());
 		}
 	}
 
@@ -210,10 +213,15 @@ public class Simulator {
 	}
 
 	public void writeDataWithPolicies(int address, int data_value) {
+		if(caches.length == 0)
+		{
+			this.memory.storeDataAtAddress(data_value, address);
+			return;
+		}
 		String WritePolicy = "";
 		for (int i = 0; i < caches.length; i++) {
 			Data dataWord = caches[i].searchData(address);
-			if (data != null) {
+			if (dataWord != null) {
 				// write hit
 				caches[i].setDataValue(dataWord, data_value);
 				if (caches[i].isWriteThrough()) {
@@ -239,6 +247,10 @@ public class Simulator {
 			insertInHigherLevels(caches.length, dataWord, false); // With
 																	// marking
 																	// bit
+		}
+		else {
+			Data dataWord = this.memory.getDataAt(address);
+			this.memory.storeDataAtAddress(data_value, address);
 		}
 	}
 

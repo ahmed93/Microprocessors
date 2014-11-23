@@ -14,19 +14,18 @@ public class Main {
 		Vector<String> instructions = new Vector<>();
 		ArrayList<HashMap<String, Integer>> cache_information = new ArrayList<>(); 
 		//HashMap<String, Integer> cache_information = new HashMap<>()[4];
-		for(int i=0;i<3;i++)
-		{ 
+		for(int i=0;i<1;i++)
+		{
 			HashMap<String,Integer>cache = new HashMap<String,Integer>();
-			cache.put("associativity", 2);
+			cache.put("associativity", 1);
 			cache.put("cacheSize", 32);
-			cache.put("blockSize",4);
-			cache.put("writeBack", 1);
-			cache.put("writeThrough", 0);
-			cache.put("writeAllocate", 1);
-			cache.put("writeAround", 0);
+			cache.put("blockSize",8);
+			cache.put("writeBack", 0);
+			cache.put("writeThrough", 1);
+			cache.put("writeAllocate",0);
+			cache.put("writeAround", 1);
 			cache_information.add(cache);
 		}
-		
 		instructions.add("ADDI R1, R1, 2");
 		instructions.add("ADDI R2, R2, 3");
 		instructions.add("NAND R3, R1, R2");
@@ -36,7 +35,7 @@ public class Main {
 		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address);
 		simulator.Initialize();
 		simulator.runInstructions();
-		simulator.printMemroy();
+		simulator.printMemory();
 		simulator.printRegisters();
 	}
 

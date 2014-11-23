@@ -61,6 +61,8 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+		case "NOP":
+			return new NOP("");
 
 		}
 
