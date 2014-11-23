@@ -40,21 +40,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.TabSet;
-import javax.swing.text.TabStop;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
-import GUI.DocumentFilter.NumbersFilter;
+import GUI.utilities.NumbersFilter;
 
 public class Window {
 
@@ -608,6 +605,20 @@ public class Window {
 		codeInput = new JTextPane();
 		// codeInput.setColumns(1);
 		// codeInput.setTabSize(2);
+//		codeInput.addCaretListener(new CaretListener() {
+//			public void caretUpdate(CaretEvent caretEvent) {
+//				System.out.println("dot:" + caretEvent.getDot());
+//				System.out.println("mark" + caretEvent.getMark());
+//			}
+//		});
+		
+		Document d = codeInput.getDocument();
+		PlainDocument doc = (PlainDocument) codeInput.getDocument();
+		DocumentFilter test = new DocumentFilter();
+		
+		
+		doc.setDocumentFilter(new DocumentFilter());
+
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
@@ -628,26 +639,6 @@ public class Window {
 					modified = false;
 					saveBT.setSelected(false);
 				}
-			}
-		});
-		
-		codeInput.addKeyListener(new KeyListener() {
-			
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				
 			}
 		});
 		InputPanel.add(codeInput);
@@ -734,7 +725,7 @@ public class Window {
 		codeInput.setText("");
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			
+
 			while (reader.ready())
 				appendCode(reader.readLine());
 		} catch (Exception e) {
@@ -779,7 +770,7 @@ public class Window {
 			try {
 				simulator.Initialize();
 				simulator.runInstructions();
-				simulator.printMemroy();
+				simulator.printMemory();
 				simulator.printRegisters();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

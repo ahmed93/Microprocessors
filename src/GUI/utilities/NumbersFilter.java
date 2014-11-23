@@ -1,4 +1,4 @@
-package GUI.DocumentFilter;
+package GUI.utilities;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -14,7 +14,6 @@ public class NumbersFilter extends DocumentFilter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(doc.getText(0, doc.getLength()));
 		sb.insert(offset, string);
-
 		if (test(sb.toString())) {
 			super.insertString(fb, offset, string, attr);
 		} else {
@@ -55,8 +54,7 @@ public class NumbersFilter extends DocumentFilter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(doc.getText(0, doc.getLength()));
 		sb.delete(offset, offset + length);
-
-		if (test(sb.toString())) {
+		if (test(sb.toString()) || sb.toString().equals("")) {
 			super.remove(fb, offset, length);
 		} else {
 			// warn the user and don't allow the insert
