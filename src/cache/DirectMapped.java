@@ -41,24 +41,11 @@ public class DirectMapped extends Cache {
 		Data word = (Data) data[index * associativity].words[word_offset_in_block];
 		if (word.getAddress() == address) {
 			hits++;
-			return word;
+			return (Data) word;
 		}
 		else {
 			misses++;
 			return null;
 		}
 	}
-
-	@Override
-	public Data insertData(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Instruction insertInstruction(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

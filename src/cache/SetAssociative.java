@@ -50,17 +50,4 @@ public class SetAssociative extends Cache {
 			return null;
 		}
 	}
-
-	@Override
-	public Data insertData(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Instruction insertInstruction(int address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
