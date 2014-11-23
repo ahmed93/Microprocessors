@@ -1,6 +1,7 @@
 package simulator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +29,7 @@ public class Simulator {
 	Vector<Integer> instructions_addresses;
 
 	public Simulator(Vector<String> data, Vector<String> instructions,
-			HashMap<String, Integer>[] input_caches,
+			ArrayList<HashMap<String, Integer>> input_caches,
 			int instruction_starting_address) {
 		this.memory = Memory.getInstance();
 		this.instruction_starting_address = instruction_starting_address;
@@ -51,10 +52,10 @@ public class Simulator {
 		// Start instruction execution
 	}
 
-	public void initializeCaches(HashMap<String, Integer>[] input_caches) {
-		this.caches = new Cache[input_caches.length];
-		for (int i = 0; i <= input_caches.length; i++) {
-			HashMap<String, Integer> input_cache = input_caches[i];
+	public void initializeCaches(ArrayList<HashMap<String, Integer>> input_caches) {
+		this.caches = new Cache[input_caches.size()];
+		for (int i = 0; i <= input_caches.size(); i++) {
+			HashMap<String, Integer> input_cache = input_caches.get(i);
 			boolean[] associativity = new boolean[4];
 			associativity[0] = (input_cache.get("writeBack") != 0);
 			associativity[1] = (input_cache.get("writeAround") != 0);

@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import simulator.Simulator;
 import cache.FullyAssociative;
+import factories.CacheFactory;
 
 public class Main {
 
@@ -13,9 +14,17 @@ public class Main {
 		Vector<String> instructions = new Vector<>();
 		ArrayList<HashMap<String, Integer>> cache_information = new ArrayList<>(); 
 		//HashMap<String, Integer> cache_information = new HashMap<>()[4];
-		for(int i=0;i<cache_information.size();i++)
+		for(int i=0;i<3;i++)
 		{ 
-		    cache_information.set(i,new HashMap<String,Integer>());
+			HashMap<String,Integer>cache = new HashMap<String,Integer>();
+			cache.put("associativity", 2);
+			cache.put("cacheSize", 32);
+			cache.put("blockSize",4);
+			cache.put("writeBack", 1);
+			cache.put("writeThrough", 0);
+			cache.put("writeAllocate", 1);
+			cache.put("writeAround", 0);
+			cache_information.add(cache);
 		}
 		
 		instructions.add("ADDI R1, R1, 2");
@@ -24,7 +33,7 @@ public class Main {
 		instructions.add("SW R2, R0, 2");
 		instructions.add("LW R4, R0, 2");
 		int instruction_starting_address = 0;
-		Simulator simulator = new Simulator(data, instructions, caches,  instruction_starting_address);
+		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address);
 		simulator.Initialize();
 		simulator.runInstructions();
 		simulator.printMemroy();
