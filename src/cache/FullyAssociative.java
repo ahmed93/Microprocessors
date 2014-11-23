@@ -16,6 +16,9 @@ public class FullyAssociative extends Cache {
 		this.associativity = cacheSize;
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
+		for (int i =0 ; i< data.length; i++){
+			data[i].initialize(blockSize, Cache.INSTRUCTION);
+		}
 	}
 
 	@Override
@@ -32,6 +35,14 @@ public class FullyAssociative extends Cache {
 		}
 		misses++;
 		return null;
+	}
+	
+	public int startingAddress(int address){
+		return address;
+	}
+	
+	public int endingAddress(int address){
+		return address + blockSize -1;
 	}
 
 	@Override

@@ -14,9 +14,12 @@ public class DirectMapped extends Cache {
 		this.associativity = 1;
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
+		for (int i =0 ; i< data.length; i++){
+			data[i].initialize(blockSize, Cache.INSTRUCTION);
+			
+		}
 	}
-	
-	
+		
 	public Word getWordAtAddress(int address, String type)
 	{
 		int num_of_words_in_set = blockSize * associativity;
@@ -32,6 +35,18 @@ public class DirectMapped extends Cache {
 		
 	}
 
+	public int startingAddress(int address) {
+		int num_of_words_in_set = blockSize * associativity;
+		int index = (address / blockSize) % (cacheSize/blockSize);
+		int word_offset_in_block = address % blockSize;
+		return address - word_offset_in_block;
+
+	}
+	
+	public int endingAddress(int address){
+		return startingAddress(address) + blockSize -1;
+	}
+	
 	@Override
 	public Instruction searchInstruction(int address) {
 		Instruction word  = (Instruction) getWordAtAddress(address, INSTRUCTION);
@@ -57,4 +72,5 @@ public class DirectMapped extends Cache {
 			return null;
 		}
 	}
+
 }
