@@ -8,11 +8,12 @@ import java.util.Vector;
 
 import Abstracts.Cache;
 import Abstracts.Instruction;
+import factories.CacheFactory;
 import factories.InstructionFactory;
 
 public class Simulator {
 
-	public Cache[] caches;
+	Cache[] caches;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
 	static final int REGISTERS_NUMBER = 8;
@@ -26,14 +27,15 @@ public class Simulator {
 
 	Vector<Integer> instructions_addresses;
 
-	public Simulator(Vector<String> data, Vector<String> instructions, Cache[] caches,
+	public Simulator(Vector<String> data, Vector<String> instructions,
+			HashMap<String, Integer>[] input_caches,
 			int instruction_starting_address) {
 		this.memory = Memory.getInstance();
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
 		this.instructions_addresses = new Vector<Integer>();
-		this.caches = caches;
+		this.initializeCaches(input_caches);
 	}
 
 	public void Initialize() throws IOException {
@@ -47,6 +49,22 @@ public class Simulator {
 		this.storeUserData();
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
+	}
+
+	public void initializeCaches(HashMap<String, Integer>[] input_caches) {
+		this.caches = new Cache[input_caches.length];
+		for (int i = 0; i <= input_caches.length; i++) {
+			HashMap<String, Integer> input_cache = input_caches[i];
+			boolean[] associativity = new boolean[4];
+			associativity[0] = (input_cache.get("writeBack") != 0);
+			associativity[1] = (input_cache.get("writeAround") != 0);
+			associativity[2] = (input_cache.get("writeThrough") != 0);
+			associativity[3] = (input_cache.get("writeAllocate") != 0);
+			caches[i] = CacheFactory.createCache(
+					input_cache.get("associativity"),
+					input_cache.get("blockSize"), input_cache.get("cacheSize"),
+					associativity);
+		}
 	}
 
 	public void storeUserInstructions() {
@@ -75,15 +93,22 @@ public class Simulator {
 				instruction = caches[j]
 						.searchInstruction(this.instructions_addresses.get(i));
 				if (instruction != null) {
-					// hit
+					updateInstructionInHigherCaches(j,
+							this.instructions_addresses.get(i));
+					// place instruction in higher cache levels(j)
 					break;
 				}
 			}
-			if (instruction == null){
+			if (instruction == null) {
+				// place instruction in higher levels of cache.(number of
+				// caches)
 				// miss
-				instruction = this.memory.getInstructionAt(this.instructions_addresses.get(i));
-				// Follow write Policy
+				int instruction_address = this.instructions_addresses.get(i);
+				updateInstructionInHigherCaches(caches.length,
+						instruction_address);
+
 			}
+
 			instruction.execute();
 		}
 		// for (int i = instruction_starting_address; i<=
@@ -92,6 +117,19 @@ public class Simulator {
 		// memory.getInstructionAt(i));
 		// memory.getInstructionAt(i).execute();
 		// }
+	}
+
+	public void updateInstructionInHigherCaches(int cacheIndex,
+			int instruction_address) {
+		Instruction instruction = null;
+		for (int j = cacheIndex - 1; j >= 0; j--) {
+			for (int k = caches[j].startingAddress(instruction_address); k <= caches[j]
+					.endingAddress(instruction_address); k++) {
+				instruction = this.memory.getInstructionAt(instruction_address);
+				caches[j].cacheInstruction(instruction);
+			}
+		}
+
 	}
 
 	public void initializeRegisters() {
@@ -129,23 +167,113 @@ public class Simulator {
 		}
 		System.out.println("#################");
 		for (int i = 0; i <= 10; i++) {
-			System.out.println(this.memory.DATA_STARTING_ADDRESS +i + " : " + this.memory.getDataAt(i));
+			System.out.println(this.memory.DATA_STARTING_ADDRESS + i + " : "
+					+ this.memory.getDataAt(i));
 		}
 	}
 
 	public Data getCachedOrMemoryData(int address) {
-		Data data = null;
+		Data dataWord = null;
 		// Search Caches for data
 		for (int i = 0; i < caches.length; i++) {
-			data = caches[i].searchData(address);
-			if (data != null) {
-				return data;
+			dataWord = caches[i].searchData(address);
+			if (dataWord != null) {
+				// Place data in higher levels of cache(i) places data with
+				insertInHigherLevelsRead(i, dataWord);
+				// dirty bit in memory
+				return dataWord;
 			}
 		}
-		data = this.memory.getDataAt(address);
-		// Follow write policy
-		return data;
+		dataWord = this.memory.getDataAt(address);
+		insertInHigherLevelsRead(this.caches.length, dataWord);
+		// Place data in all higher levels of cache(number of caches) places
+		// data with dirty bit in memory
+		return dataWord;
 	}
-	
-//	public void 
+
+	public void insertInHigherLevelsRead(int from_index, Data dataWord) {
+		for (int i = from_index - 1; i >= 0; i--) {
+			int starting_address = caches[i].startingAddress(dataWord
+					.getAddress());
+			int ending_address = caches[i].endingAddress(dataWord.getAddress());
+			for (int j = starting_address; j <= ending_address; j++) {
+				Data data = this.memory.getDataAt(j);
+				Data replaced = caches[i].insertData(data);
+				if (replaced != null) {
+					updateLowerLevels(j, replaced);
+				}
+
+			}
+		}
+
+	}
+
+	public void writeDataWithPolicies(int address, int data_value) {
+		String WritePolicy = "";
+		for (int i = 0; i < caches.length; i++) {
+			Data dataWord = caches[i].searchData(address);
+			if (data != null) {
+				// write hit
+				caches[i].setDataValue(dataWord, data_value);
+				if (caches[i].isWriteThrough()) {
+					// Update lower levels with the same value.
+					updateLowerLevels(i, dataWord);
+					// Write data in higher levels of Cache
+					insertInHigherLevels(i, dataWord, false); // Without marking
+																// bit as dirty
+				} else if (caches[i].isWriteBack()) {
+					// Write data in higher levels of Cache.
+					insertInHigherLevels(i, dataWord, true); // With marking bit
+																// as dirty
+				}
+				return;
+			}
+			if (i == caches.length - 1) {
+				WritePolicy = (caches[i].isWriteAround()) ? "WriteAround"
+						: "WriteAllocate";
+			}
+		}
+		if (WritePolicy.equals("WriteAllocate")) {
+			Data dataWord = this.memory.getDataAt(address);
+			insertInHigherLevels(caches.length, dataWord, false); // With
+																	// marking
+																	// bit
+		}
+	}
+
+	public void updateLowerLevels(int from_index, Data dataWord) {
+		for (int i = from_index + 1; i <= caches.length; i++) {
+			caches[i].updateLower(dataWord);
+		}
+		this.memory.storeDataAtAddress(dataWord.get_value(),
+				dataWord.getAddress());
+	}
+
+	public void insertInHigherLevels(int from_index, Data dataWord,
+			boolean makeDirty) {
+		for (int i = from_index - 1; i >= 0; i--) {
+			if (caches[i].isWriteAllocate()) {
+				// Insert data in higher level from lower level
+				if (makeDirty) {
+					dataWord.setDirtyBit(true);
+				} else {
+					dataWord.setDirtyBit(false);
+				}
+				int starting_address = caches[i].startingAddress(dataWord
+						.getAddress());
+				int ending_address = caches[i].endingAddress(dataWord
+						.getAddress());
+				for (int j = starting_address; j <= ending_address; j++) {
+					Data replaced_data = caches[i].insertData(dataWord);
+					if (replaced_data != null) {
+						this.memory.storeDataAtAddress(
+								replaced_data.get_value(),
+								replaced_data.getAddress());
+					}
+
+				}
+			}
+		}
+	}
+
 }

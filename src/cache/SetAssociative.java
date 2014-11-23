@@ -14,6 +14,9 @@ public class SetAssociative extends Cache {
 		this.associativity = associativity;
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
+		for (int i =0 ; i< data.length; i++){
+			data[i].initialize(blockSize, Cache.INSTRUCTION);
+		}
 	}
 
 	
@@ -33,6 +36,16 @@ public class SetAssociative extends Cache {
 		
 	}
 	
+	public int startingAddress(int address) {
+		//int word_offset_in_set = address % num_of_words_in_set;
+		int word_offset_in_block = address % blockSize;
+		return address - word_offset_in_block;
+
+	}
+	
+	public int endingAddress(int address){
+		return startingAddress(address) + blockSize -1;
+	}	
 	@Override
 	public Instruction searchInstruction(int address) {
 		Instruction word  = (Instruction) getWordAtAddress(address, INSTRUCTION);

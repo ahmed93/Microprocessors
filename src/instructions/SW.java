@@ -22,7 +22,8 @@ public class SW extends Instruction {
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
 			// Write Policy
-			this.simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
+			 this.simulator.writeDataWithPolicies(address, regA.get_value());
+//			this.simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
 			System.err.println("Wrong immediate" + imm);
 		}
