@@ -5,7 +5,6 @@ import simulator.Data;
 public abstract class Cache {
 	protected Block[] instructions;
 	protected Block[] data;
-	protected boolean dirtyBit;
 	
 	protected int hits = 0;
 	protected  int misses = 0;
@@ -15,10 +14,10 @@ public abstract class Cache {
 	protected int cacheSize;
 	protected int associativity;
 	
-	public boolean writeBack;
-	public boolean writeAround;
-	public boolean writeThrough;
-	public boolean writeAllocate;
+	private boolean writeBack;
+	private boolean writeAround;
+	private boolean writeThrough;
+	private boolean writeAllocate;
 	
 	
 	public abstract Data searchData(int address);
@@ -28,13 +27,46 @@ public abstract class Cache {
 		dataWord.set_value(value);
 		if(writeBack && writeAllocate)
 		{
-			dirtyBit = true;
+			dataWord.setDirtyBit(true);
 		}
 	}
 
 	public void insertInstruction(Instruction instruction, int address) {
 		Instruction  i = searchInstruction(address);
 		i = instruction;
+	}
+	
+
+	public void updateData(Data dataWord) {
+		int address = dataWord.getAddress();
+		Data d = searchData(address);
+		d = dataWord;
+		dataWord.setDirtyBit(false);
+	}
+
+	public boolean isWriteBack() {
+		return writeBack;
+	}
+	public void setWriteBack(boolean writeBack) {
+		this.writeBack = writeBack;
+	}
+	public boolean isWriteAround() {
+		return writeAround;
+	}
+	public void setWriteAround(boolean writeAround) {
+		this.writeAround = writeAround;
+	}
+	public boolean isWriteThrough() {
+		return writeThrough;
+	}
+	public void setWriteThrough(boolean writeThrough) {
+		this.writeThrough = writeThrough;
+	}
+	public boolean isWriteAllocate() {
+		return writeAllocate;
+	}
+	public void setWriteAllocate(boolean writeAllocate) {
+		this.writeAllocate = writeAllocate;
 	}
 	
 }
