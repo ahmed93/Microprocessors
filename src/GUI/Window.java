@@ -26,22 +26,20 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -50,16 +48,17 @@ import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 import Abstracts.Cache;
+import GUI.DocumentFilter.NumbersFilter;
 import factories.CacheFactory;
 
 public class Window {
 
 	private JFrame frame;
-	private JTextArea codeInput;
+	private JTextPane codeInput;
 	private JTextPane consoleTP;
 	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT;
-	private JPanel debuging;
+	private JPanel RegistersPanel;
 	private DefaultTableModel dataModel;
 	private JTable memoryTB;
 	private JComboBox cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
@@ -207,7 +206,7 @@ public class Window {
 				new Component[] { loadBT, saveBT, runBT }));
 
 		Panel MemoryPanel = new Panel();
-		MemoryPanel.setBounds(1025, 50, 245, 496);
+		MemoryPanel.setBounds(1025, 50, 245, 518);
 		frame.getContentPane().add(MemoryPanel);
 		MemoryPanel.setLayout(new BorderLayout(0, 0));
 
@@ -218,7 +217,7 @@ public class Window {
 		tabbedPane.addTab("Memory", null, MemoryPane, null);
 
 		memoryTB = new JTable();
-		memoryTB.setBounds(6, 6, 214, 438);
+		memoryTB.setBounds(6, 6, 214, 460);
 		MemoryPane.add(memoryTB);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -231,6 +230,9 @@ public class Window {
 		startAdressTF = new JTextField();
 		startAdressTF.setColumns(10);
 		startAdressTF.setBounds(141, 6, 108, 28);
+		PlainDocument doc = (PlainDocument) startAdressTF.getDocument();
+	    doc.setDocumentFilter(new NumbersFilter());
+	    
 		startAdressTF.addKeyListener(new KeyListener() {
 
 			@Override
@@ -486,7 +488,8 @@ public class Window {
 				FilePath = fileChooser.getSelectedFile().getPath();
 				if (!FilePath.toLowerCase().endsWith(".txt"))
 					FilePath += "." + FILE_TYPE;
-				if (saveFile()) modified = false;
+				if (saveFile())
+					modified = false;
 			}
 		}
 	}
@@ -597,14 +600,14 @@ public class Window {
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
 
-		codeInput = new JTextArea();
-		codeInput.setColumns(1);
-		codeInput.setTabSize(2);
+		codeInput = new JTextPane();
+		// codeInput.setColumns(1);
+		// codeInput.setTabSize(2);
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				// TODO Auto-generated method stub
+
 			}
 
 			@Override
@@ -622,7 +625,7 @@ public class Window {
 				}
 			}
 		});
-		codeInput.setLineWrap(true);
+		// codeInput.setLineWrap(true);
 		InputPanel.add(codeInput);
 
 		JScrollPane scroll = new JScrollPane(codeInput,
@@ -633,14 +636,14 @@ public class Window {
 	}
 
 	private void createRegisterPanel() {
-		debuging = new JPanel();
-		debuging.setBounds(1025, 560, 246, 204);
-		frame.getContentPane().add(debuging);
-		debuging.setLayout(null);
+		RegistersPanel = new JPanel();
+		RegistersPanel.setBounds(1025, 572, 246, 204);
+		frame.getContentPane().add(RegistersPanel);
+		RegistersPanel.setLayout(null);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(0, 0, 246, 204);
-		debuging.add(tabbedPane);
+		RegistersPanel.add(tabbedPane);
 
 		JLayeredPane RegisterPane = new JLayeredPane();
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
@@ -650,17 +653,18 @@ public class Window {
 		registerTB = new JTable(dataValues, columnNames);
 		registerTB.setCellSelectionEnabled(true);
 		registerTB.setColumnSelectionAllowed(true);
-//		registerTB.setBorder(UIManager.);
+		// registerTB.setBorder(UIManager.);
 		registerTB.setGridColor(Color.LIGHT_GRAY);
 		registerTB.setSurrendersFocusOnKeystroke(true);
 		registerTB.setBounds(6, 18, 213, 128);
 		registerTB.setFillsViewportHeight(true);
-		
+
 		registerTB.setTableHeader(registerTB.getTableHeader());
 		registerTB.add(registerTB.getTableHeader(), BorderLayout.PAGE_START);
 		registerTB.setEnabled(false);
-		
-		registerTB.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+		registerTB
+				.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		RegisterPane.add(registerTB);
@@ -706,8 +710,12 @@ public class Window {
 		codeInput.setText("");
 		try {
 			reader = new BufferedReader(new FileReader(file));
-			while (reader.ready())
-				codeInput.append(reader.readLine() + "\n");
+			while (reader.ready()) {
+				// Come Here
+
+			}
+			// codeInput.set
+			// codeInput.append(reader.readLine() + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -720,42 +728,46 @@ public class Window {
 		}
 	}
 
+	private void appendCode(String line) {
+
+	}
+
 	private void onClickrunBT() {
 		consoleTP.setText("");
 		dataModel.setValueAt("123", 3, 1);
 		printE("baaaaad");
-//		dataModel.
-//		int instruction_starting_address = -1;
-//		if (!modified) {
-//			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-//		} else {
-//			instruction_starting_address = getStartingAddress();
-//			if (instruction_starting_address < 0) {
-//				JOptionPane
-//						.showMessageDialog(frame, "Wrong start Address .. !");
-//				return;
-//			}
-//			setSimulatorVectors();
-//			simulator = new Simulator(data, instructions, getCacheSettings(),
-//					instruction_starting_address);
-//
-//			System.out.println(data + "\n" + instructions + "\n"
-//					+ instruction_starting_address);
-//			try {
-//				simulator.Initialize();
-//				simulator.runInstructions();
-//				simulator.printMemroy();
-//				simulator.printRegisters();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-		
-//		HashMap<Integer, Integer> sss = new HashMap<Integer, Integer>();
-//		sss.put(2, 200);
-//		sss.put(1, 500);
-//		setRegisterData(sss);
+		// dataModel.
+		// int instruction_starting_address = -1;
+		// if (!modified) {
+		// JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
+		// } else {
+		// instruction_starting_address = getStartingAddress();
+		// if (instruction_starting_address < 0) {
+		// JOptionPane
+		// .showMessageDialog(frame, "Wrong start Address .. !");
+		// return;
+		// }
+		// setSimulatorVectors();
+		// simulator = new Simulator(data, instructions, getCacheSettings(),
+		// instruction_starting_address);
+		//
+		// System.out.println(data + "\n" + instructions + "\n"
+		// + instruction_starting_address);
+		// try {
+		// simulator.Initialize();
+		// simulator.runInstructions();
+		// simulator.printMemroy();
+		// simulator.printRegisters();
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
+
+		// HashMap<Integer, Integer> sss = new HashMap<Integer, Integer>();
+		// sss.put(2, 200);
+		// sss.put(1, 500);
+		// setRegisterData(sss);
 	}
 
 	private void changeMemoryTB() {
@@ -788,14 +800,14 @@ public class Window {
 
 	private void setRegisterData(HashMap<Integer, Integer> data) {
 		Iterator<?> it = data.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)it.next();
-	        registerTB.setValueAt((int)pairs.getValue(), (int) pairs.getKey(), 1);
-	        System.out.println(pairs.getKey() + " = " + pairs.getValue());
-	        it.remove(); // avoids a ConcurrentModificationException
-	    }
-	    
-	    dataModel.fireTableDataChanged();
+		while (it.hasNext()) {
+			Map.Entry pairs = (Map.Entry) it.next();
+			registerTB.setValueAt((int) pairs.getValue(), (int) pairs.getKey(),
+					1);
+			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+			it.remove(); // avoids a ConcurrentModificationException
+		}
+		dataModel.fireTableDataChanged();
 	}
 
 	public void CreateData() {
