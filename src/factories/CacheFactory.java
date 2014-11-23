@@ -6,6 +6,7 @@ import cache.SetAssociative;
 import Abstracts.Cache;
 
 public class CacheFactory {
+	
 	public static Cache createCache(int associativity, int blockSize,
 			int cacheSize) {
 		if (associativity == cacheSize / blockSize)
@@ -15,4 +16,5 @@ public class CacheFactory {
 		else
 			return new SetAssociative(blockSize, cacheSize, associativity);
 	}
+	
 }
