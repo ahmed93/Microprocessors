@@ -1,5 +1,6 @@
 package cache;
 
+import interfaces.Word;
 import simulator.Block;
 import simulator.Data;
 import Abstracts.Cache;
@@ -49,5 +50,14 @@ public class FullyAssociative extends Cache {
 		return null;
 	}
 
+	@Override
+	protected Word getWordAtAddress(int address, String type) {
+		Word word;
+		if(type == INSTRUCTION)
+			word = searchInstruction(address);
+		else
+			word = searchData(address);
+		return word;
+	}
 
 }

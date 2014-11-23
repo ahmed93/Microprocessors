@@ -1,4 +1,5 @@
 package Abstracts;
+import interfaces.Word;
 import simulator.Block;
 import simulator.Data;
 
@@ -19,11 +20,16 @@ public abstract class Cache {
 	private boolean writeThrough;
 	private boolean writeAllocate;
 	
+	protected static final String INSTRUCTION = "instruction";
+	protected static final String DATA = "data";
+	
+	
 	
 	public abstract Data searchData(int address);
 	public abstract Instruction searchInstruction(int address);
+	protected abstract Word getWordAtAddress(int address, String type);
 
-	public void insertData(Data dataWord, int value) {
+	public void setDataValue(Data dataWord, int value) {
 		dataWord.set_value(value);
 		if(writeBack && writeAllocate)
 		{
@@ -37,7 +43,7 @@ public abstract class Cache {
 	}
 	
 
-	public void updateData(Data dataWord) {
+	public void updatelower(Data dataWord) {
 		int address = dataWord.getAddress();
 		Data d = searchData(address);
 		d = dataWord;
