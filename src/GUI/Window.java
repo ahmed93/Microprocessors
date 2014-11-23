@@ -38,10 +38,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -51,6 +48,7 @@ import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 import Abstracts.Cache;
+import GUI.DocumentFilter.NumbersFilter;
 import factories.CacheFactory;
 
 public class Window {
@@ -233,7 +231,7 @@ public class Window {
 		startAdressTF.setColumns(10);
 		startAdressTF.setBounds(141, 6, 108, 28);
 		PlainDocument doc = (PlainDocument) startAdressTF.getDocument();
-	    doc.setDocumentFilter(new MyIntFilter());
+	    doc.setDocumentFilter(new NumbersFilter());
 	    
 		startAdressTF.addKeyListener(new KeyListener() {
 
@@ -904,65 +902,5 @@ public class Window {
 		// / L3 - Cache
 		tmp[2] = initCache(l3AssociativityTF, l3BlockLengthTF, l3CashSizeTF, 3);
 		return tmp;
-	}
-}
-
-class MyIntFilter extends DocumentFilter {
-	@Override
-	public void insertString(FilterBypass fb, int offset, String string,
-			AttributeSet attr) throws BadLocationException {
-
-		Document doc = fb.getDocument();
-		StringBuilder sb = new StringBuilder();
-		sb.append(doc.getText(0, doc.getLength()));
-		sb.insert(offset, string);
-
-		if (test(sb.toString())) {
-			super.insertString(fb, offset, string, attr);
-		} else {
-			// warn the user and don't allow the insert
-		}
-	}
-
-	private boolean test(String text) {
-		try {
-			Integer.parseInt(text);
-			return true;
-		} catch (NumberFormatException e) {
-			return false;
-		}
-	}
-
-	@Override
-	public void replace(FilterBypass fb, int offset, int length, String text,
-			AttributeSet attrs) throws BadLocationException {
-
-		Document doc = fb.getDocument();
-		StringBuilder sb = new StringBuilder();
-		sb.append(doc.getText(0, doc.getLength()));
-		sb.replace(offset, offset + length, text);
-
-		if (test(sb.toString())) {
-			super.replace(fb, offset, length, text, attrs);
-		} else {
-			// warn the user and don't allow the insert
-		}
-
-	}
-
-	@Override
-	public void remove(FilterBypass fb, int offset, int length)
-			throws BadLocationException {
-		Document doc = fb.getDocument();
-		StringBuilder sb = new StringBuilder();
-		sb.append(doc.getText(0, doc.getLength()));
-		sb.delete(offset, offset + length);
-
-		if (test(sb.toString())) {
-			super.remove(fb, offset, length);
-		} else {
-			// warn the user and don't allow the insert
-		}
-
 	}
 }
