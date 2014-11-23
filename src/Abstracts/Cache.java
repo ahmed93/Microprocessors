@@ -5,8 +5,8 @@ import simulator.Block;
 import simulator.Data;
 
 public abstract class Cache {
-	protected Block[] instructions;
-	protected Block[] data;
+	public Block[] instructions;
+	public Block[] data;
 
 	protected int hits = 0;
 	protected int misses = 0;
