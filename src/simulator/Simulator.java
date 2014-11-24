@@ -329,6 +329,10 @@ public class Simulator {
 		return reg;
 	}
 	
+	public HashMap<Integer, Integer> getMemoryValues() {
+		return memory.getAllData();
+	}
+	
 	public void setPC(int i){
 		this.pc = i;
 	}

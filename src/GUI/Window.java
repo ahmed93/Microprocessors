@@ -59,7 +59,6 @@ public class Window {
 	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT, debugBT, stopBT, nextBT;
 	private JPanel RegistersPanel;
-	private DefaultTableModel dataModel;
 	private JTable memoryTB;
 	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB,
 			Hit2CB, Hit3CB;
@@ -76,8 +75,14 @@ public class Window {
 	private boolean modified;
 	private String FilePath;
 	private Simulator simulator;
-	private String columnNames[] = { "register", "values" };
+	private String columnNames[] = { "Register", "Value" };
 	private String dataValues[][];
+	private DefaultTableModel dataModel;
+	
+	private String MemoryColumnNames[] = { "Location", "value" };
+	private String MemoryDataValues[][];
+	private DefaultTableModel MemoryDataModel;
+	
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
 
@@ -95,6 +100,7 @@ public class Window {
 	private JTextField l1MissTimeTF;
 	private JTextField l3HitTimeTF;
 	private JTextField l3MissTimeTF;
+	private JTextField memoAccessTimeTF;
 
 	/**
 	 * Launch the application.
@@ -127,6 +133,7 @@ public class Window {
 		HITPOLISYS.add("WT");
 		MISSPOLISYS.add("WA");
 		MISSPOLISYS.add("WL");
+		initData();
 		/*************************************
 		 ** Initializing the Frame **
 		 *************************************/
@@ -194,23 +201,29 @@ public class Window {
 
 		debugBT = new JButton("Debug");
 		debugBT.setBounds(202, 4, 85, 29);
+//		debugBT.setEnabled(false);
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (validate()) {
-					showWarrnings();
-					runBT.setEnabled(false);
-					debugBT.setEnabled(false);
-					stopBT.setEnabled(true);
-					nextBT.setEnabled(true);
-				} else {
-					showErrors();
-					runBT.setEnabled(true);
-					debugBT.setEnabled(true);
-					stopBT.setEnabled(false);
-					nextBT.setEnabled(false);
-				}
-				// setMamoryData(null);
+//				if (validate()) {
+//					showWarrnings();
+//					runBT.setEnabled(false);
+//					debugBT.setEnabled(false);
+//					stopBT.setEnabled(true);
+//					nextBT.setEnabled(true);
+//				} else {
+//					showErrors();
+//					runBT.setEnabled(true);
+//					debugBT.setEnabled(true);
+//					stopBT.setEnabled(false);
+//					nextBT.setEnabled(false);
+//				}
+				
+				HashMap<Integer, Integer> ssss = new HashMap<Integer, Integer>();
+				ssss.put(2, 2);
+				ssss.put(1, 200000000);
+				ssss.put(444, 200);
+				 setMamoryData(ssss);
 				//
 				// memoryTB.setValueAt(200, 1, 1);
 				// memoryTB.repaint();
@@ -226,16 +239,18 @@ public class Window {
 		runBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				runBT.setEnabled(false);
-				debugBT.setEnabled(false);
+				// debugBT.setEnabled(false);
 				if (validate()) {
 					showWarrnings();
 					setSimulatorVectors();
 					simulator = new Simulator(data, instructions, getCaches(),
-							getStartingAddress(),0);
+							getStartingAddress(), Integer
+									.parseInt(memoAccessTimeTF.getText()));
 					try {
 						simulator.Initialize();
 						simulator.runInstructions();
 						simulator.printMemory();
+						setMamoryData(simulator.getMemoryValues());
 						setRegisterData(simulator.getRegistersValues());
 					} catch (IOException ea) {
 						ea.printStackTrace();
@@ -243,7 +258,7 @@ public class Window {
 				} else {
 					showErrors();
 				}
-				debugBT.setEnabled(true);
+				// debugBT.setEnabled(true);
 				runBT.setEnabled(true);
 			}
 		});
@@ -269,10 +284,10 @@ public class Window {
 				Window.class
 						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 		nextBT.setBounds(299, 8, 28, 20);
-		nextBT.addActionListener(new ActionListener() {			
+		nextBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 			}
 		});
 		OptionsPanel.add(nextBT);
@@ -291,7 +306,11 @@ public class Window {
 		tabbedPane.addTab("Memory", null, MemoryPane, null);
 		MemoryPane.setLayout(null);
 
-		memoryTB = new JTable();
+		String[] CoLNames = { "Location", "Value" };
+		Integer[][] memroyData = new Integer[1][2]; 
+		memroyData[0][0] = 0;
+		memroyData[0][1] = 0;
+		memoryTB = new JTable(MemoryDataModel);
 		memoryTB.setBounds(2, 2, 0, 468);
 
 		memoryTB.setGridColor(Color.LIGHT_GRAY);
@@ -311,7 +330,7 @@ public class Window {
 		MemoryPane.add(memoryS);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		SettingsTabbedPane.setBounds(741, 50, 276, 567);
+		SettingsTabbedPane.setBounds(741, 38, 276, 579);
 		frame.getContentPane().add(SettingsTabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
@@ -331,7 +350,7 @@ public class Window {
 		JLabel label_2 = new JLabel("Cache Settings");
 		label_2.setForeground(Color.GRAY);
 		label_2.setHorizontalAlignment(SwingConstants.LEFT);
-		label_2.setBounds(85, 34, 112, 16);
+		label_2.setBounds(6, 55, 112, 16);
 		layeredPane.add(label_2);
 
 		Vector<String> items = new Vector<>();
@@ -340,7 +359,7 @@ public class Window {
 		items.add("two");
 		items.add("three");
 		cacheLevelsCB = new JComboBox<>(items);
-		cacheLevelsCB.setBounds(156, 51, 93, 27);
+		cacheLevelsCB.setBounds(156, 69, 93, 27);
 		cacheLevelsCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switch (cacheLevelsCB.getSelectedIndex()) {
@@ -371,12 +390,12 @@ public class Window {
 		layeredPane.add(cacheLevelsCB);
 
 		JLabel label_3 = new JLabel("Number Of Levels");
-		label_3.setBounds(6, 55, 121, 16);
+		label_3.setBounds(6, 73, 121, 16);
 		layeredPane.add(label_3);
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setLayout(null);
-		panel_1.setBounds(6, 226, 243, 142);
+		panel_1.setBounds(6, 242, 243, 142);
 		layeredPane.add(panel_1);
 
 		JLabel label_4 = new JLabel("L2-Cache");
@@ -439,35 +458,35 @@ public class Window {
 		JLabel label_16 = new JLabel("MissP");
 		label_16.setBounds(162, 49, 42, 16);
 		panel_1.add(label_16);
-		
+
 		l2HitTimeTF = new JTextField();
+		l2HitTimeTF.setEnabled(false);
 		l2HitTimeTF.setBounds(45, 104, 56, 28);
 		l2HitTimeTF.setColumns(10);
-		PlainDocument l2HitTimeDoc = (PlainDocument) l2HitTimeTF
-				.getDocument();
+		PlainDocument l2HitTimeDoc = (PlainDocument) l2HitTimeTF.getDocument();
 		l2HitTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_1.add(l2HitTimeTF);
-		
-		
+
 		JLabel lblHt = new JLabel("HT");
 		lblHt.setBounds(16, 110, 27, 16);
 		panel_1.add(lblHt);
-		
+
 		l2MissTimeTF = new JTextField();
+		l2MissTimeTF.setEnabled(false);
 		l2MissTimeTF.setColumns(10);
 		l2MissTimeTF.setBounds(148, 104, 56, 28);
 		PlainDocument l2MissTimeDoc = (PlainDocument) l2MissTimeTF
 				.getDocument();
 		l2MissTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_1.add(l2MissTimeTF);
-		
+
 		JLabel lblMt = new JLabel("MT");
 		lblMt.setBounds(119, 110, 27, 16);
 		panel_1.add(lblMt);
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
-		panel_2.setBounds(6, 80, 243, 142);
+		panel_2.setBounds(6, 96, 243, 142);
 		layeredPane.add(panel_2);
 
 		JLabel label_8 = new JLabel("L1-Cache");
@@ -530,34 +549,35 @@ public class Window {
 		JLabel lblMissp = new JLabel("MissP");
 		lblMissp.setBounds(168, 53, 42, 16);
 		panel_2.add(lblMissp);
-		
+
 		l1HitTimeTF = new JTextField();
+		l1HitTimeTF.setEnabled(false);
 		l1HitTimeTF.setColumns(10);
 		l1HitTimeTF.setBounds(45, 108, 56, 28);
-		PlainDocument l1HitTimeDoc = (PlainDocument) l1HitTimeTF
-				.getDocument();
+		PlainDocument l1HitTimeDoc = (PlainDocument) l1HitTimeTF.getDocument();
 		l1HitTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_2.add(l1HitTimeTF);
-		
+
 		JLabel label_19 = new JLabel("HT");
 		label_19.setBounds(16, 114, 27, 16);
 		panel_2.add(label_19);
-		
+
 		l1MissTimeTF = new JTextField();
+		l1MissTimeTF.setEnabled(false);
 		l1MissTimeTF.setColumns(10);
 		l1MissTimeTF.setBounds(148, 108, 56, 28);
 		PlainDocument l1MissTimeDoc = (PlainDocument) l1MissTimeTF
 				.getDocument();
 		l1MissTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_2.add(l1MissTimeTF);
-		
+
 		JLabel label_20 = new JLabel("MT");
 		label_20.setBounds(119, 114, 27, 16);
 		panel_2.add(label_20);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
-		panel_3.setBounds(6, 373, 243, 142);
+		panel_3.setBounds(6, 388, 243, 142);
 		layeredPane.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
@@ -620,30 +640,43 @@ public class Window {
 		JLabel label_18 = new JLabel("MissP");
 		label_18.setBounds(165, 51, 42, 16);
 		panel_3.add(label_18);
-		
+
 		l3HitTimeTF = new JTextField();
+		l3HitTimeTF.setEnabled(false);
 		l3HitTimeTF.setColumns(10);
 		l3HitTimeTF.setBounds(45, 106, 56, 28);
-		PlainDocument l3HitTimeDoc = (PlainDocument) l3HitTimeTF
-				.getDocument();
+		PlainDocument l3HitTimeDoc = (PlainDocument) l3HitTimeTF.getDocument();
 		l3HitTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_3.add(l3HitTimeTF);
-		
+
 		JLabel label_21 = new JLabel("HT");
 		label_21.setBounds(16, 112, 27, 16);
 		panel_3.add(label_21);
-		
+
 		l3MissTimeTF = new JTextField();
+		l3MissTimeTF.setEnabled(false);
 		l3MissTimeTF.setColumns(10);
 		l3MissTimeTF.setBounds(148, 106, 56, 28);
 		PlainDocument l3MissTimeDoc = (PlainDocument) l3MissTimeTF
 				.getDocument();
 		l3MissTimeDoc.setDocumentFilter(new NumbersFilter());
 		panel_3.add(l3MissTimeTF);
-		
+
 		JLabel label_22 = new JLabel("MT");
 		label_22.setBounds(119, 112, 27, 16);
 		panel_3.add(label_22);
+
+		memoAccessTimeTF = new JTextField();
+		memoAccessTimeTF.setColumns(10);
+		memoAccessTimeTF.setBounds(141, 29, 108, 28);
+		PlainDocument memoAccessTimeDoc = (PlainDocument) l3MissTimeTF
+				.getDocument();
+		memoAccessTimeDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(memoAccessTimeTF);
+
+		JLabel lblMemoryAccessTime = new JLabel("Memory Access Time");
+		lblMemoryAccessTime.setBounds(6, 35, 133, 16);
+		layeredPane.add(lblMemoryAccessTime);
 	}
 
 	private void onClickSaveBT() {
@@ -675,12 +708,16 @@ public class Window {
 			l1AssociativityTF.setEnabled(status);
 			Miss1CB.setEnabled(true);
 			Hit1CB.setEnabled(true);
+			l1HitTimeTF.setEnabled(true);
+			l1MissTimeTF.setEnabled(true);
 			if (!status) {
 				l1CacheSizeTF.setText("");
 				l1BlockSizeTF.setText("");
 				l1AssociativityTF.setText("");
 				Miss1CB.setEnabled(false);
 				Hit1CB.setEnabled(false);
+				l1HitTimeTF.setEnabled(false);
+				l1MissTimeTF.setEnabled(false);
 			}
 			break;
 		case 2:
@@ -689,12 +726,16 @@ public class Window {
 			l2AssociativityTF.setEnabled(status);
 			Miss2CB.setEnabled(true);
 			Hit2CB.setEnabled(true);
+			l2HitTimeTF.setEnabled(true);
+			l2MissTimeTF.setEnabled(true);
 			if (!status) {
 				l2CacheSizeTF.setText("");
 				l2BlockSizeTF.setText("");
 				l2AssociativityTF.setText("");
 				Miss2CB.setEnabled(false);
 				Hit2CB.setEnabled(false);
+				l2HitTimeTF.setEnabled(false);
+				l2MissTimeTF.setEnabled(false);
 			}
 			break;
 		case 3:
@@ -703,12 +744,16 @@ public class Window {
 			l3AssociativityTF.setEnabled(status);
 			Miss3CB.setEnabled(true);
 			Hit3CB.setEnabled(true);
+			l3HitTimeTF.setEnabled(true);
+			l3MissTimeTF.setEnabled(true);
 			if (!status) {
 				l3CacheSizeTF.setText("");
 				l3BlockSizeTF.setText("");
 				l3AssociativityTF.setText("");
 				Miss3CB.setEnabled(false);
 				Hit3CB.setEnabled(false);
+				l3HitTimeTF.setEnabled(false);
+				l3MissTimeTF.setEnabled(false);
 			}
 			break;
 		}
@@ -779,24 +824,7 @@ public class Window {
 		InputPanel.setBounds(6, 6, 723, 593);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
-
 		codeInput = new JTextPane();
-		// codeInput.setColumns(1);
-		// codeInput.setTabSize(2);
-		// codeInput.addCaretListener(new CaretListener() {
-		// public void caretUpdate(CaretEvent caretEvent) {
-		// System.out.println("dot:" + caretEvent.getDot());
-		// System.out.println("mark" + caretEvent.getMark());
-		// }
-		// });
-
-		Document d = codeInput.getDocument();
-		// PlainDocument doc = (PlainDocument) codeInput.getDocument();
-		// DocumentFilter test = new DocumentFilter();
-		//
-		//
-		// doc.setDocumentFilter(new DocumentFilter());
-
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
@@ -838,7 +866,6 @@ public class Window {
 		JLayeredPane RegisterPane = new JLayeredPane();
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
 		tabbedPane.setEnabledAt(0, true);
-		initData();
 		RegisterPane.setLayout(null);
 
 		registerTB = new JTable(dataValues, columnNames);
@@ -936,13 +963,18 @@ public class Window {
 	 * */
 	private void initData() {
 		CreateData();
-		dataModel = new DefaultTableModel();
-		dataModel.addColumn("Registers");
-		dataModel.addColumn("Values");
-
-		for (int row = 0; row < dataValues.length; row++) {
-			dataModel.addRow(dataValues[row]);
-		}
+		
+//		dataModel = new DefaultTableModel();
+//		for (int row = 0; row < dataValues.length; row++) {
+//			dataModel.addRow(dataValues[row]);
+//		}
+		
+//		String[] CoLNames = { "Location", "Value" };
+//		Integer[][] memroyData = new Integer[1][2]; 
+//		memroyData[0][0] = 0;
+//		memroyData[0][1] = 0;
+//		memoryTB.setModel(new DefaultTableModel());
+//		memoryTB.repaint();
 	}
 
 	private void setRegisterData(HashMap<Integer, Integer> data) {
@@ -950,18 +982,17 @@ public class Window {
 			System.out.println((int) entry.getKey());
 			registerTB.setValueAt(entry.getValue().toString(),
 					(int) entry.getKey(), 1);
-			// dataValues[(int) entry.getKey()][1] =
-			// entry.getValue().toString();
 		}
 		registerTB.repaint();
 	}
 
-	private void setMamoryData(HashMap<String, Integer> data) {
-		String[] CoLNames = { "Location", "Value" };
+	private void setMamoryData(HashMap<Integer, Integer> data) {
 		String[][] memroyData = new String[data.size()][2];
-
-		DefaultTableModel s = new DefaultTableModel(memroyData, CoLNames);
-		memoryTB.setModel(s);
+		int counter = 0;
+		for (Entry<Integer,Integer> en : data.entrySet()) {
+			memroyData[counter][0] = en.getKey().toString();
+			memroyData[counter][1] = en.getValue().toString();
+		}
 		memoryTB.repaint();
 	}
 
@@ -1104,6 +1135,8 @@ public class Window {
 
 		if (startAdressTF.getText().trim().isEmpty())
 			errors.add("Starting Address can't be blank. \n ====================================");
+		if (memoAccessTimeTF.getText().trim().isEmpty())
+			errors.add("Memory Access Time can't be blank. \n ====================================");
 		if (cacheLevelsCB.getSelectedIndex() == 0)
 			errors.add("Select the number of caches levels needed \n ====================================");
 		else if (cacheLevelsCB.getSelectedIndex() > 0) {
@@ -1113,7 +1146,7 @@ public class Window {
 				errors.add("L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
 				errors.add("L1-Cache: Associativity can't be blank");
-//			errors.add("====================================");
+			// errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
 					errors.add("L2-Cache: Cache-Size can't be blank");
@@ -1121,7 +1154,7 @@ public class Window {
 					errors.add("L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
 					errors.add("L2-Cache: Associativity can't be blank");
-//				errors.add("====================================");
+				// errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
 						errors.add("L3-Cache: Cache-Size can't be blank");
@@ -1129,7 +1162,7 @@ public class Window {
 						errors.add("L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
 						errors.add("L3-Cache: Associativity can't be blank");
-//					errors.add("====================================");
+					// errors.add("====================================");
 				}
 			}
 		}

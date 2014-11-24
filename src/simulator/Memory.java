@@ -1,5 +1,8 @@
 package simulator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import interfaces.Word;
 import Abstracts.Instruction;
 
@@ -8,6 +11,7 @@ public class Memory {
 	final int SIZE = 32768;
 	Word[] cells;
 	private static Memory memory_instance;
+	private static ArrayList<Integer> memoryIndex;
 
 	int percentage;
 	int d; // Data Index
@@ -19,6 +23,7 @@ public class Memory {
 		this.d = 100;
 		this.DATA_STARTING_ADDRESS = d;
 		this.i = 0;
+		memoryIndex = new ArrayList<Integer>();
 	}
 
 	public static Memory getInstance() {
@@ -42,6 +47,7 @@ public class Memory {
 	public void storeData(int data) {
 		if (d == SIZE)
 			d = DATA_STARTING_ADDRESS;
+		if(!memoryIndex.contains(d)) memoryIndex.add(d);
 		this.cells[d++] = new Data(data);
 	}
 
@@ -83,6 +89,13 @@ public class Memory {
 
 	public int getInstructionIndex() {
 		return this.i;
+	}
+	
+	public HashMap<Integer, Integer> getAllData() {
+		HashMap<Integer, Integer> dataMem = new HashMap<Integer, Integer>();
+		for (int data : memoryIndex)
+			dataMem.put(data, getDataAt(data).get_value());
+		return dataMem;
 	}
 
 }
