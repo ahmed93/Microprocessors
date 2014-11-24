@@ -38,7 +38,7 @@ public abstract class Cache {
 	}
 
 	public void cacheInstruction(Instruction instruction) {
-		setWordAtAddress(instruction);		
+		setWordAtAddress(instruction, Cache.INSTRUCTION);		
 //		int address = instruction.getAddress();
 //		Instruction i = (Instruction) getWordAtAddress(address, Cache.INSTRUCTION);
 ////		Instruction i = searchInstruction(address);
@@ -121,5 +121,5 @@ public abstract class Cache {
 		}
 		System.out.println("##################3");
 	}
-	public abstract void setWordAtAddress(Instruction instruction);
+	public abstract void setWordAtAddress(Instruction instruction, String type);
 }
