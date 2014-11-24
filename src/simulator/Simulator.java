@@ -16,7 +16,7 @@ import factories.InstructionFactory;
 
 public class Simulator {
 
-	Cache[] caches;
+	public Cache[] caches;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
 	static final int REGISTERS_NUMBER = 8;
@@ -54,7 +54,8 @@ public class Simulator {
 		// Start instruction execution
 	}
 
-	public void initializeCaches(ArrayList<HashMap<String, Integer>> input_caches) {
+	public void initializeCaches(
+			ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];
 		for (int i = 0; i < input_caches.size(); i++) {
 			HashMap<String, Integer> input_cache = input_caches.get(i);
@@ -90,7 +91,8 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		for (int i = 0; i < this.instructions_addresses.size(); i++) {
+		 for (int i = 0; i < this.instructions_addresses.size(); i++) {
+//		for (int i = 0; i < 1; i++) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j]
@@ -107,7 +109,7 @@ public class Simulator {
 				// caches)
 				// miss
 				int instruction_address = this.instructions_addresses.get(i);
-				instruction =this.memory.getInstructionAt(instruction_address);
+				instruction = this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
@@ -129,8 +131,10 @@ public class Simulator {
 		for (int j = cacheIndex - 1; j >= 0; j--) {
 			for (int k = caches[j].startingAddress(instruction_address); k <= caches[j]
 					.endingAddress(instruction_address); k++) {
-				instruction = this.memory.getInstructionAt(instruction_address);
-				caches[j].cacheInstruction(instruction);
+				instruction = this.memory.getInstructionAt(k);
+				if (instruction != null) {
+					caches[j].cacheInstruction(instruction);
+				}
 			}
 		}
 
@@ -213,8 +217,7 @@ public class Simulator {
 	}
 
 	public void writeDataWithPolicies(int address, int data_value) {
-		if(caches.length == 0)
-		{
+		if (caches.length == 0) {
 			this.memory.storeDataAtAddress(data_value, address);
 			return;
 		}
@@ -247,8 +250,7 @@ public class Simulator {
 			insertInHigherLevels(caches.length, dataWord, false); // With
 																	// marking
 																	// bit
-		}
-		else {
+		} else {
 			Data dataWord = this.memory.getDataAt(address);
 			this.memory.storeDataAtAddress(data_value, address);
 		}
