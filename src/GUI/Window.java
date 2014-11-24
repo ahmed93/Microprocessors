@@ -50,6 +50,7 @@ import javax.swing.text.StyledDocument;
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
+import sun.font.FontFamily;
 import GUI.utilities.NumbersFilter;
 
 public class Window {
@@ -58,11 +59,11 @@ public class Window {
 	private JTextPane codeInput;
 	private JTextPane consoleTP;
 	private JTable registerTB;
-	private JButton loadBT, saveBT, runBT;
+	private JButton loadBT, saveBT, runBT, debugBT, stopBT, nextBT;
 	private JPanel RegistersPanel;
 	private DefaultTableModel dataModel;
 	private JTable memoryTB;
-	private JComboBox cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
+	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
 			Hit3CB;
 	private JTextField startAdressTF, l2CacheSizeTF, l2BlockSizeTF,
 			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF,
@@ -73,6 +74,8 @@ public class Window {
 	 ** Data Variables **
 	 ****************************/
 	private ArrayList<String> errors;
+	private ArrayList<String> warrnings;
+	private ArrayList<String> output;
 	private boolean modified;
 	private String FilePath;
 	private Simulator simulator;
@@ -84,7 +87,7 @@ public class Window {
 	/*************************
 	 ** Static Variables **
 	 *************************/
-	private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
+//	private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
 	private static final String FILE_TYPE_Viewed = "TEXT-File";
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
@@ -128,6 +131,7 @@ public class Window {
 		frame.setBounds(100, 100, 1280, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.setResizable(false);
 
 		/*******************************************
 		 ** JTabbedPane: Tabs-Console **
@@ -177,6 +181,7 @@ public class Window {
 		// Save Button
 		saveBT = new JButton("Save");
 		saveBT.setBounds(103, 4, 85, 29);
+		saveBT.setEnabled(false);
 		saveBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				onClickSaveBT();
@@ -184,18 +189,31 @@ public class Window {
 		});
 		OptionsPanel.add(saveBT);
 
-		JButton debugBT = new JButton("Debug");
+		debugBT = new JButton("Debug");
 		debugBT.setBounds(202, 4, 85, 29);
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				if (validate()) {
+					showWarrnings();
+					runBT.setEnabled(false);
+					debugBT.setEnabled(false);
+					stopBT.setEnabled(true);
+					nextBT.setEnabled(true);
+				}else {
+					showErrors();
+					runBT.setEnabled(true);
+					debugBT.setEnabled(true);
+					stopBT.setEnabled(false);
+					nextBT.setEnabled(false);
+				}
 				// setMamoryData(null);
 				//
 				// memoryTB.setValueAt(200, 1, 1);
 				// memoryTB.repaint();
-
+				
 			}
+
 		});
 		OptionsPanel.add(debugBT);
 
@@ -205,18 +223,44 @@ public class Window {
 		runBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				runBT.setEnabled(false);
-				onClickrunBT();
+				debugBT.setEnabled(false);
+				if (validate()) {
+					showWarrnings();
+					setSimulatorVectors();
+					simulator = new Simulator(data, instructions, getCaches(),
+							getStartingAddress());
+					try {
+						simulator.Initialize();
+						simulator.runInstructions();
+						simulator.printMemory();
+						setRegisterData(simulator.getRegistersValues());
+					} catch (IOException ea) {
+						ea.printStackTrace();
+					}
+				}else {
+					showErrors();
+				}
+				debugBT.setEnabled(true);
 				runBT.setEnabled(true);
 			}
 		});
 		OptionsPanel.add(runBT);
 
-		JButton stioBT = new JButton("Stop");
-		stioBT.setBounds(345, 3, 85, 30);
-		stioBT.setEnabled(false);
-		OptionsPanel.add(stioBT);
+		stopBT = new JButton("Stop");
+		stopBT.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				runBT.setEnabled(true);
+				debugBT.setEnabled(true);
+				stopBT.setEnabled(false);
+				nextBT.setEnabled(false);
+				printE("******* **** Session has been terminated by the user **** *******");
+			}
+		});
+		stopBT.setBounds(345, 3, 85, 30);
+		stopBT.setEnabled(false);
+		OptionsPanel.add(stopBT);
 
-		JButton nextBT = new JButton("");
+		nextBT = new JButton("");
 		nextBT.setEnabled(false);
 		nextBT.setIcon(new ImageIcon(
 				Window.class
@@ -285,7 +329,7 @@ public class Window {
 		items.add("one");
 		items.add("two");
 		items.add("three");
-		cacheLevelsCB = new JComboBox(items);
+		cacheLevelsCB = new JComboBox<>(items);
 		cacheLevelsCB.setBounds(156, 58, 93, 27);
 		cacheLevelsCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -372,12 +416,12 @@ public class Window {
 		label_1.setBounds(6, 104, 26, 16);
 		panel_1.add(label_1);
 
-		Hit2CB = new JComboBox(HITPOLISYS);
+		Hit2CB = new JComboBox<>(HITPOLISYS);
 		Hit2CB.setBounds(37, 101, 76, 25);
 		Hit2CB.setEnabled(false);
 		panel_1.add(Hit2CB);
 
-		Miss2CB = new JComboBox(MISSPOLISYS);
+		Miss2CB = new JComboBox<>(MISSPOLISYS);
 		Miss2CB.setBounds(155, 102, 82, 23);
 		Miss2CB.setEnabled(false);
 		panel_1.add(Miss2CB);
@@ -438,12 +482,12 @@ public class Window {
 		lblHitp.setBounds(6, 105, 26, 16);
 		panel_2.add(lblHitp);
 
-		Hit1CB = new JComboBox(HITPOLISYS);
+		Hit1CB = new JComboBox<>(HITPOLISYS);
 		Hit1CB.setBounds(37, 102, 76, 25);
 		Hit1CB.setEnabled(false);
 		panel_2.add(Hit1CB);
 
-		Miss1CB = new JComboBox(MISSPOLISYS);
+		Miss1CB = new JComboBox<>(MISSPOLISYS);
 		Miss1CB.setBounds(155, 103, 82, 23);
 		Miss1CB.setEnabled(false);
 		panel_2.add(Miss1CB);
@@ -504,12 +548,12 @@ public class Window {
 		label_17.setBounds(6, 104, 26, 16);
 		panel_3.add(label_17);
 
-		Hit3CB = new JComboBox(HITPOLISYS);
+		Hit3CB = new JComboBox<>(HITPOLISYS);
 		Hit3CB.setBounds(37, 101, 76, 25);
 		Hit3CB.setEnabled(false);
 		panel_3.add(Hit3CB);
 
-		Miss3CB = new JComboBox(MISSPOLISYS);
+		Miss3CB = new JComboBox<>(MISSPOLISYS);
 		Miss3CB.setBounds(155, 102, 82, 23);
 		Miss3CB.setEnabled(false);
 		panel_3.add(Miss3CB);
@@ -521,7 +565,7 @@ public class Window {
 
 	private void onClickSaveBT() {
 		if (FilePath != null && !FilePath.equals(" ")) {
-			saveBT.setSelected(false);
+			saveBT.setEnabled(false);
 			File file = new File(FilePath);
 			if (file != null)
 				saveFile();
@@ -610,6 +654,9 @@ public class Window {
 		StyledDocument doc = consoleTP.getStyledDocument();
 		Style style = consoleTP.addStyle(message, null);
 		StyleConstants.setForeground(style, Color.RED);
+		StyleConstants.setBold(style, true);
+		StyleConstants.setFontSize(style, 14);
+		StyleConstants.setFontFamily(style, "Arial");
 		try {
 			doc.insertString(doc.getLength(), message + "\n", style);
 		} catch (BadLocationException ex) {
@@ -621,6 +668,8 @@ public class Window {
 		String stru = "Warrning: " + message + "\n";
 		Style style = consoleTP.addStyle(stru, null);
 		StyleConstants.setForeground(style, Color.DARK_GRAY);
+		StyleConstants.setFontSize(style, 12);
+		StyleConstants.setFontFamily(style, "Arial");
 
 		try {
 			doc.insertString(doc.getLength(), stru, style);
@@ -633,6 +682,8 @@ public class Window {
 
 		Style style = consoleTP.addStyle(message, null);
 		StyleConstants.setForeground(style, Color.WHITE);
+		StyleConstants.setFontSize(style, 12);
+		StyleConstants.setFontFamily(style, "Arial");
 
 		try {
 			doc.insertString(doc.getLength(), message + "\n", style);
@@ -673,16 +724,12 @@ public class Window {
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
 				modified = true;
-				saveBT.setSelected(true);
+				saveBT.setEnabled(true);
 			}
-
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
-				// TODO Auto-generated method stub
-				if (codeInput.getText().equals("")) {
-					modified = false;
-					saveBT.setSelected(false);
-				}
+				modified = true;
+				saveBT.setEnabled(true);
 			}
 		});
 		InputPanel.add(codeInput);
@@ -739,6 +786,7 @@ public class Window {
 	private boolean saveFile() {
 		File file = new File(FilePath);
 		FileWriter fw = null;
+		
 		try {
 			fw = new FileWriter(file.getAbsoluteFile(), false);
 			codeInput.write(fw);
@@ -753,9 +801,12 @@ public class Window {
 					e.printStackTrace();
 					return false;
 				}
-			} else
+			} 
+			else {
 				return false;
+			}
 		}
+		modified = false;
 		return true;
 	}
 
@@ -782,6 +833,8 @@ public class Window {
 				e.printStackTrace();
 			}
 		}
+		
+		modified = false;
 	}
 
 	private void appendCode(String line) {
@@ -792,50 +845,6 @@ public class Window {
 			doc.insertString(doc.getLength(), line + "\n", style);
 		} catch (BadLocationException ex) {
 		}
-	}
-
-	private void onClickrunBT() {
-		System.out.println(getCaches().toArray());
-
-		int instruction_starting_address = -1;
-		if (!modified) {
-			JOptionPane.showMessageDialog(frame, "Save File Then Run ... !");
-		} else {
-			instruction_starting_address = getStartingAddress();
-			if (instruction_starting_address < 0) {
-				JOptionPane
-						.showMessageDialog(frame, "Wrong start Address .. !");
-				return;
-			}
-			setSimulatorVectors();
-			simulator = new Simulator(data, instructions, getCaches(),
-					getStartingAddress());
-			try {
-				simulator.Initialize();
-				simulator.runInstructions();
-				// setRegisterData(simulator);
-				simulator.printMemory();
-				simulator.printRegisters();
-				setRegisterData(simulator.getRegistersValues());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	private void changeMemoryTB() {
-		// for (int i = 0; i < 10; i++) {
-		// System.out.println(i + " : " +
-		// simulator.getMemory().getInstructionAt(i));
-		// }
-		// System.out.println("#################");
-		// for (int i = simulator.getMemory().DATA_STARTING_ADDRESS; i <=
-		// simulator.getMemory().DATA_STARTING_ADDRESS + 10; i++) {
-		// System.out.println(i + " : " +
-		// this.simulator.getMemory().getDataAt(i));
-		// }
 	}
 
 	/**
@@ -908,14 +917,13 @@ public class Window {
 				dataFound = false;
 				continue;
 			}
-			System.out.println("DataFound:  " + dataFound
+			System.out.println(line.trim()+"    ->DataFound:  " + dataFound
 					+ "  --  instructionFound:  " + instructionFound);
 			if (dataFound)
-				data.add(line);
+				data.add(line.trim());
 			else if (instructionFound)
-				instructions.add(line);
+				instructions.add(line.trim());
 		}
-
 		System.out.println(Arrays.toString(instructions.toArray()));
 	}
 
@@ -983,14 +991,29 @@ public class Window {
 		return tmp;
 	}
 
+	private void showErrors() {
+		for (String err : errors)
+			printE(err);
+	}
+
+	private void showWarrnings() {
+		for (String warr : warrnings)
+			printE(warr);
+	}
+	
 	private boolean validate() {
+		consoleTP.setText("");
 		errors = new ArrayList<String>();
+		warrnings = new ArrayList<String>();
 		if (codeInput.getText().trim().isEmpty()) {
-			errors.add("Can't run, Please Enter code first");
+			errors.add("Can't run, Please Enter code first \n ====================================");
 			return false;
 		}
+		if (modified) onClickSaveBT();
+		
+		
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("Starting Address can't be blank. !!!!");
+			errors.add("Starting Address can't be blank. !!!! \n ====================================");
 		if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
 				errors.add("L1-Cache: Cache-Size can't be blank");
@@ -998,20 +1021,23 @@ public class Window {
 				errors.add("L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
 				errors.add("L1-Cache: Associativity can't be blank");
+			errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
-					errors.add("L1-Cache: Cache-Size can't be blank");
+					errors.add("L2-Cache: Cache-Size can't be blank");
 				if (l2BlockSizeTF.getText().trim().isEmpty())
-					errors.add("L1-Cache: Block-Size can't be blank");
+					errors.add("L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
-					errors.add("L1-Cache: Associativity can't be blank");
+					errors.add("L2-Cache: Associativity can't be blank");
+				errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
-						errors.add("L1-Cache: Cache-Size can't be blank");
+						errors.add("L3-Cache: Cache-Size can't be blank");
 					if (l3BlockSizeTF.getText().trim().isEmpty())
-						errors.add("L1-Cache: Block-Size can't be blank");
+						errors.add("L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
-						errors.add("L1-Cache: Associativity can't be blank");
+						errors.add("L3-Cache: Associativity can't be blank");
+					errors.add("====================================");
 				}
 			}
 		}
