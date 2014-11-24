@@ -1,5 +1,6 @@
 package Abstracts;
 
+import factories.InstructionFactory;
 import interfaces.Word;
 import simulator.Block;
 import simulator.Data;
@@ -37,9 +38,12 @@ public abstract class Cache {
 	}
 
 	public void cacheInstruction(Instruction instruction) {
-		int address = instruction.getAddress();
-		Instruction i = searchInstruction(address);
-		i = instruction;
+		setWordAtAddress(instruction);		
+//		int address = instruction.getAddress();
+//		Instruction i = (Instruction) getWordAtAddress(address, Cache.INSTRUCTION);
+////		Instruction i = searchInstruction(address);
+//		i = InstructionFactory.create_instruction(instruction.instruction, instruction.simulator);
+//		i.address = instruction.address;
 	}
 
 	public void updateLower(Data dataWord) {
@@ -98,4 +102,24 @@ public abstract class Cache {
 
 	public abstract int endingAddress(int address);
 
+	public void printCache(){
+		System.out.println("----Instructions------");
+		for(int i = 0; i<instructions.length; i++){
+			for (int j = 0; j<instructions[i].words.length; j++){
+				Instruction instruction = ((Instruction)(instructions[i].words[j]));
+				System.out.print("|" + instruction.instruction+ "|");
+			}
+			System.out.println("");
+		}
+		System.out.println("----Data------");
+		for(int i = 0; i<data.length; i++){
+			for (int j = 0; j<data[i].words.length; j++){
+				Data datum = ((Data)(data[i].words[j]));
+				System.out.print("|" + datum.get_value() + "|");
+			}
+			System.out.println("");
+		}
+		System.out.println("##################3");
+	}
+	public abstract void setWordAtAddress(Instruction instruction);
 }

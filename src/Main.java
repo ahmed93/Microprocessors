@@ -17,9 +17,9 @@ public class Main {
 		for(int i=0;i<1;i++)
 		{
 			HashMap<String,Integer>cache = new HashMap<String,Integer>();
-			cache.put("associativity", 1);
+			cache.put("associativity", 4);
 			cache.put("cacheSize", 32);
-			cache.put("blockSize",8);
+			cache.put("blockSize",4);
 			cache.put("writeBack", 0);
 			cache.put("writeThrough", 1);
 			cache.put("writeAllocate",0);
@@ -35,8 +35,12 @@ public class Main {
 		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address);
 		simulator.Initialize();
 		simulator.runInstructions();
+		for (int i = 0; i < simulator.caches.length; i++){
+			simulator.caches[i].printCache();
+		}
 		simulator.printMemory();
 		simulator.printRegisters();
+		
 	}
 
 }

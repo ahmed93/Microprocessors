@@ -72,4 +72,10 @@ public class FullyAssociative extends Cache {
 		return word;
 	}
 
+	@Override
+	public void setWordAtAddress(Instruction instruction) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
