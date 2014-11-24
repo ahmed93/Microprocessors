@@ -63,11 +63,11 @@ public class DirectMapped extends Cache {
 	public Instruction searchInstruction(int address) {
 		Instruction word = (Instruction) getWordAtAddress(address, INSTRUCTION);
 		if (word.getAddress() == address && word.getClass() != NOP.class) {
-			hits++;
+//			hits++;
 			return word;
 		} else {
 //			System.out.println("MISS");
-			misses++;
+//			misses++;
 			return null;
 		}
 	}
@@ -76,10 +76,10 @@ public class DirectMapped extends Cache {
 	public Data searchData(int address) {
 		Data word = (Data) getWordAtAddress(address, DATA);
 		if (word.getAddress() == address) {
-			hits++;
+//			hits++;
 			return (Data) word;
 		} else {
-			misses++;
+//			misses++;
 			return null;
 		}
 	}

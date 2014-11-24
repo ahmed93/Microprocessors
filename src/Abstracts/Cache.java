@@ -9,8 +9,8 @@ public abstract class Cache {
 	public Block[] instructions;
 	public Block[] data;
 
-	protected int hits = 0;
-	protected int misses = 0;
+	public int hits = 0;
+	public int misses = 0;
 
 	protected int blockSize;
 	protected int cacheSize;
@@ -20,7 +20,7 @@ public abstract class Cache {
 	private boolean writeAround;
 	private boolean writeThrough;
 	private boolean writeAllocate;
-	
+
 	int hitTime;
 	int missTime;
 
@@ -39,6 +39,7 @@ public abstract class Cache {
 	public void setMissTime(int missTime) {
 		this.missTime = missTime;
 	}
+
 	public static final String INSTRUCTION = "instruction";
 	public static final String DATA = "data";
 
@@ -56,12 +57,14 @@ public abstract class Cache {
 	}
 
 	public void cacheInstruction(Instruction instruction) {
-		setWordAtAddress(instruction, Cache.INSTRUCTION);		
-//		int address = instruction.getAddress();
-//		Instruction i = (Instruction) getWordAtAddress(address, Cache.INSTRUCTION);
-////		Instruction i = searchInstruction(address);
-//		i = InstructionFactory.create_instruction(instruction.instruction, instruction.simulator);
-//		i.address = instruction.address;
+		setWordAtAddress(instruction, Cache.INSTRUCTION);
+		// int address = instruction.getAddress();
+		// Instruction i = (Instruction) getWordAtAddress(address,
+		// Cache.INSTRUCTION);
+		// // Instruction i = searchInstruction(address);
+		// i = InstructionFactory.create_instruction(instruction.instruction,
+		// instruction.simulator);
+		// i.address = instruction.address;
 	}
 
 	public void updateLower(Data dataWord) {
@@ -122,24 +125,29 @@ public abstract class Cache {
 
 	public abstract int endingAddress(int address);
 
-	public void printCache(){
+	public void printCache() {
 		System.out.println("----Instructions------");
-		for(int i = 0; i<instructions.length; i++){
-			for (int j = 0; j<instructions[i].words.length; j++){
-				Instruction instruction = ((Instruction)(instructions[i].words[j]));
-				System.out.print("|" + instruction.instruction+ "|");
+		for (int i = 0; i < instructions.length; i++) {
+			for (int j = 0; j < instructions[i].words.length; j++) {
+				Instruction instruction = ((Instruction) (instructions[i].words[j]));
+				System.out.print("|" + instruction.instruction + "|");
 			}
 			System.out.println("");
 		}
 		System.out.println("----Data------");
-		for(int i = 0; i<data.length; i++){
-			for (int j = 0; j<data[i].words.length; j++){
-				Data datum = ((Data)(data[i].words[j]));
+		for (int i = 0; i < data.length; i++) {
+			for (int j = 0; j < data[i].words.length; j++) {
+				Data datum = ((Data) (data[i].words[j]));
 				System.out.print("|" + datum.get_value() + "|");
 			}
 			System.out.println("");
 		}
 		System.out.println("##################3");
 	}
+
 	public abstract void setWordAtAddress(Word word, String type);
+	
+	public double getMissRate(){
+		return ((double) misses)/((double) misses+hits); 
+	}
 }

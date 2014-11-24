@@ -111,8 +111,10 @@ public class Simulator {
 				if (instruction != null && instruction.getClass() != NOP.class) {
 					updateInstructionInHigherCaches(j, pc);
 					// place instruction in higher cache levels(j)
+					caches[j].hits++;
 					break;
 				}
+				caches[j].misses++;
 			}
 			if (instruction == null || instruction.getClass() == NOP.class) {
 				// place instruction in higher levels of cache.(number of
@@ -201,8 +203,10 @@ public class Simulator {
 				// Place data in higher levels of cache(i) places data with
 				insertInHigherLevelsRead(i, dataWord);
 				// dirty bit in memory
+				caches[i].hits++;
 				return dataWord;
 			}
+			caches[i].misses++;
 		}
 		dataWord = this.memory.getDataAt(address);
 		dataWord.setAddress(address);
@@ -256,8 +260,10 @@ public class Simulator {
 					insertInHigherLevels(i, dataWord, true); // With marking bit
 																// as dirty
 				}
+				caches[i].hits++;
 				return;
 			}
+			caches[i].misses++;
 			if (i == caches.length - 1) {
 				WritePolicy = (caches[i].isWriteAround()) ? "WriteAround"
 						: "WriteAllocate";
@@ -329,5 +335,14 @@ public class Simulator {
 	
 	public int getPc(){
 		return this.pc;
+	}
+	
+	public double calculateAMAT(){
+		double amat = memoryAccessTime;
+		for (int i = caches.length-1; i>=0; i--){
+			Cache c = caches[i];
+			amat = c.getHitTime() + c.getMissRate() * amat;
+		}
+		return amat;
 	}
 }
