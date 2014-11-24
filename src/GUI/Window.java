@@ -26,7 +26,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -50,7 +49,6 @@ import javax.swing.text.StyledDocument;
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
-import sun.font.FontFamily;
 import GUI.utilities.NumbersFilter;
 
 public class Window {
@@ -91,6 +89,7 @@ public class Window {
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
+	private JTextField textField;
 
 	/**
 	 * Launch the application.
@@ -227,7 +226,7 @@ public class Window {
 					showWarrnings();
 					setSimulatorVectors();
 					simulator = new Simulator(data, instructions, getCaches(),
-							getStartingAddress());
+							getStartingAddress(),0);
 					try {
 						simulator.Initialize();
 						simulator.runInstructions();
@@ -307,7 +306,7 @@ public class Window {
 		MemoryPane.add(memoryS);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		SettingsTabbedPane.setBounds(741, 50, 276, 556);
+		SettingsTabbedPane.setBounds(741, 50, 276, 567);
 		frame.getContentPane().add(SettingsTabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
@@ -325,8 +324,8 @@ public class Window {
 		layeredPane.add(label);
 
 		JLabel label_2 = new JLabel("Cache Settings");
-		label_2.setHorizontalAlignment(SwingConstants.CENTER);
-		label_2.setBounds(72, 40, 112, 16);
+		label_2.setHorizontalAlignment(SwingConstants.LEFT);
+		label_2.setBounds(6, 34, 112, 16);
 		layeredPane.add(label_2);
 
 		Vector<String> items = new Vector<>();
@@ -335,7 +334,7 @@ public class Window {
 		items.add("two");
 		items.add("three");
 		cacheLevelsCB = new JComboBox<>(items);
-		cacheLevelsCB.setBounds(156, 58, 93, 27);
+		cacheLevelsCB.setBounds(156, 51, 93, 27);
 		cacheLevelsCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switch (cacheLevelsCB.getSelectedIndex()) {
@@ -366,12 +365,12 @@ public class Window {
 		layeredPane.add(cacheLevelsCB);
 
 		JLabel label_3 = new JLabel("Number Of Levels");
-		label_3.setBounds(6, 62, 121, 16);
+		label_3.setBounds(6, 55, 121, 16);
 		layeredPane.add(label_3);
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setLayout(null);
-		panel_1.setBounds(6, 226, 243, 132);
+		panel_1.setBounds(6, 226, 243, 142);
 		layeredPane.add(panel_1);
 
 		JLabel label_4 = new JLabel("L2-Cache");
@@ -381,7 +380,7 @@ public class Window {
 		l2CacheSizeTF = new JTextField();
 		l2CacheSizeTF.setEnabled(false);
 		l2CacheSizeTF.setColumns(10);
-		l2CacheSizeTF.setBounds(94, 20, 113, 28);
+		l2CacheSizeTF.setBounds(94, 34, 56, 28);
 		PlainDocument l2CacheSizeDoc = (PlainDocument) l2CacheSizeTF
 				.getDocument();
 		l2CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -390,7 +389,7 @@ public class Window {
 		l2BlockSizeTF = new JTextField();
 		l2BlockSizeTF.setEnabled(false);
 		l2BlockSizeTF.setColumns(10);
-		l2BlockSizeTF.setBounds(94, 44, 113, 28);
+		l2BlockSizeTF.setBounds(94, 58, 56, 28);
 		PlainDocument l2BlockSizeDoc = (PlainDocument) l2BlockSizeTF
 				.getDocument();
 		l2BlockSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -399,45 +398,54 @@ public class Window {
 		l2AssociativityTF = new JTextField();
 		l2AssociativityTF.setEnabled(false);
 		l2AssociativityTF.setColumns(10);
-		l2AssociativityTF.setBounds(94, 71, 113, 28);
+		l2AssociativityTF.setBounds(94, 85, 56, 28);
 		PlainDocument l2AssociativityDoc = (PlainDocument) l2AssociativityTF
 				.getDocument();
 		l2AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_1.add(l2AssociativityTF);
 
 		JLabel label_5 = new JLabel("Cache Size");
-		label_5.setBounds(6, 26, 89, 16);
+		label_5.setBounds(6, 40, 89, 16);
 		panel_1.add(label_5);
 
 		JLabel label_6 = new JLabel("Block Size");
-		label_6.setBounds(6, 50, 89, 16);
+		label_6.setBounds(6, 64, 89, 16);
 		panel_1.add(label_6);
 
 		JLabel label_7 = new JLabel("Associativity");
-		label_7.setBounds(6, 77, 89, 16);
+		label_7.setBounds(6, 91, 89, 16);
 		panel_1.add(label_7);
 
 		JLabel label_1 = new JLabel("HitP");
-		label_1.setBounds(6, 104, 26, 16);
+		label_1.setBounds(178, 17, 26, 16);
 		panel_1.add(label_1);
 
 		Hit2CB = new JComboBox<>(HITPOLISYS);
-		Hit2CB.setBounds(37, 101, 76, 25);
+		Hit2CB.setBounds(155, 37, 82, 25);
 		Hit2CB.setEnabled(false);
 		panel_1.add(Hit2CB);
 
 		Miss2CB = new JComboBox<>(MISSPOLISYS);
-		Miss2CB.setBounds(155, 102, 82, 23);
+		Miss2CB.setBounds(155, 93, 82, 23);
 		Miss2CB.setEnabled(false);
 		panel_1.add(Miss2CB);
 
 		JLabel label_16 = new JLabel("MissP");
-		label_16.setBounds(114, 104, 42, 16);
+		label_16.setBounds(178, 68, 42, 16);
 		panel_1.add(label_16);
+		
+		textField = new JTextField();
+		textField.setBounds(45, 108, 56, 28);
+		panel_1.add(textField);
+		textField.setColumns(10);
+		
+		JLabel label_19 = new JLabel("New label");
+		label_19.setBounds(-78, 92, 200, 50);
+		panel_1.add(label_19);
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
-		panel_2.setBounds(6, 90, 243, 132);
+		panel_2.setBounds(6, 80, 243, 142);
 		layeredPane.add(panel_2);
 
 		JLabel label_8 = new JLabel("L1-Cache");
@@ -447,7 +455,7 @@ public class Window {
 		l1CacheSizeTF = new JTextField();
 		l1CacheSizeTF.setEnabled(false);
 		l1CacheSizeTF.setColumns(10);
-		l1CacheSizeTF.setBounds(94, 20, 113, 28);
+		l1CacheSizeTF.setBounds(94, 34, 113, 28);
 		PlainDocument l1CacheSizeDoc = (PlainDocument) l1CacheSizeTF
 				.getDocument();
 		l1CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -456,7 +464,7 @@ public class Window {
 		l1BlockSizeTF = new JTextField();
 		l1BlockSizeTF.setEnabled(false);
 		l1BlockSizeTF.setColumns(10);
-		l1BlockSizeTF.setBounds(94, 44, 113, 28);
+		l1BlockSizeTF.setBounds(94, 58, 113, 28);
 		PlainDocument l1BlockLengtDoc = (PlainDocument) l1BlockSizeTF
 				.getDocument();
 		l1BlockLengtDoc.setDocumentFilter(new NumbersFilter());
@@ -465,45 +473,45 @@ public class Window {
 		l1AssociativityTF = new JTextField();
 		l1AssociativityTF.setEnabled(false);
 		l1AssociativityTF.setColumns(10);
-		l1AssociativityTF.setBounds(94, 71, 113, 28);
+		l1AssociativityTF.setBounds(94, 85, 113, 28);
 		PlainDocument l1AssociativityDoc = (PlainDocument) l1AssociativityTF
 				.getDocument();
 		l1AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_2.add(l1AssociativityTF);
 
 		JLabel label_9 = new JLabel("Cache Size");
-		label_9.setBounds(6, 26, 89, 16);
+		label_9.setBounds(6, 40, 89, 16);
 		panel_2.add(label_9);
 
 		JLabel label_10 = new JLabel("Block Size");
-		label_10.setBounds(6, 50, 89, 16);
+		label_10.setBounds(6, 64, 89, 16);
 		panel_2.add(label_10);
 
 		JLabel label_11 = new JLabel("Associativity");
-		label_11.setBounds(6, 77, 89, 16);
+		label_11.setBounds(6, 91, 89, 16);
 		panel_2.add(label_11);
 
 		JLabel lblHitp = new JLabel("HitP");
-		lblHitp.setBounds(6, 105, 26, 16);
+		lblHitp.setBounds(6, 119, 26, 16);
 		panel_2.add(lblHitp);
 
 		Hit1CB = new JComboBox<>(HITPOLISYS);
-		Hit1CB.setBounds(37, 102, 76, 25);
+		Hit1CB.setBounds(37, 116, 76, 25);
 		Hit1CB.setEnabled(false);
 		panel_2.add(Hit1CB);
 
 		Miss1CB = new JComboBox<>(MISSPOLISYS);
-		Miss1CB.setBounds(155, 103, 82, 23);
+		Miss1CB.setBounds(155, 117, 82, 23);
 		Miss1CB.setEnabled(false);
 		panel_2.add(Miss1CB);
 
 		JLabel lblMissp = new JLabel("MissP");
-		lblMissp.setBounds(114, 105, 42, 16);
+		lblMissp.setBounds(114, 119, 42, 16);
 		panel_2.add(lblMissp);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
-		panel_3.setBounds(6, 361, 243, 132);
+		panel_3.setBounds(6, 373, 243, 142);
 		layeredPane.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
@@ -513,7 +521,7 @@ public class Window {
 		l3CacheSizeTF = new JTextField();
 		l3CacheSizeTF.setEnabled(false);
 		l3CacheSizeTF.setColumns(10);
-		l3CacheSizeTF.setBounds(94, 20, 113, 28);
+		l3CacheSizeTF.setBounds(94, 34, 113, 28);
 		PlainDocument l3CacheSizeDoc = (PlainDocument) l3CacheSizeTF
 				.getDocument();
 		l3CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -522,7 +530,7 @@ public class Window {
 		l3BlockSizeTF = new JTextField();
 		l3BlockSizeTF.setEnabled(false);
 		l3BlockSizeTF.setColumns(10);
-		l3BlockSizeTF.setBounds(94, 44, 113, 28);
+		l3BlockSizeTF.setBounds(94, 58, 113, 28);
 		PlainDocument l3BlockSizeDoc = (PlainDocument) l3BlockSizeTF
 				.getDocument();
 		l3BlockSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -531,40 +539,40 @@ public class Window {
 		l3AssociativityTF = new JTextField();
 		l3AssociativityTF.setEnabled(false);
 		l3AssociativityTF.setColumns(10);
-		l3AssociativityTF.setBounds(94, 71, 113, 28);
+		l3AssociativityTF.setBounds(94, 85, 113, 28);
 		PlainDocument l3AssociativityDoc = (PlainDocument) l3AssociativityTF
 				.getDocument();
 		l3AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_3.add(l3AssociativityTF);
 
 		JLabel label_13 = new JLabel("Cache Size");
-		label_13.setBounds(6, 26, 89, 16);
+		label_13.setBounds(6, 40, 89, 16);
 		panel_3.add(label_13);
 
 		JLabel label_14 = new JLabel("Block Size");
-		label_14.setBounds(6, 50, 89, 16);
+		label_14.setBounds(6, 64, 89, 16);
 		panel_3.add(label_14);
 
 		JLabel label_15 = new JLabel("Associativity");
-		label_15.setBounds(6, 77, 89, 16);
+		label_15.setBounds(6, 91, 89, 16);
 		panel_3.add(label_15);
 
 		JLabel label_17 = new JLabel("HitP");
-		label_17.setBounds(6, 104, 26, 16);
+		label_17.setBounds(6, 118, 26, 16);
 		panel_3.add(label_17);
 
 		Hit3CB = new JComboBox<>(HITPOLISYS);
-		Hit3CB.setBounds(37, 101, 76, 25);
+		Hit3CB.setBounds(37, 115, 76, 25);
 		Hit3CB.setEnabled(false);
 		panel_3.add(Hit3CB);
 
 		Miss3CB = new JComboBox<>(MISSPOLISYS);
-		Miss3CB.setBounds(155, 102, 82, 23);
+		Miss3CB.setBounds(155, 116, 82, 23);
 		Miss3CB.setEnabled(false);
 		panel_3.add(Miss3CB);
 
 		JLabel label_18 = new JLabel("MissP");
-		label_18.setBounds(114, 104, 42, 16);
+		label_18.setBounds(114, 118, 42, 16);
 		panel_3.add(label_18);
 	}
 
@@ -1026,7 +1034,7 @@ public class Window {
 				errors.add("L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
 				errors.add("L1-Cache: Associativity can't be blank");
-			errors.add("====================================");
+//			errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
 					errors.add("L2-Cache: Cache-Size can't be blank");
@@ -1034,7 +1042,7 @@ public class Window {
 					errors.add("L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
 					errors.add("L2-Cache: Associativity can't be blank");
-				errors.add("====================================");
+//				errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
 						errors.add("L3-Cache: Cache-Size can't be blank");
@@ -1042,7 +1050,7 @@ public class Window {
 						errors.add("L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
 						errors.add("L3-Cache: Associativity can't be blank");
-					errors.add("====================================");
+//					errors.add("====================================");
 				}
 			}
 		}
