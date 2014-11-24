@@ -186,6 +186,15 @@ public class Window {
 
 		JButton debugBT = new JButton("Debug");
 		debugBT.setBounds(202, 4, 85, 29);
+		debugBT.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dataModel.setValueAt("4", 2, 1);
+				System.out.println(dataModel.getValueAt(2, 1));
+				
+				
+			}
+		});
 		OptionsPanel.add(debugBT);
 
 		// Run Button
@@ -613,11 +622,11 @@ public class Window {
 //		});
 		
 		Document d = codeInput.getDocument();
-		PlainDocument doc = (PlainDocument) codeInput.getDocument();
-		DocumentFilter test = new DocumentFilter();
-		
-		
-		doc.setDocumentFilter(new DocumentFilter());
+//		PlainDocument doc = (PlainDocument) codeInput.getDocument();
+//		DocumentFilter test = new DocumentFilter();
+//		
+//		
+//		doc.setDocumentFilter(new DocumentFilter());
 
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
