@@ -150,4 +150,7 @@ public abstract class Cache {
 	public double getMissRate(){
 		return ((double) misses)/((double) misses+hits); 
 	}
+	public double getHitRate(){
+		return 1 - this.getMissRate();
+	}
 }

@@ -53,6 +53,7 @@ public class Main {
 		simulator.printMemory();
 		simulator.printRegisters();
 		System.out.println(simulator.instructions_executed);
+		System.out.println(simulator.output().toString());
 		
 	}
 

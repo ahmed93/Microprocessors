@@ -345,4 +345,18 @@ public class Simulator {
 		}
 		return amat;
 	}
+
+	public ArrayList<String> output(){
+		ArrayList<String> output= new ArrayList<String>();
+		output.add("\nNumber of instructions executed : " + instructions_executed);
+		for (int i = 0; i< caches.length; i++){
+			output.add("\nCache Level " + (Integer)(i+1));
+			output.add("\n\tHits: " + caches[i].hits);
+			output.add("\n\tMisses: " + caches[i].misses);
+			output.add("\n\tTotat number of accessess: " + caches[i].hits + caches[i].misses);
+			output.add("\n\tHit Rate: " + caches[i].getHitRate());
+		}
+		output.add("\nGlobal AMAT:" + calculateAMAT() + " cycles");
+		return output;
+	}
 }
