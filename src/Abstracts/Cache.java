@@ -20,7 +20,25 @@ public abstract class Cache {
 	private boolean writeAround;
 	private boolean writeThrough;
 	private boolean writeAllocate;
+	
+	int hitTime;
+	int missTime;
 
+	public int getHitTime() {
+		return hitTime;
+	}
+
+	public void setHitTime(int hitTime) {
+		this.hitTime = hitTime;
+	}
+
+	public int getMissTime() {
+		return missTime;
+	}
+
+	public void setMissTime(int missTime) {
+		this.missTime = missTime;
+	}
 	public static final String INSTRUCTION = "instruction";
 	public static final String DATA = "data";
 

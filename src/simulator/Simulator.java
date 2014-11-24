@@ -21,19 +21,31 @@ public class Simulator {
 	String inputFile = "input.txt";
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
-	public static int pc;
+	private int memoryAccessTime;
+	public int getMemoryAccessTime() {
+		return memoryAccessTime;
+	}
+
+	public void setMemoryAccessTime(int memoryAccessTime) {
+		this.memoryAccessTime = memoryAccessTime;
+	}
+
+	public int pc;
 
 	int instruction_starting_address;
 	int instructions_ending_address;
 	Vector<String> data;
 	Vector<String> instructions;
+	public int instructions_executed;
+	public int calculatedNumberOfCycles;
 
 	Vector<Integer> instructions_addresses;
-
+	
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address) {
+			int instruction_starting_address, int memoryAccessTime) {
 		this.memory = Memory.getInstance();
+		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
@@ -59,15 +71,15 @@ public class Simulator {
 		this.caches = new Cache[input_caches.size()];
 		for (int i = 0; i < input_caches.size(); i++) {
 			HashMap<String, Integer> input_cache = input_caches.get(i);
-			boolean[] associativity = new boolean[4];
-			associativity[0] = (input_cache.get("writeBack") != 0);
-			associativity[1] = (input_cache.get("writeAround") != 0);
-			associativity[2] = (input_cache.get("writeThrough") != 0);
-			associativity[3] = (input_cache.get("writeAllocate") != 0);
+			boolean[] policy = new boolean[4];
+			policy[0] = (input_cache.get("writeBack") != 0);
+			policy[1] = (input_cache.get("writeAround") != 0);
+			policy[2] = (input_cache.get("writeThrough") != 0);
+			policy[3] = (input_cache.get("writeAllocate") != 0);
 			caches[i] = CacheFactory.createCache(
 					input_cache.get("associativity"),
 					input_cache.get("blockSize"), input_cache.get("cacheSize"),
-					associativity);
+					policy, input_cache.get("hitTime"), input_cache.get("missTime"));
 		}
 	}
 
@@ -91,15 +103,13 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		for (int i = 0; i < this.instructions_addresses.size(); i++) {
-			// for (int i = 0; i < 1; i++) {
+		pc = instructions_addresses.firstElement();
+		while (pc != instructions_addresses.lastElement()) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
-				instruction = caches[j]
-						.searchInstruction(this.instructions_addresses.get(i));
+				instruction = caches[j].searchInstruction(pc);
 				if (instruction != null && instruction.getClass() != NOP.class) {
-					updateInstructionInHigherCaches(j,
-							this.instructions_addresses.get(i));
+					updateInstructionInHigherCaches(j, pc);
 					// place instruction in higher cache levels(j)
 					break;
 				}
@@ -108,14 +118,16 @@ public class Simulator {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
-				int instruction_address = this.instructions_addresses.get(i);
+				int instruction_address = pc;
 				instruction = this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
 			}
-
+			pc++;
 			instruction.execute();
+			instructions_executed++;
+
 		}
 		// for (int i = instruction_starting_address; i<=
 		// instructions_ending_address; i++){
@@ -292,7 +304,7 @@ public class Simulator {
 									replaced_data.get_value(),
 									replaced_data.getAddress());
 						}
-					}else {
+					} else {
 						caches[i].setWordAtAddress(dataWord, Cache.DATA);
 					}
 
@@ -300,14 +312,22 @@ public class Simulator {
 			}
 		}
 	}
-	
+
 	public HashMap<Integer, Integer> getRegistersValues() {
 		HashMap<Integer, Integer> reg = new HashMap<Integer, Integer>();
 		for (Entry<String, Register> enty : registers.entrySet()) {
-			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+",""));
+			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+", ""));
 			int value = enty.getValue().get_value();
 			reg.put(key, value);
 		}
 		return reg;
+	}
+	
+	public void setPC(int i){
+		this.pc = i;
+	}
+	
+	public int getPc(){
+		return this.pc;
 	}
 }
