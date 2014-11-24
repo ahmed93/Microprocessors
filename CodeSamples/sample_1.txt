@@ -1,8 +1,9 @@
 data:
 
 instructions:
-	ADDI R1, R1, 2
-	ADDI R2, R2, 3
-	NAND R3, R1, R2
-	SW R2, R0, 2
-	LW R4, R0, 2
+	ADDI R2, R0, 1
+	ADDI R3, R0, 5
+	MUL R2, R2, R3
+	ADDI R3, R3, -1
+	BEQ R0, R3, 1
+	JMP R0, -4
