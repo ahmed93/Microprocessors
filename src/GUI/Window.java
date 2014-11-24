@@ -15,9 +15,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -39,12 +39,10 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.TableHeaderUI;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -52,8 +50,11 @@ import javax.swing.text.StyledDocument;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 import simulator.Simulator;
 import GUI.utilities.NumbersFilter;
+import javax.swing.ScrollPaneConstants;
 
 public class Window {
 
@@ -191,8 +192,18 @@ public class Window {
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dataModel.setValueAt("4", 2, 1);
-				dataModel.fireTableCellUpdated(2, 1);
+				//
+				// HashMap<Integer, Integer> da = new HashMap<Integer,
+				// Integer>();
+				// da.put(2, 500);
+				// da.put(1, 300);
+				// da.put(4, 10);
+				//
+				// setRegisterData(da);
+				setMamoryData(null);
+
+				memoryTB.setValueAt(200, 1, 1);
+				memoryTB.repaint();
 
 			}
 		});
@@ -227,10 +238,26 @@ public class Window {
 
 		JLayeredPane MemoryPane = new JLayeredPane();
 		tabbedPane.addTab("Memory", null, MemoryPane, null);
+		MemoryPane.setLayout(null);
 
 		memoryTB = new JTable();
-		memoryTB.setBounds(6, 6, 214, 460);
+		memoryTB.setBounds(2, 2, 0, 468);
+
+		memoryTB.setGridColor(Color.LIGHT_GRAY);
+		memoryTB.setSurrendersFocusOnKeystroke(true);
+		memoryTB.setFillsViewportHeight(true);
+		memoryTB.setEnabled(false);
+		memoryTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		memoryTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		MemoryPane.add(memoryTB);
+
+		JScrollPane memoryS = new JScrollPane(memoryTB,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		memoryS.setBounds(0, 0, 218, 472);
+		// memoryTB.add(memoryS);
+
+		MemoryPane.add(memoryS);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		SettingsTabbedPane.setBounds(741, 50, 276, 556);
@@ -655,7 +682,7 @@ public class Window {
 
 		JScrollPane scroll = new JScrollPane(codeInput,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		InputPanel.add(scroll);
 	}
@@ -674,18 +701,25 @@ public class Window {
 		tabbedPane.addTab("Registers", null, RegisterPane, null);
 		tabbedPane.setEnabledAt(0, true);
 		initData();
+		RegisterPane.setLayout(null);
 
 		registerTB = new JTable(dataValues, columnNames);
+		registerTB.setBounds(2, 18, 206, 138);
 		registerTB.setGridColor(Color.LIGHT_GRAY);
 		registerTB.setSurrendersFocusOnKeystroke(true);
-		registerTB.setBounds(6, 18, 213, 128);
 		registerTB.setFillsViewportHeight(true);
 		registerTB.setEnabled(false);
 		registerTB
 				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 		RegisterPane.add(registerTB);
+
+		JScrollPane regS = new JScrollPane(registerTB,
+				JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		regS.setBounds(0, 0, 225, 158);
+		RegisterPane.add(regS);
 	}
 
 	/*************************************
@@ -769,12 +803,13 @@ public class Window {
 			setSimulatorVectors();
 			simulator = new Simulator(data, instructions, getCaches(),
 					getStartingAddress());
-
 			try {
 				simulator.Initialize();
 				simulator.runInstructions();
+				// setRegisterData(simulator);
 				simulator.printMemory();
 				simulator.printRegisters();
+				setRegisterData(simulator.getRegistersValues());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -812,15 +847,26 @@ public class Window {
 	}
 
 	private void setRegisterData(HashMap<Integer, Integer> data) {
-		Iterator<?> it = data.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pairs = (Map.Entry) it.next();
-			registerTB.setValueAt((int) pairs.getValue(), (int) pairs.getKey(),
-					1);
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
-			it.remove(); // avoids a ConcurrentModificationException
+		for (Entry<Integer, Integer> entry : data.entrySet()) {
+			System.out.println((int) entry.getKey());
+			registerTB.setValueAt(entry.getValue().toString(),
+					(int) entry.getKey(), 1);
+			// dataValues[(int) entry.getKey()][1] =
+			// entry.getValue().toString();
 		}
-		dataModel.fireTableDataChanged();
+		registerTB.repaint();
+	}
+
+	private void setMamoryData(HashMap<String, Integer> data) {
+		String[] CoLNames = {"Location","Value" };
+		String[][] memroyData = new String[data.size()][2];
+		
+		
+		
+		
+		DefaultTableModel s = new DefaultTableModel(memroyData, CoLNames);
+		memoryTB.setModel(s);
+		memoryTB.repaint();
 	}
 
 	public void CreateData() {
@@ -847,6 +893,8 @@ public class Window {
 	private void setSimulatorVectors() {
 		boolean dataFound = false, instructionFound = false;
 		for (String line : codeInput.getText().split("\\n")) {
+			if (line.trim().isEmpty())
+				continue;
 			if (line.toLowerCase().contains("#data")) {
 				dataFound = true;
 				instructionFound = false;
@@ -856,11 +904,15 @@ public class Window {
 				dataFound = false;
 				continue;
 			}
+			System.out.println("DataFound:  " + dataFound
+					+ "  --  instructionFound:  " + instructionFound);
 			if (dataFound)
 				data.add(line);
 			else if (instructionFound)
 				instructions.add(line);
 		}
+
+		System.out.println(Arrays.toString(instructions.toArray()));
 	}
 
 	/**

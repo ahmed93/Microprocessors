@@ -5,7 +5,6 @@ import instructions.NOP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -142,7 +141,7 @@ public class Simulator {
 
 	public void initializeRegisters() {
 		registers = new HashMap<>();
-		for (int i = 0; i <= REGISTERS_NUMBER; i++) {
+		for (int i = 0; i < REGISTERS_NUMBER; i++) {
 			Register Ri = (i == 0) ? new Register(0, true) : new Register(0,
 					false);
 			registers.put("R" + i, Ri);
@@ -290,5 +289,14 @@ public class Simulator {
 			}
 		}
 	}
-
+	
+	public HashMap<Integer, Integer> getRegistersValues() {
+		HashMap<Integer, Integer> reg = new HashMap<Integer, Integer>();
+		for (Entry<String, Register> enty : registers.entrySet()) {
+			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+",""));
+			int value = enty.getValue().get_value();
+			reg.put(key, value);
+		}
+		return reg;
+	}
 }
