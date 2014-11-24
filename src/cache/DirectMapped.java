@@ -37,7 +37,8 @@ public class DirectMapped extends Cache {
 		return word;
 	}
 
-	public void setWordAtAddress(Instruction instruction) {
+	public void setWordAtAddress(Word word, String type) {
+		Instruction instruction = (Instruction) word;
 		int address = instruction.getAddress();
 		int index = (address / blockSize) % (cacheSize / blockSize);
 		int word_offset_in_block = address % blockSize;

@@ -67,6 +67,7 @@ public class Memory {
 				cells[address] = new Data(0);
 			}
 			Data data = (Data)this.cells[address];
+			data.setAddress(address - DATA_STARTING_ADDRESS);
 				return data;
 		}
 		return null;

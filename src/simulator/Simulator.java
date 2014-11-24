@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import cache.DirectMapped;
 import Abstracts.Cache;
 import Abstracts.Instruction;
 import factories.CacheFactory;
@@ -90,8 +91,8 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		 for (int i = 0; i < this.instructions_addresses.size(); i++) {
-//		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < this.instructions_addresses.size(); i++) {
+			// for (int i = 0; i < 1; i++) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j]
@@ -192,6 +193,7 @@ public class Simulator {
 			}
 		}
 		dataWord = this.memory.getDataAt(address);
+		dataWord.setAddress(address);
 		insertInHigherLevelsRead(this.caches.length, dataWord);
 		// Place data in all higher levels of cache(number of caches) places
 		// data with dirty bit in memory
@@ -205,9 +207,14 @@ public class Simulator {
 			int ending_address = caches[i].endingAddress(dataWord.getAddress());
 			for (int j = starting_address; j <= ending_address; j++) {
 				Data data = this.memory.getDataAt(j);
-				Data replaced = caches[i].insertData(data);
-				if (replaced != null) {
-					updateLowerLevels(j, replaced);
+				if (caches[i].getClass() == DirectMapped.class) {
+					Data replaced = caches[i].insertData(data);
+					if (replaced != null) {
+						updateLowerLevels(j, replaced);
+					}
+
+				} else {
+					caches[i].setWordAtAddress(data, Cache.DATA);
 				}
 
 			}
@@ -256,7 +263,7 @@ public class Simulator {
 	}
 
 	public void updateLowerLevels(int from_index, Data dataWord) {
-		for (int i = from_index + 1; i <= caches.length; i++) {
+		for (int i = from_index + 1; i < caches.length; i++) {
 			caches[i].updateLower(dataWord);
 		}
 		this.memory.storeDataAtAddress(dataWord.get_value(),
@@ -278,11 +285,15 @@ public class Simulator {
 				int ending_address = caches[i].endingAddress(dataWord
 						.getAddress());
 				for (int j = starting_address; j <= ending_address; j++) {
-					Data replaced_data = caches[i].insertData(dataWord);
-					if (replaced_data != null) {
-						this.memory.storeDataAtAddress(
-								replaced_data.get_value(),
-								replaced_data.getAddress());
+					if (caches[i].getClass() == DirectMapped.class) {
+						Data replaced_data = caches[i].insertData(dataWord);
+						if (replaced_data != null) {
+							this.memory.storeDataAtAddress(
+									replaced_data.get_value(),
+									replaced_data.getAddress());
+						}
+					}else {
+						caches[i].setWordAtAddress(dataWord, Cache.DATA);
 					}
 
 				}

@@ -18,8 +18,8 @@ public class Main {
 		{
 			HashMap<String,Integer>cache = new HashMap<String,Integer>();
 			cache.put("associativity", 4);
-			cache.put("cacheSize", 32);
-			cache.put("blockSize",4);
+			cache.put("cacheSize", 8);
+			cache.put("blockSize",2);
 			cache.put("writeBack", 0);
 			cache.put("writeThrough", 1);
 			cache.put("writeAllocate",0);
@@ -28,9 +28,17 @@ public class Main {
 		}
 		instructions.add("ADDI R1, R1, 2");
 		instructions.add("ADDI R2, R2, 3");
-		instructions.add("NAND R3, R1, R2");
+//		instructions.add("NAND R3, R1, R2");
+//		instructions.add("ADDI R1, R1, 3");
+//		instructions.add("ADDI R8, R8, 4");
+//		instructions.add("NAND R3, R1, R5");
+//		instructions.add("ADDI R1, R1, 4");
+//		instructions.add("ADDI R2, R2, 3");
+//		instructions.add("NAND R3, R1, R1");
 		instructions.add("SW R2, R0, 2");
 		instructions.add("LW R4, R0, 2");
+		instructions.add("SW R1, R0, 3");
+		instructions.add("LW R5, R0, 3");
 		int instruction_starting_address = 0;
 		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address);
 		simulator.Initialize();
