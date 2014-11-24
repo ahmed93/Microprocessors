@@ -7,8 +7,6 @@ import java.awt.EventQueue;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -21,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -35,12 +34,12 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -50,11 +49,8 @@ import javax.swing.text.StyledDocument;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import simulator.Simulator;
 import GUI.utilities.NumbersFilter;
-import javax.swing.ScrollPaneConstants;
 
 public class Window {
 
@@ -68,14 +64,15 @@ public class Window {
 	private JTable memoryTB;
 	private JComboBox cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
 			Hit3CB;
-	private JTextField startAdressTF, l2CashSizeTF, l2BlockLengthTF,
-			l2AssociativityTF, l1CashSizeTF, l1BlockLengthTF,
-			l1AssociativityTF, l3CashSizeTF, l3BlockLengthTF,
+	private JTextField startAdressTF, l2CacheSizeTF, l2BlockSizeTF,
+			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF,
+			l1AssociativityTF, l3CacheSizeTF, l3BlockSizeTF,
 			l3AssociativityTF;
 
 	/****************************
 	 ** Data Variables **
 	 ****************************/
+	private ArrayList<String> errors;
 	private boolean modified;
 	private String FilePath;
 	private Simulator simulator;
@@ -192,18 +189,11 @@ public class Window {
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//
-				// HashMap<Integer, Integer> da = new HashMap<Integer,
-				// Integer>();
-				// da.put(2, 500);
-				// da.put(1, 300);
-				// da.put(4, 10);
-				//
-				// setRegisterData(da);
-				setMamoryData(null);
 
-				memoryTB.setValueAt(200, 1, 1);
-				memoryTB.repaint();
+				// setMamoryData(null);
+				//
+				// memoryTB.setValueAt(200, 1, 1);
+				// memoryTB.repaint();
 
 			}
 		});
@@ -211,7 +201,7 @@ public class Window {
 
 		// Run Button
 		runBT = new JButton("Run");
-		runBT.setBounds(406, 4, 85, 29);
+		runBT.setBounds(442, 4, 85, 29);
 		runBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				runBT.setEnabled(false);
@@ -222,9 +212,17 @@ public class Window {
 		OptionsPanel.add(runBT);
 
 		JButton stioBT = new JButton("Stop");
-		stioBT.setBounds(309, 3, 85, 30);
+		stioBT.setBounds(345, 3, 85, 30);
 		stioBT.setEnabled(false);
 		OptionsPanel.add(stioBT);
+
+		JButton nextBT = new JButton("");
+		nextBT.setEnabled(false);
+		nextBT.setIcon(new ImageIcon(
+				Window.class
+						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
+		nextBT.setBounds(299, 8, 28, 20);
+		OptionsPanel.add(nextBT);
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
 
@@ -271,24 +269,6 @@ public class Window {
 		startAdressTF.setBounds(141, 6, 108, 28);
 		PlainDocument doc = (PlainDocument) startAdressTF.getDocument();
 		doc.setDocumentFilter(new NumbersFilter());
-
-		startAdressTF.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				if (startAdressTF.getText().matches(NUMBERS_ONLY_REGIX)) {
-
-				}
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-			}
-		});
 		layeredPane.add(startAdressTF);
 
 		JLabel label = new JLabel("Start Address");
@@ -349,29 +329,38 @@ public class Window {
 		label_4.setBounds(6, 6, 69, 16);
 		panel_1.add(label_4);
 
-		l2CashSizeTF = new JTextField();
-		l2CashSizeTF.setEnabled(false);
-		l2CashSizeTF.setColumns(10);
-		l2CashSizeTF.setBounds(94, 20, 113, 28);
-		panel_1.add(l2CashSizeTF);
+		l2CacheSizeTF = new JTextField();
+		l2CacheSizeTF.setEnabled(false);
+		l2CacheSizeTF.setColumns(10);
+		l2CacheSizeTF.setBounds(94, 20, 113, 28);
+		PlainDocument l2CacheSizeDoc = (PlainDocument) l2CacheSizeTF
+				.getDocument();
+		l2CacheSizeDoc.setDocumentFilter(new NumbersFilter());
+		panel_1.add(l2CacheSizeTF);
 
-		l2BlockLengthTF = new JTextField();
-		l2BlockLengthTF.setEnabled(false);
-		l2BlockLengthTF.setColumns(10);
-		l2BlockLengthTF.setBounds(94, 44, 113, 28);
-		panel_1.add(l2BlockLengthTF);
+		l2BlockSizeTF = new JTextField();
+		l2BlockSizeTF.setEnabled(false);
+		l2BlockSizeTF.setColumns(10);
+		l2BlockSizeTF.setBounds(94, 44, 113, 28);
+		PlainDocument l2BlockSizeDoc = (PlainDocument) l2BlockSizeTF
+				.getDocument();
+		l2BlockSizeDoc.setDocumentFilter(new NumbersFilter());
+		panel_1.add(l2BlockSizeTF);
 
 		l2AssociativityTF = new JTextField();
 		l2AssociativityTF.setEnabled(false);
 		l2AssociativityTF.setColumns(10);
 		l2AssociativityTF.setBounds(94, 71, 113, 28);
+		PlainDocument l2AssociativityDoc = (PlainDocument) l2AssociativityTF
+				.getDocument();
+		l2AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_1.add(l2AssociativityTF);
 
 		JLabel label_5 = new JLabel("Cache Size");
 		label_5.setBounds(6, 26, 89, 16);
 		panel_1.add(label_5);
 
-		JLabel label_6 = new JLabel("Block Length");
+		JLabel label_6 = new JLabel("Block Size");
 		label_6.setBounds(6, 50, 89, 16);
 		panel_1.add(label_6);
 
@@ -406,29 +395,38 @@ public class Window {
 		label_8.setBounds(6, 6, 69, 16);
 		panel_2.add(label_8);
 
-		l1CashSizeTF = new JTextField();
-		l1CashSizeTF.setEnabled(false);
-		l1CashSizeTF.setColumns(10);
-		l1CashSizeTF.setBounds(94, 20, 113, 28);
-		panel_2.add(l1CashSizeTF);
+		l1CacheSizeTF = new JTextField();
+		l1CacheSizeTF.setEnabled(false);
+		l1CacheSizeTF.setColumns(10);
+		l1CacheSizeTF.setBounds(94, 20, 113, 28);
+		PlainDocument l1CacheSizeDoc = (PlainDocument) l1CacheSizeTF
+				.getDocument();
+		l1CacheSizeDoc.setDocumentFilter(new NumbersFilter());
+		panel_2.add(l1CacheSizeTF);
 
-		l1BlockLengthTF = new JTextField();
-		l1BlockLengthTF.setEnabled(false);
-		l1BlockLengthTF.setColumns(10);
-		l1BlockLengthTF.setBounds(94, 44, 113, 28);
-		panel_2.add(l1BlockLengthTF);
+		l1BlockSizeTF = new JTextField();
+		l1BlockSizeTF.setEnabled(false);
+		l1BlockSizeTF.setColumns(10);
+		l1BlockSizeTF.setBounds(94, 44, 113, 28);
+		PlainDocument l1BlockLengtDoc = (PlainDocument) l1BlockSizeTF
+				.getDocument();
+		l1BlockLengtDoc.setDocumentFilter(new NumbersFilter());
+		panel_2.add(l1BlockSizeTF);
 
 		l1AssociativityTF = new JTextField();
 		l1AssociativityTF.setEnabled(false);
 		l1AssociativityTF.setColumns(10);
 		l1AssociativityTF.setBounds(94, 71, 113, 28);
+		PlainDocument l1AssociativityDoc = (PlainDocument) l1AssociativityTF
+				.getDocument();
+		l1AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_2.add(l1AssociativityTF);
 
 		JLabel label_9 = new JLabel("Cache Size");
 		label_9.setBounds(6, 26, 89, 16);
 		panel_2.add(label_9);
 
-		JLabel label_10 = new JLabel("Block Length");
+		JLabel label_10 = new JLabel("Block Size");
 		label_10.setBounds(6, 50, 89, 16);
 		panel_2.add(label_10);
 
@@ -463,29 +461,38 @@ public class Window {
 		label_12.setBounds(6, 6, 69, 16);
 		panel_3.add(label_12);
 
-		l3CashSizeTF = new JTextField();
-		l3CashSizeTF.setEnabled(false);
-		l3CashSizeTF.setColumns(10);
-		l3CashSizeTF.setBounds(94, 20, 113, 28);
-		panel_3.add(l3CashSizeTF);
+		l3CacheSizeTF = new JTextField();
+		l3CacheSizeTF.setEnabled(false);
+		l3CacheSizeTF.setColumns(10);
+		l3CacheSizeTF.setBounds(94, 20, 113, 28);
+		PlainDocument l3CacheSizeDoc = (PlainDocument) l3CacheSizeTF
+				.getDocument();
+		l3CacheSizeDoc.setDocumentFilter(new NumbersFilter());
+		panel_3.add(l3CacheSizeTF);
 
-		l3BlockLengthTF = new JTextField();
-		l3BlockLengthTF.setEnabled(false);
-		l3BlockLengthTF.setColumns(10);
-		l3BlockLengthTF.setBounds(94, 44, 113, 28);
-		panel_3.add(l3BlockLengthTF);
+		l3BlockSizeTF = new JTextField();
+		l3BlockSizeTF.setEnabled(false);
+		l3BlockSizeTF.setColumns(10);
+		l3BlockSizeTF.setBounds(94, 44, 113, 28);
+		PlainDocument l3BlockSizeDoc = (PlainDocument) l3BlockSizeTF
+				.getDocument();
+		l3BlockSizeDoc.setDocumentFilter(new NumbersFilter());
+		panel_3.add(l3BlockSizeTF);
 
 		l3AssociativityTF = new JTextField();
 		l3AssociativityTF.setEnabled(false);
 		l3AssociativityTF.setColumns(10);
 		l3AssociativityTF.setBounds(94, 71, 113, 28);
+		PlainDocument l3AssociativityDoc = (PlainDocument) l3AssociativityTF
+				.getDocument();
+		l3AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_3.add(l3AssociativityTF);
 
 		JLabel label_13 = new JLabel("Cache Size");
 		label_13.setBounds(6, 26, 89, 16);
 		panel_3.add(label_13);
 
-		JLabel label_14 = new JLabel("Block Length");
+		JLabel label_14 = new JLabel("Block Size");
 		label_14.setBounds(6, 50, 89, 16);
 		panel_3.add(label_14);
 
@@ -536,42 +543,42 @@ public class Window {
 	private void EnableCacheLevel(int level, boolean status) {
 		switch (level) {
 		case 1:
-			l1CashSizeTF.setEnabled(status);
-			l1BlockLengthTF.setEnabled(status);
+			l1CacheSizeTF.setEnabled(status);
+			l1BlockSizeTF.setEnabled(status);
 			l1AssociativityTF.setEnabled(status);
 			Miss1CB.setEnabled(true);
 			Hit1CB.setEnabled(true);
 			if (!status) {
-				l1CashSizeTF.setText("");
-				l1BlockLengthTF.setText("");
+				l1CacheSizeTF.setText("");
+				l1BlockSizeTF.setText("");
 				l1AssociativityTF.setText("");
 				Miss1CB.setEnabled(false);
 				Hit1CB.setEnabled(false);
 			}
 			break;
 		case 2:
-			l2CashSizeTF.setEnabled(status);
-			l2BlockLengthTF.setEnabled(status);
+			l2CacheSizeTF.setEnabled(status);
+			l2BlockSizeTF.setEnabled(status);
 			l2AssociativityTF.setEnabled(status);
 			Miss2CB.setEnabled(true);
 			Hit2CB.setEnabled(true);
 			if (!status) {
-				l2CashSizeTF.setText("");
-				l2BlockLengthTF.setText("");
+				l2CacheSizeTF.setText("");
+				l2BlockSizeTF.setText("");
 				l2AssociativityTF.setText("");
 				Miss2CB.setEnabled(false);
 				Hit2CB.setEnabled(false);
 			}
 			break;
 		case 3:
-			l3CashSizeTF.setEnabled(status);
-			l3BlockLengthTF.setEnabled(status);
+			l3CacheSizeTF.setEnabled(status);
+			l3BlockSizeTF.setEnabled(status);
 			l3AssociativityTF.setEnabled(status);
 			Miss3CB.setEnabled(true);
 			Hit3CB.setEnabled(true);
 			if (!status) {
-				l3CashSizeTF.setText("");
-				l3BlockLengthTF.setText("");
+				l3CacheSizeTF.setText("");
+				l3BlockSizeTF.setText("");
 				l3AssociativityTF.setText("");
 				Miss3CB.setEnabled(false);
 				Hit3CB.setEnabled(false);
@@ -858,12 +865,9 @@ public class Window {
 	}
 
 	private void setMamoryData(HashMap<String, Integer> data) {
-		String[] CoLNames = {"Location","Value" };
+		String[] CoLNames = { "Location", "Value" };
 		String[][] memroyData = new String[data.size()][2];
-		
-		
-		
-		
+
 		DefaultTableModel s = new DefaultTableModel(memroyData, CoLNames);
 		memoryTB.setModel(s);
 		memoryTB.repaint();
@@ -926,8 +930,8 @@ public class Window {
 		case 1:
 			cache.put("associativity",
 					Integer.parseInt(l1AssociativityTF.getText()));
-			cache.put("cacheSize", Integer.parseInt(l1CashSizeTF.getText()));
-			cache.put("blockSize", Integer.parseInt(l1BlockLengthTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l1CacheSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l1BlockSizeTF.getText()));
 			wb = Hit1CB.getSelectedIndex();
 			cache.put("writeBack", wb == 0 ? 1 : 0);
 			cache.put("writeThrough", wb == 1 ? 1 : 0);
@@ -938,8 +942,8 @@ public class Window {
 		case 2:
 			cache.put("associativity",
 					Integer.parseInt(l2AssociativityTF.getText()));
-			cache.put("cacheSize", Integer.parseInt(l2CashSizeTF.getText()));
-			cache.put("blockSize", Integer.parseInt(l2BlockLengthTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l2CacheSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l2BlockSizeTF.getText()));
 			wb = Hit2CB.getSelectedIndex();
 			cache.put("writeBack", wb == 0 ? 1 : 0);
 			cache.put("writeThrough", wb == 1 ? 1 : 0);
@@ -950,8 +954,8 @@ public class Window {
 		case 3:
 			cache.put("associativity",
 					Integer.parseInt(l3AssociativityTF.getText()));
-			cache.put("cacheSize", Integer.parseInt(l3CashSizeTF.getText()));
-			cache.put("blockSize", Integer.parseInt(l3BlockLengthTF.getText()));
+			cache.put("cacheSize", Integer.parseInt(l3CacheSizeTF.getText()));
+			cache.put("blockSize", Integer.parseInt(l3BlockSizeTF.getText()));
 			wb = Hit3CB.getSelectedIndex();
 			cache.put("writeBack", wb == 0 ? 1 : 0);
 			cache.put("writeThrough", wb == 1 ? 1 : 0);
@@ -977,5 +981,40 @@ public class Window {
 			tmp.add(initCache(3));
 
 		return tmp;
+	}
+
+	private boolean validate() {
+		errors = new ArrayList<String>();
+		if (codeInput.getText().trim().isEmpty()) {
+			errors.add("Can't run, Please Enter code first");
+			return false;
+		}
+		if (startAdressTF.getText().trim().isEmpty())
+			errors.add("Starting Address can't be blank. !!!!");
+		if (cacheLevelsCB.getSelectedIndex() > 0) {
+			if (l1CacheSizeTF.getText().trim().isEmpty())
+				errors.add("L1-Cache: Cache-Size can't be blank");
+			if (l1BlockSizeTF.getText().trim().isEmpty())
+				errors.add("L1-Cache: Block-Size can't be blank");
+			if (l1AssociativityTF.getText().trim().isEmpty())
+				errors.add("L1-Cache: Associativity can't be blank");
+			if (cacheLevelsCB.getSelectedIndex() > 1) {
+				if (l2CacheSizeTF.getText().trim().isEmpty())
+					errors.add("L1-Cache: Cache-Size can't be blank");
+				if (l2BlockSizeTF.getText().trim().isEmpty())
+					errors.add("L1-Cache: Block-Size can't be blank");
+				if (l2AssociativityTF.getText().trim().isEmpty())
+					errors.add("L1-Cache: Associativity can't be blank");
+				if (cacheLevelsCB.getSelectedIndex() > 2) {
+					if (l3CacheSizeTF.getText().trim().isEmpty())
+						errors.add("L1-Cache: Cache-Size can't be blank");
+					if (l3BlockSizeTF.getText().trim().isEmpty())
+						errors.add("L1-Cache: Block-Size can't be blank");
+					if (l3AssociativityTF.getText().trim().isEmpty())
+						errors.add("L1-Cache: Associativity can't be blank");
+				}
+			}
+		}
+		return errors.isEmpty() ? true : false;
 	}
 }
