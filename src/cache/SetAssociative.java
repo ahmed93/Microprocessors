@@ -68,7 +68,7 @@ public class SetAssociative extends Cache {
 			hits++;
 			return word;
 		} else {
-//			System.out.println("MISS");
+			// System.out.println("MISS");
 			misses++;
 			return null;
 		}
@@ -77,7 +77,7 @@ public class SetAssociative extends Cache {
 	@Override
 	public Data searchData(int address) {
 		Data word = (Data) getWordAtAddress(address, DATA);
-		if (word.getAddress() == address) {
+		if (word != null && word.getAddress() == address) {
 			hits++;
 			return word;
 		} else {
@@ -86,8 +86,8 @@ public class SetAssociative extends Cache {
 		}
 	}
 
-	public void setWordAtAddress(Instruction instruction, String type) {
-		int address = instruction.getAddress();
+	public void setWordAtAddress(Word input_word, String type) {
+		int address = input_word.getAddress();
 		int num_of_words_in_set = blockSize * associativity;
 		int number_of_sets = (cacheSize / blockSize) / associativity;
 		Word word = null;
@@ -105,16 +105,29 @@ public class SetAssociative extends Cache {
 			}
 			for (int i = 0; i < block.words.length; i++) {
 				if (type == Cache.INSTRUCTION) {
+					Instruction instruction = (Instruction) (input_word);
 					Instruction k = (Instruction) block.words[i];
 					if (k.getClass() == NOP.class) {
 						instructions[j].words[i] = InstructionFactory
 								.create_instruction(
 										instruction.getInstruction(),
 										instruction.getSimulator());
-						((Instruction)instructions[j].words[i]).setAddress(instruction.getAddress());
+						((Instruction) instructions[j].words[i])
+								.setAddress(instruction.getAddress());
 						return;
 
 					}
+				} else if (type == Cache.DATA) {
+					Data input_data = (Data) (input_word);
+					Data k = (Data) block.words[i];
+					if (k.get_value() == 0 && k.getAddress() == 0) {
+						Data target_data = (Data) data[j].words[i];
+						target_data.set_value(input_data.get_value());
+						target_data.setAddress(input_data.getAddress());
+						target_data.setDirtyBit(input_data.isDirtyBit());
+						return;
+					}
+					insertData(input_data);
 				}
 			}
 		}

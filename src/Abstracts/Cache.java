@@ -88,6 +88,8 @@ public abstract class Cache {
 	public Data insertData(Data data) {
 		Data replaced = null;
 		Data destination = (Data) getWordAtAddress(data.getAddress(), DATA);
+		if (destination == null)
+			return null;
 		if (destination.isDirtyBit()) {
 			replaced = new Data(destination.get_value());
 			replaced.setAddress(destination.getAddress());
@@ -121,5 +123,5 @@ public abstract class Cache {
 		}
 		System.out.println("##################3");
 	}
-	public abstract void setWordAtAddress(Instruction instruction, String type);
+	public abstract void setWordAtAddress(Word word, String type);
 }

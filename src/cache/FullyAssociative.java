@@ -19,13 +19,14 @@ public class FullyAssociative extends Cache {
 		instructions = new Block[(int) cacheSize / blockSize];
 		data = new Block[(int) cacheSize / blockSize];
 		for (int i = 0; i < data.length; i++) {
+			data[i] = new Block(blockSize, Cache.DATA);
 			data[i].initialize(blockSize, Cache.DATA);
 			instructions[i] = new Block(blockSize, Cache.INSTRUCTION);
 		}
 	}
 
 	public Data insertData(Data data) {
-		this.data_index = (this.data_index + blockSize) % blockSize;
+//		this.data_index = (this.data_index + blockSize) % blockSize;
 		return super.insertData(data);
 	}
 
@@ -81,33 +82,54 @@ public class FullyAssociative extends Cache {
 	}
 
 	@Override
-	public void setWordAtAddress(Instruction instruction, String type) {
+	public void setWordAtAddress(Word word, String type) {
 		if (type == Cache.INSTRUCTION) {
-			for (int i = 0; i <= this.instructions[data_index].words.length; i++) {
-				Instruction k = (Instruction) this.instructions[data_index].words[i];
+			Instruction instruction = (Instruction) word;
+			for (int i = 0; i < this.instructions[instruction_index].words.length; i++) {
+				Instruction k = (Instruction) this.instructions[instruction_index].words[i];
 				if (k.getClass() == NOP.class) {
-					this.instructions[data_index].words[i] = InstructionFactory
+					this.instructions[instruction_index].words[i] = InstructionFactory
 							.create_instruction(instruction.getInstruction(),
 									instruction.getSimulator());
-					((Instruction) instructions[data_index].words[i])
+					((Instruction) instructions[instruction_index].words[i])
 							.setAddress(instruction.getAddress());
+					if (i == blockSize -1)
+						instruction_index = (instruction_index + 1)%(cacheSize/blockSize);
 					return;
 				}
 			}
 			for (int i = 1; i < blockSize; i++) {
-				this.instructions[data_index].words[i] = InstructionFactory
+				this.instructions[instruction_index].words[i] = InstructionFactory
 						.create_instruction("NOP", null);
-				((Instruction) instructions[data_index].words[i]).setAddress(0);
+				((Instruction) instructions[instruction_index].words[i]).setAddress(0);
 			}
-			this.instructions[data_index].words[0] = InstructionFactory
+			this.instructions[instruction_index].words[0] = InstructionFactory
 					.create_instruction(instruction.getInstruction(),
 							instruction.getSimulator());
-			((Instruction) instructions[data_index].words[0])
+			((Instruction) instructions[instruction_index].words[0])
 					.setAddress(instruction.getAddress());
 
+		}else if (type == Cache.DATA) {
+			Data input_data  = (Data) word;
+			for (int i = 0; i < this.data[data_index].words.length; i++) {
+				Data k = (Data) this.data[data_index].words[i];
+				if (k.get_value() == 0 && k.getAddress() == 0) {
+					Data destination_data = (Data) this.data[data_index].words[i];
+					destination_data.set_value(input_data.get_value());
+					destination_data.setAddress(input_data.getAddress());
+					if (i == blockSize -1)
+						data_index = (data_index + 1)%(cacheSize/blockSize);
+					return;
+				}
+			}
+			for (int i = 1; i < blockSize; i++) {
+				this.data[data_index].words[i] = new Data(0);
+			}
+			Data destination_data = (Data) this.data[data_index].words[0];
+			destination_data.set_value(input_data.get_value());
+			destination_data.setAddress(input_data.getAddress());
 		}
-		// TODO Auto-generated method stub
-
+//		data_index = (data_index + 1)%(cacheSize/blockSize);
 	}
 
 }
