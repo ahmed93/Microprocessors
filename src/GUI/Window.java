@@ -223,6 +223,8 @@ public class Window {
 				ssss.put(2, 2);
 				ssss.put(1, 200000000);
 				ssss.put(444, 200);
+				
+				
 				 setMamoryData(ssss);
 				//
 				// memoryTB.setValueAt(200, 1, 1);
@@ -250,6 +252,7 @@ public class Window {
 						simulator.Initialize();
 						simulator.runInstructions();
 						simulator.printMemory();
+						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());
 						setRegisterData(simulator.getRegistersValues());
 					} catch (IOException ea) {
@@ -310,7 +313,7 @@ public class Window {
 		Integer[][] memroyData = new Integer[1][2]; 
 		memroyData[0][0] = 0;
 		memroyData[0][1] = 0;
-		memoryTB = new JTable(MemoryDataModel);
+		memoryTB = new JTable(MemoryDataValues, MemoryColumnNames);
 		memoryTB.setBounds(2, 2, 0, 468);
 
 		memoryTB.setGridColor(Color.LIGHT_GRAY);
@@ -963,23 +966,11 @@ public class Window {
 	 * */
 	private void initData() {
 		CreateData();
-		
-//		dataModel = new DefaultTableModel();
-//		for (int row = 0; row < dataValues.length; row++) {
-//			dataModel.addRow(dataValues[row]);
-//		}
-		
-//		String[] CoLNames = { "Location", "Value" };
-//		Integer[][] memroyData = new Integer[1][2]; 
-//		memroyData[0][0] = 0;
-//		memroyData[0][1] = 0;
-//		memoryTB.setModel(new DefaultTableModel());
-//		memoryTB.repaint();
+		CreateMemoryData();
 	}
 
 	private void setRegisterData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
-			System.out.println((int) entry.getKey());
 			registerTB.setValueAt(entry.getValue().toString(),
 					(int) entry.getKey(), 1);
 		}
@@ -987,11 +978,13 @@ public class Window {
 	}
 
 	private void setMamoryData(HashMap<Integer, Integer> data) {
-		String[][] memroyData = new String[data.size()][2];
 		int counter = 0;
-		for (Entry<Integer,Integer> en : data.entrySet()) {
-			memroyData[counter][0] = en.getKey().toString();
-			memroyData[counter][1] = en.getValue().toString();
+		for (Entry<Integer, Integer> entry : data.entrySet()) {
+			System.out.println(entry.getKey() + "   " +entry.getValue());
+			memoryTB.setValueAt(entry.getKey().toString(),
+					counter, 0);
+			memoryTB.setValueAt(entry.getValue().toString(),
+					counter, 1);
 		}
 		memoryTB.repaint();
 	}
@@ -1003,6 +996,10 @@ public class Window {
 			dataValues[i][0] = "R" + i;
 		for (int i = 0; i < 8; i++)
 			dataValues[i][1] = "0";
+	}
+	public void CreateMemoryData() {
+		// Create data for each element
+		MemoryDataValues = new String[3500][2];
 	}
 
 	/**
@@ -1115,6 +1112,10 @@ public class Window {
 	private void showErrors() {
 		for (String err : errors)
 			printE(err);
+	}
+	private void showMessages(ArrayList<String> messages) {
+		for (String err : messages)
+			printM(err);
 	}
 
 	private void showWarrnings() {

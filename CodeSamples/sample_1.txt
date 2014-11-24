@@ -1,6 +1,6 @@
-data:
+#data:
 
-instructions:
+#instructions:
 	ADDI R2, R0, 1
 	ADDI R3, R0, 5
 	MUL R2, R2, R3
