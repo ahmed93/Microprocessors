@@ -21,19 +21,31 @@ public class Simulator {
 	String inputFile = "input.txt";
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
-	public static int pc;
+	private int memoryAccessTime;
+	public int getMemoryAccessTime() {
+		return memoryAccessTime;
+	}
+
+	public void setMemoryAccessTime(int memoryAccessTime) {
+		this.memoryAccessTime = memoryAccessTime;
+	}
+
+	public int pc;
 
 	int instruction_starting_address;
 	int instructions_ending_address;
 	Vector<String> data;
 	Vector<String> instructions;
+	public int instructions_executed;
+	public int calculatedNumberOfCycles;
 
 	Vector<Integer> instructions_addresses;
-
+	
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address) {
+			int instruction_starting_address, int memoryAccessTime) {
 		this.memory = Memory.getInstance();
+		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
@@ -59,15 +71,15 @@ public class Simulator {
 		this.caches = new Cache[input_caches.size()];
 		for (int i = 0; i < input_caches.size(); i++) {
 			HashMap<String, Integer> input_cache = input_caches.get(i);
-			boolean[] associativity = new boolean[4];
-			associativity[0] = (input_cache.get("writeBack") != 0);
-			associativity[1] = (input_cache.get("writeAround") != 0);
-			associativity[2] = (input_cache.get("writeThrough") != 0);
-			associativity[3] = (input_cache.get("writeAllocate") != 0);
+			boolean[] policy = new boolean[4];
+			policy[0] = (input_cache.get("writeBack") != 0);
+			policy[1] = (input_cache.get("writeAround") != 0);
+			policy[2] = (input_cache.get("writeThrough") != 0);
+			policy[3] = (input_cache.get("writeAllocate") != 0);
 			caches[i] = CacheFactory.createCache(
 					input_cache.get("associativity"),
 					input_cache.get("blockSize"), input_cache.get("cacheSize"),
-					associativity);
+					policy, input_cache.get("hitTime"), input_cache.get("missTime"));
 		}
 	}
 
@@ -91,7 +103,7 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		int pc = instructions_addresses.firstElement();
+		pc = instructions_addresses.firstElement();
 		while (pc != instructions_addresses.lastElement()) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
@@ -114,6 +126,7 @@ public class Simulator {
 			}
 			pc++;
 			instruction.execute();
+			instructions_executed++;
 
 		}
 		// for (int i = instruction_starting_address; i<=
@@ -308,5 +321,13 @@ public class Simulator {
 			reg.put(key, value);
 		}
 		return reg;
+	}
+	
+	public void setPC(int i){
+		this.pc = i;
+	}
+	
+	public int getPc(){
+		return this.pc;
 	}
 }

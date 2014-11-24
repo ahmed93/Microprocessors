@@ -13,6 +13,7 @@ public class Main {
 		Vector<String> data = new Vector<>();
 		Vector<String> instructions = new Vector<>();
 		ArrayList<HashMap<String, Integer>> cache_information = new ArrayList<>(); 
+		int memoryAccessTime;
 		//HashMap<String, Integer> cache_information = new HashMap<>()[4];
 		for(int i=0;i<1;i++)
 		{
@@ -24,23 +25,26 @@ public class Main {
 			cache.put("writeThrough", 1);
 			cache.put("writeAllocate",0);
 			cache.put("writeAround", 1);
+			cache.put("hitTime", 1);
+			cache.put("missTime", 1);
 			cache_information.add(cache);
 		}
-		instructions.add("ADDI R1, R1, 2");
-		instructions.add("ADDI R2, R2, 3");
-//		instructions.add("NAND R3, R1, R2");
+		instructions.add("ADDI R2, R2, 1");
+		instructions.add("ADDI R1, R1, 1");
+		instructions.add("BEQ, R1, R2, -2");
+		instructions.add("NAND R3, R1, R2");
 //		instructions.add("ADDI R1, R1, 3");
 //		instructions.add("ADDI R8, R8, 4");
 //		instructions.add("NAND R3, R1, R5");
 //		instructions.add("ADDI R1, R1, 4");
 //		instructions.add("ADDI R2, R2, 3");
 //		instructions.add("NAND R3, R1, R1");
-		instructions.add("SW R2, R0, 2");
-		instructions.add("LW R4, R0, 2");
-		instructions.add("SW R1, R0, 3");
-		instructions.add("LW R5, R0, 3");
+//		instructions.add("SW R2, R0, 2");
+//		instructions.add("LW R4, R0, 2");
+//		instructions.add("SW R1, R0, 3");
+//		instructions.add("LW R5, R0, 3");
 		int instruction_starting_address = 0;
-		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address);
+		Simulator simulator = new Simulator(data, instructions, cache_information,  instruction_starting_address, memoryAccessTime);
 		simulator.Initialize();
 		simulator.runInstructions();
 		for (int i = 0; i < simulator.caches.length; i++){
@@ -48,6 +52,7 @@ public class Main {
 		}
 		simulator.printMemory();
 		simulator.printRegisters();
+		System.out.println(simulator.instructions_executed);
 		
 	}
 
