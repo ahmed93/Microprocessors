@@ -5,7 +5,6 @@ import instructions.NOP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -301,5 +300,14 @@ public class Simulator {
 			}
 		}
 	}
-
+	
+	public HashMap<Integer, Integer> getRegistersValues() {
+		HashMap<Integer, Integer> reg = new HashMap<Integer, Integer>();
+		for (Entry<String, Register> enty : registers.entrySet()) {
+			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+",""));
+			int value = enty.getValue().get_value();
+			reg.put(key, value);
+		}
+		return reg;
+	}
 }
