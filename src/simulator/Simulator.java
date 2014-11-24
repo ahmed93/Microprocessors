@@ -104,7 +104,7 @@ public class Simulator {
 
 	public void runInstructions() {
 		pc = instructions_addresses.firstElement();
-		while (pc != instructions_addresses.lastElement()) {
+		while (pc != instructions_addresses.lastElement()+1) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j].searchInstruction(pc);
