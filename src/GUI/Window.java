@@ -39,7 +39,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.TableHeaderUI;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
@@ -190,9 +192,8 @@ public class Window {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dataModel.setValueAt("4", 2, 1);
-				System.out.println(dataModel.getValueAt(2, 1));
-				
-				
+				dataModel.fireTableCellUpdated(2, 1);
+
 			}
 		});
 		OptionsPanel.add(debugBT);
@@ -614,19 +615,19 @@ public class Window {
 		codeInput = new JTextPane();
 		// codeInput.setColumns(1);
 		// codeInput.setTabSize(2);
-//		codeInput.addCaretListener(new CaretListener() {
-//			public void caretUpdate(CaretEvent caretEvent) {
-//				System.out.println("dot:" + caretEvent.getDot());
-//				System.out.println("mark" + caretEvent.getMark());
-//			}
-//		});
-		
+		// codeInput.addCaretListener(new CaretListener() {
+		// public void caretUpdate(CaretEvent caretEvent) {
+		// System.out.println("dot:" + caretEvent.getDot());
+		// System.out.println("mark" + caretEvent.getMark());
+		// }
+		// });
+
 		Document d = codeInput.getDocument();
-//		PlainDocument doc = (PlainDocument) codeInput.getDocument();
-//		DocumentFilter test = new DocumentFilter();
-//		
-//		
-//		doc.setDocumentFilter(new DocumentFilter());
+		// PlainDocument doc = (PlainDocument) codeInput.getDocument();
+		// DocumentFilter test = new DocumentFilter();
+		//
+		//
+		// doc.setDocumentFilter(new DocumentFilter());
 
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -675,20 +676,13 @@ public class Window {
 		initData();
 
 		registerTB = new JTable(dataValues, columnNames);
-		registerTB.setCellSelectionEnabled(true);
-		registerTB.setColumnSelectionAllowed(true);
-
 		registerTB.setGridColor(Color.LIGHT_GRAY);
 		registerTB.setSurrendersFocusOnKeystroke(true);
 		registerTB.setBounds(6, 18, 213, 128);
 		registerTB.setFillsViewportHeight(true);
-
-		registerTB.setTableHeader(registerTB.getTableHeader());
-		registerTB.add(registerTB.getTableHeader(), BorderLayout.PAGE_START);
 		registerTB.setEnabled(false);
-
 		registerTB
-				.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		RegisterPane.add(registerTB);
