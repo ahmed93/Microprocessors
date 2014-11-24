@@ -91,15 +91,13 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		for (int i = 0; i < this.instructions_addresses.size(); i++) {
-			// for (int i = 0; i < 1; i++) {
+		int pc = instructions_addresses.firstElement();
+		while (pc != instructions_addresses.lastElement()) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
-				instruction = caches[j]
-						.searchInstruction(this.instructions_addresses.get(i));
+				instruction = caches[j].searchInstruction(pc);
 				if (instruction != null && instruction.getClass() != NOP.class) {
-					updateInstructionInHigherCaches(j,
-							this.instructions_addresses.get(i));
+					updateInstructionInHigherCaches(j, pc);
 					// place instruction in higher cache levels(j)
 					break;
 				}
@@ -108,14 +106,15 @@ public class Simulator {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
-				int instruction_address = this.instructions_addresses.get(i);
+				int instruction_address = pc;
 				instruction = this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
 			}
-
+			pc++;
 			instruction.execute();
+
 		}
 		// for (int i = instruction_starting_address; i<=
 		// instructions_ending_address; i++){
@@ -292,7 +291,7 @@ public class Simulator {
 									replaced_data.get_value(),
 									replaced_data.getAddress());
 						}
-					}else {
+					} else {
 						caches[i].setWordAtAddress(dataWord, Cache.DATA);
 					}
 
@@ -300,11 +299,11 @@ public class Simulator {
 			}
 		}
 	}
-	
+
 	public HashMap<Integer, Integer> getRegistersValues() {
 		HashMap<Integer, Integer> reg = new HashMap<Integer, Integer>();
 		for (Entry<String, Register> enty : registers.entrySet()) {
-			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+",""));
+			int key = Integer.parseInt(enty.getKey().replaceAll("\\D+", ""));
 			int value = enty.getValue().get_value();
 			reg.put(key, value);
 		}
