@@ -89,7 +89,12 @@ public class Window {
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
-	private JTextField textField;
+	private JTextField l2HitTimeTF;
+	private JTextField l2MissTimeTF;
+	private JTextField l1HitTimeTF;
+	private JTextField l1MissTimeTF;
+	private JTextField l3HitTimeTF;
+	private JTextField l3MissTimeTF;
 
 	/**
 	 * Launch the application.
@@ -324,8 +329,9 @@ public class Window {
 		layeredPane.add(label);
 
 		JLabel label_2 = new JLabel("Cache Settings");
+		label_2.setForeground(Color.GRAY);
 		label_2.setHorizontalAlignment(SwingConstants.LEFT);
-		label_2.setBounds(6, 34, 112, 16);
+		label_2.setBounds(85, 34, 112, 16);
 		layeredPane.add(label_2);
 
 		Vector<String> items = new Vector<>();
@@ -380,7 +386,7 @@ public class Window {
 		l2CacheSizeTF = new JTextField();
 		l2CacheSizeTF.setEnabled(false);
 		l2CacheSizeTF.setColumns(10);
-		l2CacheSizeTF.setBounds(94, 34, 56, 28);
+		l2CacheSizeTF.setBounds(94, 19, 56, 28);
 		PlainDocument l2CacheSizeDoc = (PlainDocument) l2CacheSizeTF
 				.getDocument();
 		l2CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -389,7 +395,7 @@ public class Window {
 		l2BlockSizeTF = new JTextField();
 		l2BlockSizeTF.setEnabled(false);
 		l2BlockSizeTF.setColumns(10);
-		l2BlockSizeTF.setBounds(94, 58, 56, 28);
+		l2BlockSizeTF.setBounds(94, 43, 56, 28);
 		PlainDocument l2BlockSizeDoc = (PlainDocument) l2BlockSizeTF
 				.getDocument();
 		l2BlockSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -398,50 +404,66 @@ public class Window {
 		l2AssociativityTF = new JTextField();
 		l2AssociativityTF.setEnabled(false);
 		l2AssociativityTF.setColumns(10);
-		l2AssociativityTF.setBounds(94, 85, 56, 28);
+		l2AssociativityTF.setBounds(94, 70, 56, 28);
 		PlainDocument l2AssociativityDoc = (PlainDocument) l2AssociativityTF
 				.getDocument();
 		l2AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_1.add(l2AssociativityTF);
 
 		JLabel label_5 = new JLabel("Cache Size");
-		label_5.setBounds(6, 40, 89, 16);
+		label_5.setBounds(6, 25, 89, 16);
 		panel_1.add(label_5);
 
 		JLabel label_6 = new JLabel("Block Size");
-		label_6.setBounds(6, 64, 89, 16);
+		label_6.setBounds(6, 49, 89, 16);
 		panel_1.add(label_6);
 
 		JLabel label_7 = new JLabel("Associativity");
-		label_7.setBounds(6, 91, 89, 16);
+		label_7.setBounds(6, 76, 89, 16);
 		panel_1.add(label_7);
 
 		JLabel label_1 = new JLabel("HitP");
-		label_1.setBounds(178, 17, 26, 16);
+		label_1.setBounds(178, 6, 26, 16);
 		panel_1.add(label_1);
 
 		Hit2CB = new JComboBox<>(HITPOLISYS);
-		Hit2CB.setBounds(155, 37, 82, 25);
+		Hit2CB.setBounds(155, 22, 82, 25);
 		Hit2CB.setEnabled(false);
 		panel_1.add(Hit2CB);
 
 		Miss2CB = new JComboBox<>(MISSPOLISYS);
-		Miss2CB.setBounds(155, 93, 82, 23);
+		Miss2CB.setBounds(155, 74, 82, 23);
 		Miss2CB.setEnabled(false);
 		panel_1.add(Miss2CB);
 
 		JLabel label_16 = new JLabel("MissP");
-		label_16.setBounds(178, 68, 42, 16);
+		label_16.setBounds(162, 49, 42, 16);
 		panel_1.add(label_16);
 		
-		textField = new JTextField();
-		textField.setBounds(45, 108, 56, 28);
-		panel_1.add(textField);
-		textField.setColumns(10);
+		l2HitTimeTF = new JTextField();
+		l2HitTimeTF.setBounds(45, 104, 56, 28);
+		l2HitTimeTF.setColumns(10);
+		PlainDocument l2HitTimeDoc = (PlainDocument) l2HitTimeTF
+				.getDocument();
+		l2HitTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_1.add(l2HitTimeTF);
 		
-		JLabel label_19 = new JLabel("New label");
-		label_19.setBounds(-78, 92, 200, 50);
-		panel_1.add(label_19);
+		
+		JLabel lblHt = new JLabel("HT");
+		lblHt.setBounds(16, 110, 27, 16);
+		panel_1.add(lblHt);
+		
+		l2MissTimeTF = new JTextField();
+		l2MissTimeTF.setColumns(10);
+		l2MissTimeTF.setBounds(148, 104, 56, 28);
+		PlainDocument l2MissTimeDoc = (PlainDocument) l2MissTimeTF
+				.getDocument();
+		l2MissTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_1.add(l2MissTimeTF);
+		
+		JLabel lblMt = new JLabel("MT");
+		lblMt.setBounds(119, 110, 27, 16);
+		panel_1.add(lblMt);
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
@@ -455,7 +477,7 @@ public class Window {
 		l1CacheSizeTF = new JTextField();
 		l1CacheSizeTF.setEnabled(false);
 		l1CacheSizeTF.setColumns(10);
-		l1CacheSizeTF.setBounds(94, 34, 113, 28);
+		l1CacheSizeTF.setBounds(94, 23, 56, 28);
 		PlainDocument l1CacheSizeDoc = (PlainDocument) l1CacheSizeTF
 				.getDocument();
 		l1CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -464,7 +486,7 @@ public class Window {
 		l1BlockSizeTF = new JTextField();
 		l1BlockSizeTF.setEnabled(false);
 		l1BlockSizeTF.setColumns(10);
-		l1BlockSizeTF.setBounds(94, 58, 113, 28);
+		l1BlockSizeTF.setBounds(94, 47, 56, 28);
 		PlainDocument l1BlockLengtDoc = (PlainDocument) l1BlockSizeTF
 				.getDocument();
 		l1BlockLengtDoc.setDocumentFilter(new NumbersFilter());
@@ -473,41 +495,65 @@ public class Window {
 		l1AssociativityTF = new JTextField();
 		l1AssociativityTF.setEnabled(false);
 		l1AssociativityTF.setColumns(10);
-		l1AssociativityTF.setBounds(94, 85, 113, 28);
+		l1AssociativityTF.setBounds(94, 74, 56, 28);
 		PlainDocument l1AssociativityDoc = (PlainDocument) l1AssociativityTF
 				.getDocument();
 		l1AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_2.add(l1AssociativityTF);
 
 		JLabel label_9 = new JLabel("Cache Size");
-		label_9.setBounds(6, 40, 89, 16);
+		label_9.setBounds(6, 29, 89, 16);
 		panel_2.add(label_9);
 
 		JLabel label_10 = new JLabel("Block Size");
-		label_10.setBounds(6, 64, 89, 16);
+		label_10.setBounds(6, 53, 89, 16);
 		panel_2.add(label_10);
 
 		JLabel label_11 = new JLabel("Associativity");
-		label_11.setBounds(6, 91, 89, 16);
+		label_11.setBounds(6, 80, 89, 16);
 		panel_2.add(label_11);
 
 		JLabel lblHitp = new JLabel("HitP");
-		lblHitp.setBounds(6, 119, 26, 16);
+		lblHitp.setBounds(168, 6, 26, 16);
 		panel_2.add(lblHitp);
 
 		Hit1CB = new JComboBox<>(HITPOLISYS);
-		Hit1CB.setBounds(37, 116, 76, 25);
+		Hit1CB.setBounds(155, 26, 82, 25);
 		Hit1CB.setEnabled(false);
 		panel_2.add(Hit1CB);
 
 		Miss1CB = new JComboBox<>(MISSPOLISYS);
-		Miss1CB.setBounds(155, 117, 82, 23);
+		Miss1CB.setBounds(155, 74, 82, 23);
 		Miss1CB.setEnabled(false);
 		panel_2.add(Miss1CB);
 
 		JLabel lblMissp = new JLabel("MissP");
-		lblMissp.setBounds(114, 119, 42, 16);
+		lblMissp.setBounds(168, 53, 42, 16);
 		panel_2.add(lblMissp);
+		
+		l1HitTimeTF = new JTextField();
+		l1HitTimeTF.setColumns(10);
+		l1HitTimeTF.setBounds(45, 108, 56, 28);
+		PlainDocument l1HitTimeDoc = (PlainDocument) l1HitTimeTF
+				.getDocument();
+		l1HitTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_2.add(l1HitTimeTF);
+		
+		JLabel label_19 = new JLabel("HT");
+		label_19.setBounds(16, 114, 27, 16);
+		panel_2.add(label_19);
+		
+		l1MissTimeTF = new JTextField();
+		l1MissTimeTF.setColumns(10);
+		l1MissTimeTF.setBounds(148, 108, 56, 28);
+		PlainDocument l1MissTimeDoc = (PlainDocument) l1MissTimeTF
+				.getDocument();
+		l1MissTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_2.add(l1MissTimeTF);
+		
+		JLabel label_20 = new JLabel("MT");
+		label_20.setBounds(119, 114, 27, 16);
+		panel_2.add(label_20);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
@@ -521,7 +567,7 @@ public class Window {
 		l3CacheSizeTF = new JTextField();
 		l3CacheSizeTF.setEnabled(false);
 		l3CacheSizeTF.setColumns(10);
-		l3CacheSizeTF.setBounds(94, 34, 113, 28);
+		l3CacheSizeTF.setBounds(94, 21, 56, 28);
 		PlainDocument l3CacheSizeDoc = (PlainDocument) l3CacheSizeTF
 				.getDocument();
 		l3CacheSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -530,7 +576,7 @@ public class Window {
 		l3BlockSizeTF = new JTextField();
 		l3BlockSizeTF.setEnabled(false);
 		l3BlockSizeTF.setColumns(10);
-		l3BlockSizeTF.setBounds(94, 58, 113, 28);
+		l3BlockSizeTF.setBounds(94, 45, 56, 28);
 		PlainDocument l3BlockSizeDoc = (PlainDocument) l3BlockSizeTF
 				.getDocument();
 		l3BlockSizeDoc.setDocumentFilter(new NumbersFilter());
@@ -539,41 +585,65 @@ public class Window {
 		l3AssociativityTF = new JTextField();
 		l3AssociativityTF.setEnabled(false);
 		l3AssociativityTF.setColumns(10);
-		l3AssociativityTF.setBounds(94, 85, 113, 28);
+		l3AssociativityTF.setBounds(94, 72, 56, 28);
 		PlainDocument l3AssociativityDoc = (PlainDocument) l3AssociativityTF
 				.getDocument();
 		l3AssociativityDoc.setDocumentFilter(new NumbersFilter());
 		panel_3.add(l3AssociativityTF);
 
 		JLabel label_13 = new JLabel("Cache Size");
-		label_13.setBounds(6, 40, 89, 16);
+		label_13.setBounds(6, 27, 89, 16);
 		panel_3.add(label_13);
 
 		JLabel label_14 = new JLabel("Block Size");
-		label_14.setBounds(6, 64, 89, 16);
+		label_14.setBounds(6, 51, 89, 16);
 		panel_3.add(label_14);
 
 		JLabel label_15 = new JLabel("Associativity");
-		label_15.setBounds(6, 91, 89, 16);
+		label_15.setBounds(6, 78, 89, 16);
 		panel_3.add(label_15);
 
 		JLabel label_17 = new JLabel("HitP");
-		label_17.setBounds(6, 118, 26, 16);
+		label_17.setBounds(175, 6, 26, 16);
 		panel_3.add(label_17);
 
 		Hit3CB = new JComboBox<>(HITPOLISYS);
-		Hit3CB.setBounds(37, 115, 76, 25);
+		Hit3CB.setBounds(155, 24, 82, 25);
 		Hit3CB.setEnabled(false);
 		panel_3.add(Hit3CB);
 
 		Miss3CB = new JComboBox<>(MISSPOLISYS);
-		Miss3CB.setBounds(155, 116, 82, 23);
+		Miss3CB.setBounds(155, 76, 82, 23);
 		Miss3CB.setEnabled(false);
 		panel_3.add(Miss3CB);
 
 		JLabel label_18 = new JLabel("MissP");
-		label_18.setBounds(114, 118, 42, 16);
+		label_18.setBounds(165, 51, 42, 16);
 		panel_3.add(label_18);
+		
+		l3HitTimeTF = new JTextField();
+		l3HitTimeTF.setColumns(10);
+		l3HitTimeTF.setBounds(45, 106, 56, 28);
+		PlainDocument l3HitTimeDoc = (PlainDocument) l3HitTimeTF
+				.getDocument();
+		l3HitTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_3.add(l3HitTimeTF);
+		
+		JLabel label_21 = new JLabel("HT");
+		label_21.setBounds(16, 112, 27, 16);
+		panel_3.add(label_21);
+		
+		l3MissTimeTF = new JTextField();
+		l3MissTimeTF.setColumns(10);
+		l3MissTimeTF.setBounds(148, 106, 56, 28);
+		PlainDocument l3MissTimeDoc = (PlainDocument) l3MissTimeTF
+				.getDocument();
+		l3MissTimeDoc.setDocumentFilter(new NumbersFilter());
+		panel_3.add(l3MissTimeTF);
+		
+		JLabel label_22 = new JLabel("MT");
+		label_22.setBounds(119, 112, 27, 16);
+		panel_3.add(label_22);
 	}
 
 	private void onClickSaveBT() {
@@ -959,6 +1029,9 @@ public class Window {
 			wa = Miss1CB.getSelectedIndex();
 			cache.put("writeAllocate", wa == 1 ? 1 : 0);
 			cache.put("writeAround", wa == 0 ? 1 : 0);
+			cache.put("writeAround", Integer.parseInt(l1HitTimeTF.getText()));
+			cache.put("hitTime", Integer.parseInt(l1HitTimeTF.getText()));
+			cache.put("missTime", Integer.parseInt(l1MissTimeTF.getText()));
 			break;
 		case 2:
 			cache.put("associativity",
@@ -971,6 +1044,8 @@ public class Window {
 			wa = Miss2CB.getSelectedIndex();
 			cache.put("writeAllocate", wa == 1 ? 1 : 0);
 			cache.put("writeAround", wa == 0 ? 1 : 0);
+			cache.put("hitTime", Integer.parseInt(l2HitTimeTF.getText()));
+			cache.put("missTime", Integer.parseInt(l2MissTimeTF.getText()));
 			break;
 		case 3:
 			cache.put("associativity",
@@ -983,6 +1058,8 @@ public class Window {
 			wa = Miss3CB.getSelectedIndex();
 			cache.put("writeAllocate", wa == 1 ? 1 : 0);
 			cache.put("writeAround", wa == 0 ? 1 : 0);
+			cache.put("hitTime", Integer.parseInt(l3HitTimeTF.getText()));
+			cache.put("missTime", Integer.parseInt(l3MissTimeTF.getText()));
 			break;
 		}
 
@@ -1026,8 +1103,10 @@ public class Window {
 			onClickSaveBT();
 
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("Starting Address can't be blank. !!!! \n ====================================");
-		if (cacheLevelsCB.getSelectedIndex() > 0) {
+			errors.add("Starting Address can't be blank. \n ====================================");
+		if (cacheLevelsCB.getSelectedIndex() == 0)
+			errors.add("Select the number of caches levels needed \n ====================================");
+		else if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
 				errors.add("L1-Cache: Cache-Size can't be blank");
 			if (l1BlockSizeTF.getText().trim().isEmpty())
