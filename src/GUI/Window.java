@@ -63,12 +63,11 @@ public class Window {
 	private JPanel RegistersPanel;
 	private DefaultTableModel dataModel;
 	private JTable memoryTB;
-	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB, Hit2CB,
-			Hit3CB;
+	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB,
+			Hit2CB, Hit3CB;
 	private JTextField startAdressTF, l2CacheSizeTF, l2BlockSizeTF,
-			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF,
-			l1AssociativityTF, l3CacheSizeTF, l3BlockSizeTF,
-			l3AssociativityTF;
+			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF, l1AssociativityTF,
+			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF;
 
 	/****************************
 	 ** Data Variables **
@@ -87,7 +86,7 @@ public class Window {
 	/*************************
 	 ** Static Variables **
 	 *************************/
-//	private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
+	// private static final String NUMBERS_ONLY_REGIX = "[0-9]+";
 	private static final String FILE_TYPE_Viewed = "TEXT-File";
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
@@ -200,7 +199,7 @@ public class Window {
 					debugBT.setEnabled(false);
 					stopBT.setEnabled(true);
 					nextBT.setEnabled(true);
-				}else {
+				} else {
 					showErrors();
 					runBT.setEnabled(true);
 					debugBT.setEnabled(true);
@@ -211,7 +210,7 @@ public class Window {
 				//
 				// memoryTB.setValueAt(200, 1, 1);
 				// memoryTB.repaint();
-				
+
 			}
 
 		});
@@ -237,7 +236,7 @@ public class Window {
 					} catch (IOException ea) {
 						ea.printStackTrace();
 					}
-				}else {
+				} else {
 					showErrors();
 				}
 				debugBT.setEnabled(true);
@@ -266,6 +265,12 @@ public class Window {
 				Window.class
 						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 		nextBT.setBounds(299, 8, 28, 20);
+		nextBT.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
 		OptionsPanel.add(nextBT);
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
@@ -726,6 +731,7 @@ public class Window {
 				modified = true;
 				saveBT.setEnabled(true);
 			}
+
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {
 				modified = true;
@@ -786,7 +792,7 @@ public class Window {
 	private boolean saveFile() {
 		File file = new File(FilePath);
 		FileWriter fw = null;
-		
+
 		try {
 			fw = new FileWriter(file.getAbsoluteFile(), false);
 			codeInput.write(fw);
@@ -801,8 +807,7 @@ public class Window {
 					e.printStackTrace();
 					return false;
 				}
-			} 
-			else {
+			} else {
 				return false;
 			}
 		}
@@ -833,7 +838,7 @@ public class Window {
 				e.printStackTrace();
 			}
 		}
-		
+
 		modified = false;
 	}
 
@@ -917,7 +922,7 @@ public class Window {
 				dataFound = false;
 				continue;
 			}
-			System.out.println(line.trim()+"    ->DataFound:  " + dataFound
+			System.out.println(line.trim() + "    ->DataFound:  " + dataFound
 					+ "  --  instructionFound:  " + instructionFound);
 			if (dataFound)
 				data.add(line.trim());
@@ -1000,7 +1005,7 @@ public class Window {
 		for (String warr : warrnings)
 			printE(warr);
 	}
-	
+
 	private boolean validate() {
 		consoleTP.setText("");
 		errors = new ArrayList<String>();
@@ -1009,9 +1014,9 @@ public class Window {
 			errors.add("Can't run, Please Enter code first \n ====================================");
 			return false;
 		}
-		if (modified) onClickSaveBT();
-		
-		
+		if (modified)
+			onClickSaveBT();
+
 		if (startAdressTF.getText().trim().isEmpty())
 			errors.add("Starting Address can't be blank. !!!! \n ====================================");
 		if (cacheLevelsCB.getSelectedIndex() > 0) {
