@@ -201,7 +201,7 @@ public class Window {
 
 		debugBT = new JButton("Debug");
 		debugBT.setBounds(202, 4, 85, 29);
-//		debugBT.setEnabled(false);
+		debugBT.setEnabled(false);
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
