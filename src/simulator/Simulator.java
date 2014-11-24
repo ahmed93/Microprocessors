@@ -330,7 +330,12 @@ public class Simulator {
 	}
 	
 	public HashMap<Integer, Integer> getMemoryValues() {
-		return memory.getAllData();
+		HashMap<Integer, Integer> tmp = new HashMap<Integer, Integer>();
+		for (int i = 0; i <= 1000; i++) {
+			int x = this.memory.getDataAt(i).get_value();
+			tmp.put(this.memory.DATA_STARTING_ADDRESS + i, x);
+		}
+		return tmp;
 	}
 	
 	public void setPC(int i){

@@ -985,6 +985,7 @@ public class Window {
 					counter, 0);
 			memoryTB.setValueAt(entry.getValue().toString(),
 					counter, 1);
+			counter++;
 		}
 		memoryTB.repaint();
 	}
@@ -999,7 +1000,9 @@ public class Window {
 	}
 	public void CreateMemoryData() {
 		// Create data for each element
-		MemoryDataValues = new String[3500][2];
+		MemoryDataValues = new String[32768][2];
+//		for (int i = 0; i < 32768; i++)
+//			MemoryDataValues[i][0] = i + "";
 	}
 
 	/**

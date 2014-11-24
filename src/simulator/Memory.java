@@ -1,6 +1,7 @@
 package simulator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import interfaces.Word;
@@ -36,6 +37,7 @@ public class Memory {
 		address+= DATA_STARTING_ADDRESS;
 		if (address >= DATA_STARTING_ADDRESS && address <= SIZE) {
 //			System.out.println("Storing " + data + " At address " + address);
+			if(!memoryIndex.contains(address)) memoryIndex.add(address);
 			this.cells[address] = new Data(data);
 		}
 	}
@@ -93,6 +95,7 @@ public class Memory {
 	
 	public HashMap<Integer, Integer> getAllData() {
 		HashMap<Integer, Integer> dataMem = new HashMap<Integer, Integer>();
+		System.out.println(Arrays.toString(memoryIndex.toArray()));
 		for (int data : memoryIndex)
 			dataMem.put(data, getDataAt(data).get_value());
 		return dataMem;
