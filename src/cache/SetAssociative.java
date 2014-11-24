@@ -65,11 +65,11 @@ public class SetAssociative extends Cache {
 	public Instruction searchInstruction(int address) {
 		Instruction word = (Instruction) getWordAtAddress(address, INSTRUCTION);
 		if (word != null && word.getAddress() == address) {
-			hits++;
+//			hits++;
 			return word;
 		} else {
 			// System.out.println("MISS");
-			misses++;
+//			misses++;
 			return null;
 		}
 	}
@@ -78,10 +78,10 @@ public class SetAssociative extends Cache {
 	public Data searchData(int address) {
 		Data word = (Data) getWordAtAddress(address, DATA);
 		if (word != null && word.getAddress() == address) {
-			hits++;
+//			hits++;
 			return word;
 		} else {
-			misses++;
+//			misses++;
 			return null;
 		}
 	}

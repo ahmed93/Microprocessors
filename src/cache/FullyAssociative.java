@@ -37,13 +37,13 @@ public class FullyAssociative extends Cache {
 			block = data[i];
 			for (int j = 0; j < blockSize; j++) {
 				if (block.words[j].getAddress() == address) {
-					hits++;
+//					hits++;
 					return (Data) block.words[j];
 				}
 			}
 		}
-		misses++;
-		System.out.println("MISS");
+//		misses++;
+//		System.out.println("MISS");
 		return null;
 	}
 
@@ -62,12 +62,12 @@ public class FullyAssociative extends Cache {
 			block = instructions[i];
 			for (int j = 0; j < blockSize; j++) {
 				if (block.words[j].getAddress() == address) {
-					hits++;
+//					hits++
 					return (Instruction) block.words[j];
 				}
 			}
 		}
-		misses++;
+//		misses++;
 		return null;
 	}
 
