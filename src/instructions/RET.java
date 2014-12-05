@@ -16,4 +16,9 @@ public class RET extends Instruction {
 	public void execute() {
 		simulator.pc = regA.get_value();
 	}
+	
+	@Override
+	public String getName() {
+		return null;
+	}
 }

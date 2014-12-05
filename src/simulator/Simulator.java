@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import speculation.ReorderBuffer;
 import speculation.ReservationStation;
 import Abstracts.Cache;
 import Abstracts.Instruction;
@@ -26,7 +27,7 @@ public class Simulator {
 	private Memory memory;
 	private int memoryAccessTime;
 
-	private HashMap<String,Integer> registers_status;
+	private HashMap<String, Integer> registers_status;
 	public int pc;
 	int instruction_starting_address;
 	int instructions_ending_address;
@@ -36,7 +37,8 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
-	
+	ReorderBuffer rob;
+
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
 	}
@@ -44,9 +46,11 @@ public class Simulator {
 	public void setMemoryAccessTime(int memoryAccessTime) {
 		this.memoryAccessTime = memoryAccessTime;
 	}
+
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address, int memoryAccessTime, HashMap<String, Integer> inputReservationStations) {
+			int instruction_starting_address, int memoryAccessTime,
+			HashMap<String, Integer> inputReservationStations) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -57,9 +61,8 @@ public class Simulator {
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
 	}
-	
-	public void InitailizeRegistersStatus()
-	{
+
+	public void InitailizeRegistersStatus() {
 		for (int i = 0; i < 8; i++) {
 			registers_status.put("R" + i, 0);
 		}
@@ -77,15 +80,19 @@ public class Simulator {
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
 	}
-	public void initializeReservationStations(HashMap<String, Integer> inputReservationStations){
+
+	public void initializeReservationStations(
+			HashMap<String, Integer> inputReservationStations) {
 		Iterator it = inputReservationStations.entrySet().iterator();
-		for (Map.Entry<String, Integer> entry : inputReservationStations.entrySet()){
-			for (int i = 0; i < entry.getValue(); i++ ){
+		for (Map.Entry<String, Integer> entry : inputReservationStations
+				.entrySet()) {
+			for (int i = 0; i < entry.getValue(); i++) {
 				ReservationStation rs = new ReservationStation(entry.getKey());
 				reservationStations.add(rs);
-			}			
+			}
 		}
 	}
+
 	public void initializeCaches(
 			ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];
@@ -99,7 +106,8 @@ public class Simulator {
 			caches[i] = CacheFactory.createCache(
 					input_cache.get("associativity"),
 					input_cache.get("blockSize"), input_cache.get("cacheSize"),
-					policy, input_cache.get("hitTime"), input_cache.get("missTime"));
+					policy, input_cache.get("hitTime"),
+					input_cache.get("missTime"));
 		}
 	}
 
@@ -124,7 +132,7 @@ public class Simulator {
 
 	public void runInstructions() {
 		pc = instructions_addresses.firstElement();
-		while (pc != instructions_addresses.lastElement()+1) {
+		while (pc != instructions_addresses.lastElement() + 1) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j].searchInstruction(pc);
@@ -348,7 +356,7 @@ public class Simulator {
 		}
 		return reg;
 	}
-	
+
 	public HashMap<Integer, Integer> getMemoryValues() {
 		HashMap<Integer, Integer> tmp = new HashMap<Integer, Integer>();
 		for (int i = 0; i <= 1000; i++) {
@@ -357,51 +365,58 @@ public class Simulator {
 		}
 		return tmp;
 	}
-	
-	public void setPC(int i){
+
+	public void setPC(int i) {
 		this.pc = i;
 	}
-	
-	public int getPc(){
+
+	public int getPc() {
 		return this.pc;
 	}
-	
-	public double calculateAMAT(){
+
+	public double calculateAMAT() {
 		double amat = memoryAccessTime;
-		for (int i = caches.length-1; i>=0; i--){
+		for (int i = caches.length - 1; i >= 0; i--) {
 			Cache c = caches[i];
 			amat = c.getHitTime() + c.getMissRate() * amat;
 		}
 		return amat;
 	}
 
-	public ArrayList<String> output(){
-		ArrayList<String> output= new ArrayList<String>();
+	public ArrayList<String> output() {
+		ArrayList<String> output = new ArrayList<String>();
 		output.add("Number of instructions executed : " + instructions_executed);
-		for (int i = 0; i< caches.length; i++){
-			output.add("Cache Level " + (Integer)(i+1));
+		for (int i = 0; i < caches.length; i++) {
+			output.add("Cache Level " + (Integer) (i + 1));
 			output.add("\tHits: " + caches[i].hits);
 			output.add("\tMisses: " + caches[i].misses);
-			output.add("\tTotat number of accessess: " + caches[i].hits + caches[i].misses);
+			output.add("\tTotat number of accessess: " + caches[i].hits
+					+ caches[i].misses);
 			output.add("\tHit Rate: " + caches[i].getHitRate());
 		}
 		output.add("Global AMAT:" + calculateAMAT() + " cycles");
 		return output;
 	}
-	
-	public boolean issuable(Instruction i){
+
+	public boolean issuable(Instruction i) {
+		for (int j = 0; j < reservationStations.size(); j++) {
+			if (this.reservationStations.get(j).getName().equals(i.getName())
+					&& !this.reservationStations.get(j).isBusy()
+					&& !this.rob.isFull())
+				return true;
+		}
 		return false;
 	}
-	
-	public boolean  writable(Instruction i){
+
+	public boolean writable(Instruction i) {
 		return false;
 	}
-	
-	public boolean committable(Instruction i){
+
+	public boolean committable(Instruction i) {
 		return false;
 	}
-	
-	public boolean executable(Instruction i){
+
+	public boolean executable(Instruction i) {
 		return false;
 	}
 }

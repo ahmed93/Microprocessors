@@ -20,4 +20,9 @@ public class JALR extends Instruction {
 		this.simulator.pc = this.regB.get_value();
 
 	}
+	
+	@Override
+	public String getName() {
+		return null;
+	}
 }

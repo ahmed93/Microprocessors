@@ -19,5 +19,9 @@ public class MUL extends Instruction {
 	public void execute() {
 		regA.set_value(regB.get_value() * regC.get_value());
 	}
-
+	
+	@Override
+	public String getName() {
+		return "Mult";
+	}
 }

@@ -27,5 +27,10 @@ public class SW extends Instruction {
 			System.err.println("Wrong immediate" + imm);
 		}
 	}
+	
+	@Override
+	public String getName() {
+		return "Store";
+	}
 
 }

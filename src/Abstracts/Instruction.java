@@ -42,6 +42,8 @@ public abstract class Instruction implements Word {
 	protected boolean dirtyBit;
 
 	public abstract void execute();
+	
+	public abstract String getName();
 
 	public int getAddress() {
 		return address;

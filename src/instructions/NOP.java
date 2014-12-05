@@ -13,5 +13,10 @@ public class NOP extends Instruction {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public String getName() {
+		return null;
+	}
 
 }
