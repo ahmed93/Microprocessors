@@ -404,8 +404,10 @@ public class Simulator {
 		for (int j = 0; j < reservationStations.size(); j++) {
 			if (this.reservationStations.get(j).getName().equals(i.getName())
 					&& !this.reservationStations.get(j).isBusy()
-					&& !this.rob.isFull())
+					&& !this.rob.isFull()) {
+				i.setResIndex(j);
 				return true;
+			}
 		}
 >>>>>>> 00d000d25a20f28ceb72e85069ce0dd56240b99a
 		return false;

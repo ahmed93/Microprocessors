@@ -12,6 +12,7 @@ public abstract class Instruction implements Word {
 	public final String EXECUTE = "executed";
 	public final String WRITE = "written";
 	public final String COMMIT = "commited";
+	protected int resIndex;
 
 	public int getCycles() {
 		return cycles;
@@ -71,6 +72,14 @@ public abstract class Instruction implements Word {
 
 	public void setDirtyBit(boolean dirtyBit) {
 		this.dirtyBit = dirtyBit;
+	}
+
+	public int getResIndex() {
+		return resIndex;
+	}
+
+	public void setResIndex(int resIndex) {
+		this.resIndex = resIndex;
 	}
 
 }
