@@ -19,5 +19,10 @@ public class NAND extends Instruction {
 	public void execute() {
 		regA.set_value(~((regB.get_value() & regC.get_value())));
 	}
+	
+	@Override
+	public String getName() {
+		return null;
+	}
 
 }

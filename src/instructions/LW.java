@@ -26,5 +26,10 @@ public class LW extends Instruction {
 			System.err.println("Wrong immediate" + imm);
 		}
 	}
+	
+	@Override
+	public String getName() {
+		return "Load";
+	}
 
 }
