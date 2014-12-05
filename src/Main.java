@@ -53,6 +53,7 @@ public class Main {
 				cache_information, instruction_starting_address,
 				memoryAccessTime);
 		simulator.Initialize();
+		simulator.getInstructionsToRun();
 		simulator.runInstructions();
 		for (int i = 0; i < simulator.caches.length; i++) {
 			simulator.caches[i].printCache();

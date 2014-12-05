@@ -50,6 +50,7 @@ import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import simulator.Simulator;
 import GUI.utilities.NumbersFilter;
+import java.awt.GridBagLayout;
 
 public class Window {
 
@@ -58,13 +59,15 @@ public class Window {
 	private JTextPane consoleTP;
 	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT, debugBT, stopBT, nextBT;
-	private JPanel RegistersPanel;
-	private JTable memoryTB;
+	private JTable memoryTB,reservationStationsTB,registersStatusTB,robTB;
 	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB,
 			Hit2CB, Hit3CB;
 	private JTextField startAdressTF, l2CacheSizeTF, l2BlockSizeTF,
 			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF, l1AssociativityTF,
-			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF;
+			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF, l2HitTimeTF,
+			l2MissTimeTF, l1HitTimeTF, l1MissTimeTF, l3HitTimeTF, l3MissTimeTF,
+			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF,
+			latMultTF, latDivTF, rsLdTF, reStTF, reAddSubTF, reMultTF, reDivTF;
 
 	/****************************
 	 ** Data Variables **
@@ -78,11 +81,11 @@ public class Window {
 	private String columnNames[] = { "Register", "Value" };
 	private String dataValues[][];
 	private DefaultTableModel dataModel;
-	
+
 	private String MemoryColumnNames[] = { "Location", "value" };
 	private String MemoryDataValues[][];
 	private DefaultTableModel MemoryDataModel;
-	
+
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
 
@@ -94,13 +97,6 @@ public class Window {
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
-	private JTextField l2HitTimeTF;
-	private JTextField l2MissTimeTF;
-	private JTextField l1HitTimeTF;
-	private JTextField l1MissTimeTF;
-	private JTextField l3HitTimeTF;
-	private JTextField l3MissTimeTF;
-	private JTextField memoAccessTimeTF;
 
 	/**
 	 * Launch the application.
@@ -166,7 +162,7 @@ public class Window {
 	 *************************************/
 	private void createOptionPanel() {
 		JPanel OptionsPanel = new JPanel();
-		OptionsPanel.setBounds(741, 5, 533, 39);
+		OptionsPanel.setBounds(752, 5, 522, 34);
 		frame.getContentPane().add(OptionsPanel);
 
 		// Load Button
@@ -205,27 +201,26 @@ public class Window {
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-//				if (validate()) {
-//					showWarrnings();
-//					runBT.setEnabled(false);
-//					debugBT.setEnabled(false);
-//					stopBT.setEnabled(true);
-//					nextBT.setEnabled(true);
-//				} else {
-//					showErrors();
-//					runBT.setEnabled(true);
-//					debugBT.setEnabled(true);
-//					stopBT.setEnabled(false);
-//					nextBT.setEnabled(false);
-//				}
-				
+				// if (validate()) {
+				// showWarrnings();
+				// runBT.setEnabled(false);
+				// debugBT.setEnabled(false);
+				// stopBT.setEnabled(true);
+				// nextBT.setEnabled(true);
+				// } else {
+				// showErrors();
+				// runBT.setEnabled(true);
+				// debugBT.setEnabled(true);
+				// stopBT.setEnabled(false);
+				// nextBT.setEnabled(false);
+				// }
+
 				HashMap<Integer, Integer> ssss = new HashMap<Integer, Integer>();
 				ssss.put(2, 2);
 				ssss.put(1, 200000000);
 				ssss.put(444, 200);
-				
-				
-				 setMamoryData(ssss);
+
+				setMamoryData(ssss);
 				//
 				// memoryTB.setValueAt(200, 1, 1);
 				// memoryTB.repaint();
@@ -245,12 +240,14 @@ public class Window {
 				if (validate()) {
 					showWarrnings();
 					setSimulatorVectors();
+					int memoryAccessTime = Integer.parseInt(memoAccessTimeTF
+							.getText());
 					simulator = new Simulator(data, instructions, getCaches(),
-							getStartingAddress(), Integer
-									.parseInt(memoAccessTimeTF.getText()));
+							getStartingAddress(), memoryAccessTime,
+							inputReservationStations, ROB_Size);
 					try {
 						simulator.Initialize();
-						simulator.runInstructions();
+						simulator.getInstructionsToRun();
 						simulator.printMemory();
 						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());
@@ -297,24 +294,14 @@ public class Window {
 		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
 				new Component[] { loadBT, saveBT, runBT }));
 
-		Panel MemoryPanel = new Panel();
-		MemoryPanel.setBounds(1025, 50, 245, 518);
-		frame.getContentPane().add(MemoryPanel);
-		MemoryPanel.setLayout(new BorderLayout(0, 0));
-
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		MemoryPanel.add(tabbedPane, BorderLayout.CENTER);
+		JTabbedPane MemoRegTab = new JTabbedPane(JTabbedPane.TOP);
+		MemoRegTab.setBounds(1025, 38, 245, 579);
+		frame.getContentPane().add(MemoRegTab);
 
 		JLayeredPane MemoryPane = new JLayeredPane();
-		tabbedPane.addTab("Memory", null, MemoryPane, null);
-		MemoryPane.setLayout(null);
-
-		String[] CoLNames = { "Location", "Value" };
-		Integer[][] memroyData = new Integer[1][2]; 
-		memroyData[0][0] = 0;
-		memroyData[0][1] = 0;
+		MemoRegTab.addTab("Memory", null, MemoryPane, null);
+		MemoryPane.setLayout(new BorderLayout(0, 0));
 		memoryTB = new JTable(MemoryDataValues, MemoryColumnNames);
-		memoryTB.setBounds(2, 2, 0, 468);
 
 		memoryTB.setGridColor(Color.LIGHT_GRAY);
 		memoryTB.setSurrendersFocusOnKeystroke(true);
@@ -327,34 +314,61 @@ public class Window {
 		JScrollPane memoryS = new JScrollPane(memoryTB,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		memoryS.setBounds(0, 0, 218, 472);
 		// memoryTB.add(memoryS);
 
 		MemoryPane.add(memoryS);
+
+		JLayeredPane RegisterPane = new JLayeredPane();
+		MemoRegTab.addTab("Register", null, RegisterPane, null);
+		RegisterPane.setLayout(null);
+
+		registerTB = new JTable(dataValues, columnNames);
+		registerTB.setBounds(2, 18, 206, 138);
+		registerTB.setGridColor(Color.LIGHT_GRAY);
+		registerTB.setSurrendersFocusOnKeystroke(true);
+		registerTB.setFillsViewportHeight(true);
+		registerTB.setEnabled(false);
+		registerTB
+				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+		RegisterPane.add(registerTB);
+
+		JScrollPane regS = new JScrollPane(registerTB,
+				JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		regS.setBounds(0, 0, 225, 158);
+		RegisterPane.add(regS);
+
+		String[] CoLNames = { "Location", "Value" };
+		Integer[][] memroyData = new Integer[1][2];
+		memroyData[0][0] = 0;
+		memroyData[0][1] = 0;
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		SettingsTabbedPane.setBounds(741, 38, 276, 579);
 		frame.getContentPane().add(SettingsTabbedPane);
 
-		JLayeredPane layeredPane = new JLayeredPane();
-		SettingsTabbedPane.addTab("Settings", null, layeredPane, null);
+		JLayeredPane memoryCacheSettingsTab = new JLayeredPane();
+		SettingsTabbedPane.addTab("Memory/Cache", null, memoryCacheSettingsTab,
+				null);
 
 		startAdressTF = new JTextField();
 		startAdressTF.setColumns(10);
 		startAdressTF.setBounds(141, 6, 108, 28);
 		PlainDocument doc = (PlainDocument) startAdressTF.getDocument();
 		doc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(startAdressTF);
+		memoryCacheSettingsTab.add(startAdressTF);
 
 		JLabel label = new JLabel("Start Address");
 		label.setBounds(6, 12, 93, 16);
-		layeredPane.add(label);
+		memoryCacheSettingsTab.add(label);
 
 		JLabel label_2 = new JLabel("Cache Settings");
 		label_2.setForeground(Color.GRAY);
 		label_2.setHorizontalAlignment(SwingConstants.LEFT);
 		label_2.setBounds(6, 55, 112, 16);
-		layeredPane.add(label_2);
+		memoryCacheSettingsTab.add(label_2);
 
 		Vector<String> items = new Vector<>();
 		items.add("none");
@@ -390,16 +404,16 @@ public class Window {
 			}
 		});
 
-		layeredPane.add(cacheLevelsCB);
+		memoryCacheSettingsTab.add(cacheLevelsCB);
 
 		JLabel label_3 = new JLabel("Number Of Levels");
 		label_3.setBounds(6, 73, 121, 16);
-		layeredPane.add(label_3);
+		memoryCacheSettingsTab.add(label_3);
 
 		JPanel panel_1 = new JPanel();
 		panel_1.setLayout(null);
 		panel_1.setBounds(6, 242, 243, 142);
-		layeredPane.add(panel_1);
+		memoryCacheSettingsTab.add(panel_1);
 
 		JLabel label_4 = new JLabel("L2-Cache");
 		label_4.setBounds(6, 6, 69, 16);
@@ -490,7 +504,7 @@ public class Window {
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
 		panel_2.setBounds(6, 96, 243, 142);
-		layeredPane.add(panel_2);
+		memoryCacheSettingsTab.add(panel_2);
 
 		JLabel label_8 = new JLabel("L1-Cache");
 		label_8.setBounds(6, 6, 69, 16);
@@ -581,7 +595,7 @@ public class Window {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBounds(6, 388, 243, 142);
-		layeredPane.add(panel_3);
+		memoryCacheSettingsTab.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
 		label_12.setBounds(6, 6, 69, 16);
@@ -675,11 +689,172 @@ public class Window {
 		PlainDocument memoAccessTimeDoc = (PlainDocument) l3MissTimeTF
 				.getDocument();
 		memoAccessTimeDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(memoAccessTimeTF);
+		memoryCacheSettingsTab.add(memoAccessTimeTF);
 
 		JLabel lblMemoryAccessTime = new JLabel("Memory Access Time");
 		lblMemoryAccessTime.setBounds(6, 35, 133, 16);
-		layeredPane.add(lblMemoryAccessTime);
+		memoryCacheSettingsTab.add(lblMemoryAccessTime);
+
+		JLayeredPane TomasuloSettingsTab = new JLayeredPane();
+		SettingsTabbedPane.addTab("Tomasulo", null, TomasuloSettingsTab, null);
+
+		JLabel lblRobSize = new JLabel("Re-order Buffer Size:");
+		lblRobSize.setBounds(6, 10, 130, 16);
+		TomasuloSettingsTab.add(lblRobSize);
+
+		robSizeTF = new JTextField();
+		robSizeTF.setBounds(142, 4, 107, 28);
+		TomasuloSettingsTab.add(robSizeTF);
+		robSizeTF.setColumns(10);
+
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(6, 38, 243, 196);
+		TomasuloSettingsTab.add(tabbedPane);
+
+		JLayeredPane layeredPane = new JLayeredPane();
+		tabbedPane.addTab("Latencies", null, layeredPane, null);
+
+		JLabel lblLoad = new JLabel("Load");
+		lblLoad.setBounds(25, 6, 71, 16);
+		layeredPane.add(lblLoad);
+
+		latLDTF = new JTextField();
+		latLDTF.setBounds(101, 6, 100, 28);
+		PlainDocument latLDTFeDoc = (PlainDocument) latLDTF
+				.getDocument();
+		latLDTFeDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(latLDTF);
+		latLDTF.setColumns(10);
+
+		JLabel lblStore = new JLabel("Store");
+		lblStore.setBounds(25, 31, 71, 16);
+		layeredPane.add(lblStore);
+
+		latSTTF = new JTextField();
+		latSTTF.setColumns(10);
+		PlainDocument latSTTFDoc = (PlainDocument) latSTTF
+				.getDocument();
+		latSTTFDoc.setDocumentFilter(new NumbersFilter());
+		latSTTF.setBounds(101, 33, 100, 28);
+		layeredPane.add(latSTTF);
+
+		JLabel lblAddsub = new JLabel("ADD/SUB");
+		lblAddsub.setBounds(25, 60, 71, 16);
+		layeredPane.add(lblAddsub);
+
+		latAddSubTF = new JTextField();
+		latAddSubTF.setColumns(10);
+		latAddSubTF.setBounds(101, 60, 100, 28);
+		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF
+				.getDocument();
+		latAddSubTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(latAddSubTF);
+
+		JLabel lblMulti = new JLabel("MULT");
+		lblMulti.setBounds(25, 87, 71, 16);
+		layeredPane.add(lblMulti);
+
+		latMultTF = new JTextField();
+		latMultTF.setColumns(10);
+		latMultTF.setBounds(101, 87, 100, 28);
+		layeredPane.add(latMultTF);
+
+		JLabel lblDiv = new JLabel("DIV");
+		lblDiv.setBounds(25, 114, 51, 16);
+		layeredPane.add(lblDiv);
+
+		latDivTF = new JTextField();
+		latDivTF.setColumns(10);
+		latDivTF.setBounds(101, 114, 100, 28);
+		PlainDocument latDivTFTFDoc = (PlainDocument) latDivTF
+				.getDocument();
+		latDivTFTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(latDivTF);
+
+		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_1.setBounds(6, 239, 243, 196);
+		TomasuloSettingsTab.add(tabbedPane_1);
+
+		JLayeredPane layeredPane_1 = new JLayeredPane();
+		tabbedPane_1.addTab("Reservation Stations ", null, layeredPane_1, null);
+
+		JLabel label_23 = new JLabel("Load");
+		label_23.setBounds(25, 6, 71, 16);
+		layeredPane_1.add(label_23);
+
+		rsLdTF = new JTextField();
+		rsLdTF.setColumns(10);
+		rsLdTF.setBounds(101, 6, 100, 28);
+		layeredPane_1.add(rsLdTF);
+
+		JLabel label_24 = new JLabel("Store");
+		label_24.setBounds(25, 31, 71, 16);
+		layeredPane_1.add(label_24);
+
+		reStTF = new JTextField();
+		reStTF.setColumns(10);
+		reStTF.setBounds(101, 33, 100, 28);
+		layeredPane_1.add(reStTF);
+
+		JLabel label_25 = new JLabel("ADD/SUB");
+		label_25.setBounds(25, 60, 71, 16);
+		layeredPane_1.add(label_25);
+
+		reAddSubTF = new JTextField();
+		reAddSubTF.setColumns(10);
+		reAddSubTF.setBounds(101, 60, 100, 28);
+		layeredPane_1.add(reAddSubTF);
+
+		JLabel label_26 = new JLabel("MULT");
+		label_26.setBounds(25, 87, 71, 16);
+		layeredPane_1.add(label_26);
+
+		reMultTF = new JTextField();
+		reMultTF.setColumns(10);
+		reMultTF.setBounds(101, 87, 100, 28);
+		layeredPane_1.add(reMultTF);
+
+		JLabel label_27 = new JLabel("DIV");
+		label_27.setBounds(25, 114, 51, 16);
+		layeredPane_1.add(label_27);
+
+		reDivTF = new JTextField();
+		reDivTF.setColumns(10);
+		reDivTF.setBounds(101, 114, 100, 28);
+		layeredPane_1.add(reDivTF);
+
+		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_2.setBounds(0, 303, 750, 209);
+		frame.getContentPane().add(tabbedPane_2);
+
+		JLayeredPane layeredPane_2 = new JLayeredPane();
+		tabbedPane_2.addTab("Reservation Stations", null, layeredPane_2, null);
+		layeredPane_2.setLayout(new BorderLayout(0, 0));
+
+		reservationStationsTB = new JTable();
+		layeredPane_2.add(reservationStationsTB, BorderLayout.CENTER);
+
+		JTabbedPane tabbedPane_3 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_3.setBounds(0, 498, 750, 167);
+		frame.getContentPane().add(tabbedPane_3);
+
+		JLayeredPane layeredPane_3 = new JLayeredPane();
+		tabbedPane_3.addTab("ROB", null, layeredPane_3, null);
+		layeredPane_3.setLayout(new BorderLayout(0, 0));
+
+		robTB = new JTable();
+		layeredPane_3.add(robTB, BorderLayout.CENTER);
+
+		JTabbedPane tabbedPane_4 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_4.setBounds(0, 650, 750, 122);
+		frame.getContentPane().add(tabbedPane_4);
+
+		JLayeredPane layeredPane_4 = new JLayeredPane();
+		tabbedPane_4.addTab("Registers status", null, layeredPane_4, null);
+		layeredPane_4.setLayout(new BorderLayout(0, 0));
+
+		registersStatusTB = new JTable();
+		layeredPane_4.add(registersStatusTB, BorderLayout.CENTER);
 	}
 
 	private void onClickSaveBT() {
@@ -764,7 +939,7 @@ public class Window {
 
 	private void createConsolePanel() {
 		JTabbedPane bottomPart = new JTabbedPane(JTabbedPane.TOP);
-		bottomPart.setBounds(0, 598, 1023, 181);
+		bottomPart.setBounds(741, 605, 529, 174);
 		frame.getContentPane().add(bottomPart);
 
 		JLayeredPane consolePannel = new JLayeredPane();
@@ -824,7 +999,7 @@ public class Window {
 
 	private void createInputPanel() {
 		JPanel InputPanel = new JPanel();
-		InputPanel.setBounds(6, 6, 723, 593);
+		InputPanel.setBounds(6, 6, 734, 295);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
 		codeInput = new JTextPane();
@@ -857,37 +1032,6 @@ public class Window {
 	}
 
 	private void createRegisterPanel() {
-		RegistersPanel = new JPanel();
-		RegistersPanel.setBounds(1025, 572, 246, 204);
-		frame.getContentPane().add(RegistersPanel);
-		RegistersPanel.setLayout(null);
-
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(0, 0, 246, 204);
-		RegistersPanel.add(tabbedPane);
-
-		JLayeredPane RegisterPane = new JLayeredPane();
-		tabbedPane.addTab("Registers", null, RegisterPane, null);
-		tabbedPane.setEnabledAt(0, true);
-		RegisterPane.setLayout(null);
-
-		registerTB = new JTable(dataValues, columnNames);
-		registerTB.setBounds(2, 18, 206, 138);
-		registerTB.setGridColor(Color.LIGHT_GRAY);
-		registerTB.setSurrendersFocusOnKeystroke(true);
-		registerTB.setFillsViewportHeight(true);
-		registerTB.setEnabled(false);
-		registerTB
-				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
-		RegisterPane.add(registerTB);
-
-		JScrollPane regS = new JScrollPane(registerTB,
-				JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		regS.setBounds(0, 0, 225, 158);
-		RegisterPane.add(regS);
 	}
 
 	/*************************************
@@ -980,11 +1124,9 @@ public class Window {
 	private void setMamoryData(HashMap<Integer, Integer> data) {
 		int counter = 0;
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
-			System.out.println(entry.getKey() + "   " +entry.getValue());
-			memoryTB.setValueAt(entry.getKey().toString(),
-					counter, 0);
-			memoryTB.setValueAt(entry.getValue().toString(),
-					counter, 1);
+			System.out.println(entry.getKey() + "   " + entry.getValue());
+			memoryTB.setValueAt(entry.getKey().toString(), counter, 0);
+			memoryTB.setValueAt(entry.getValue().toString(), counter, 1);
 			counter++;
 		}
 		memoryTB.repaint();
@@ -998,11 +1140,12 @@ public class Window {
 		for (int i = 0; i < 8; i++)
 			dataValues[i][1] = "0";
 	}
+
 	public void CreateMemoryData() {
 		// Create data for each element
 		MemoryDataValues = new String[32768][2];
-//		for (int i = 0; i < 32768; i++)
-//			MemoryDataValues[i][0] = i + "";
+		// for (int i = 0; i < 32768; i++)
+		// MemoryDataValues[i][0] = i + "";
 	}
 
 	/**
@@ -1116,6 +1259,7 @@ public class Window {
 		for (String err : errors)
 			printE(err);
 	}
+
 	private void showMessages(ArrayList<String> messages) {
 		for (String err : messages)
 			printM(err);
