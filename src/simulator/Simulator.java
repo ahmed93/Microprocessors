@@ -399,8 +399,6 @@ public class Simulator {
 	}
 
 	public boolean issuable(Instruction i) {
-<<<<<<< HEAD
-=======
 		for (int j = 0; j < reservationStations.size(); j++) {
 			if (this.reservationStations.get(j).getName().equals(i.getName())
 					&& !this.reservationStations.get(j).isBusy()
@@ -409,7 +407,6 @@ public class Simulator {
 				return true;
 			}
 		}
->>>>>>> 00d000d25a20f28ceb72e85069ce0dd56240b99a
 		return false;
 	}
 
