@@ -12,7 +12,7 @@ public abstract class Instruction implements Word {
 	public final String EXECUTE = "executed";
 	public final String WRITE = "written";
 	public final String COMMIT = "commited";
-	protected int resIndex;
+	protected int resIndex = -1;
 
 	public int getCycles() {
 		return cycles;
