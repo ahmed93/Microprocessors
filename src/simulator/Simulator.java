@@ -410,6 +410,14 @@ public class Simulator {
 		return false;
 	}
 
+	public boolean executable(Instruction i) {
+		if (this.reservationStations.get(i.getResIndex()).getQj() == 0
+				&& this.reservationStations.get(i.getResIndex()).getQk() == 0)
+			return true;
+		else
+			return false;
+	}
+
 	public boolean writable(Instruction i) {
 		return false;
 	}
@@ -418,7 +426,4 @@ public class Simulator {
 		return false;
 	}
 
-	public boolean executable(Instruction i) {
-		return false;
-	}
 }
