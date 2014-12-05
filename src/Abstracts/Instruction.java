@@ -8,6 +8,7 @@ public abstract class Instruction implements Word {
 	protected Simulator simulator;
 	protected String status ="";
 	protected int cycles = 0;
+	protected int resIndex;
 
 	public int getCycles() {
 		return cycles;
@@ -67,6 +68,14 @@ public abstract class Instruction implements Word {
 
 	public void setDirtyBit(boolean dirtyBit) {
 		this.dirtyBit = dirtyBit;
+	}
+
+	public int getResIndex() {
+		return resIndex;
+	}
+
+	public void setResIndex(int resIndex) {
+		this.resIndex = resIndex;
 	}
 
 }
