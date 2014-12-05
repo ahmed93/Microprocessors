@@ -412,11 +412,12 @@ public class Simulator {
 	}
 
 	public boolean executable(Instruction i) {
-		if (this.reservationStations.get(i.getResIndex()).getQj() == 0
-				&& this.reservationStations.get(i.getResIndex()).getQk() == 0)
-			return true;
+		boolean qj = this.reservationStations.get(i.getResIndex()).getQj() == 0;
+		if (i.getName().equals("Store"))
+			return qj;
 		else
-			return false;
+			return qj && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+
 	}
 
 	public boolean writable(Instruction i) {
