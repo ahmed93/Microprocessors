@@ -36,6 +36,7 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
+	ArrayList<Instruction> instructionsToRun;
 	
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -44,9 +45,23 @@ public class Simulator {
 	public void setMemoryAccessTime(int memoryAccessTime) {
 		this.memoryAccessTime = memoryAccessTime;
 	}
+//	public Simulator(Vector<String> data, Vector<String> instructions,
+//			ArrayList<HashMap<String, Integer>> input_caches,
+//			int instruction_starting_address, int memoryAccessTime, HashMap<String, Integer> inputReservationStations) {
+//		this.memory = Memory.getInstance();
+//		this.memoryAccessTime = memoryAccessTime;
+//		this.instruction_starting_address = instruction_starting_address;
+//		this.instructions = instructions;
+//		this.data = data;
+//		this.instructions_addresses = new Vector<Integer>();
+//		this.initializeCaches(input_caches);
+//		this.initializeReservationStations(inputReservationStations);
+//		this.InitailizeRegistersStatus();
+//	}
+	
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address, int memoryAccessTime, HashMap<String, Integer> inputReservationStations) {
+			int instruction_starting_address, int memoryAccessTime) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -54,8 +69,8 @@ public class Simulator {
 		this.data = data;
 		this.instructions_addresses = new Vector<Integer>();
 		this.initializeCaches(input_caches);
-		this.initializeReservationStations(inputReservationStations);
-		this.InitailizeRegistersStatus();
+//		this.initializeReservationStations(inputReservationStations);
+//		this.InitailizeRegistersStatus();
 	}
 	
 	public void InitailizeRegistersStatus()
@@ -122,7 +137,7 @@ public class Simulator {
 		}
 	}
 
-	public void runInstructions() {
+	public void getInstructionsToRun() {
 		pc = instructions_addresses.firstElement();
 		while (pc != instructions_addresses.lastElement()+1) {
 			Instruction instruction = null;
@@ -146,10 +161,10 @@ public class Simulator {
 						instruction_address);
 
 			}
-			pc++;
-			instruction.execute();
-			instructions_executed++;
-
+			instructionsToRun.add(instruction);
+//			pc++;
+//			instruction.execute();
+//			instructions_executed++;
 		}
 		// for (int i = instruction_starting_address; i<=
 		// instructions_ending_address; i++){
@@ -158,6 +173,28 @@ public class Simulator {
 		// memory.getInstructionAt(i).execute();
 		// }
 	}
+	
+	public void runInstructions() {
+		// loop until all instructions are written
+		for (Instruction instruction : instructionsToRun) {
+			// if instruction is issuable
+				// issue instructions 
+				// break
+			// else if instruction is executable and executions cycle != 0
+				// decrement execution cycle
+			// else if instruction is executable and execution cycles == 0
+				// execute instruction
+			// else if instruction is writable
+				// write instruction
+				// forward value to reservation stations waiting
+			// else if instruction is commitable
+				// commit instruction
+			pc++;
+			instruction.execute();
+			instructions_executed++;
+		}	
+	}
+
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
 			int instruction_address) {

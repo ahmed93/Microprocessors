@@ -10,7 +10,7 @@ public class ReservationStation {
 	int Qk;
 	
 	public ReservationStation(String name){
-		this.Name = name;
+		this.Name = name;	
 	}
 	public String getName() {
 		return Name;
