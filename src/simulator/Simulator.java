@@ -22,6 +22,7 @@ public class Simulator {
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
 	private int memoryAccessTime;
+	private HashMap<String,Integer> registers_status;
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
 	}
@@ -51,6 +52,14 @@ public class Simulator {
 		this.data = data;
 		this.instructions_addresses = new Vector<Integer>();
 		this.initializeCaches(input_caches);
+		this.InitailizeRegistersStatus();
+	}
+	
+	public void InitailizeRegistersStatus()
+	{
+		for (int i = 0; i < 8; i++) {
+			registers_status.put("R" + i, 0);
+		}
 	}
 
 	public void Initialize() throws IOException {
