@@ -377,4 +377,20 @@ public class Simulator {
 		output.add("Global AMAT:" + calculateAMAT() + " cycles");
 		return output;
 	}
+	
+	public boolean issuable(Instruction i){
+		return false;
+	}
+	
+	public boolean  writable(Instruction i){
+		return false;
+	}
+	
+	public boolean committable(Instruction i){
+		return false;
+	}
+	
+	public boolean executable(Instruction i){
+		return false;
+	}
 }
