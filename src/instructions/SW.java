@@ -1,6 +1,5 @@
 package instructions;
 
-import simulator.Data;
 import simulator.Register;
 import simulator.Simulator;
 import Abstracts.Instruction;

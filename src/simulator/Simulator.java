@@ -25,6 +25,8 @@ public class Simulator {
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
 	private int memoryAccessTime;
+
+	private HashMap<String,Integer> registers_status;
 	public int pc;
 	int instruction_starting_address;
 	int instructions_ending_address;
@@ -53,6 +55,14 @@ public class Simulator {
 		this.instructions_addresses = new Vector<Integer>();
 		this.initializeCaches(input_caches);
 		this.initializeReservationStations(inputReservationStations);
+		this.InitailizeRegistersStatus();
+	}
+	
+	public void InitailizeRegistersStatus()
+	{
+		for (int i = 0; i < 8; i++) {
+			registers_status.put("R" + i, 0);
+		}
 	}
 
 	public void Initialize() throws IOException {
@@ -377,5 +387,21 @@ public class Simulator {
 		}
 		output.add("Global AMAT:" + calculateAMAT() + " cycles");
 		return output;
+	}
+	
+	public boolean issuable(Instruction i){
+		return false;
+	}
+	
+	public boolean  writable(Instruction i){
+		return false;
+	}
+	
+	public boolean committable(Instruction i){
+		return false;
+	}
+	
+	public boolean executable(Instruction i){
+		return false;
 	}
 }

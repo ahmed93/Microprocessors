@@ -6,6 +6,24 @@ import simulator.Simulator;
 
 public abstract class Instruction implements Word {
 	protected Simulator simulator;
+	protected String status ="";
+	protected int cycles = 0;
+
+	public int getCycles() {
+		return cycles;
+	}
+
+	public void setCycles(int cycles) {
+		this.cycles = cycles;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
 	public Simulator getSimulator() {
 		return simulator;
