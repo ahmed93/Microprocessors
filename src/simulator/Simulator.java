@@ -26,8 +26,7 @@ public class Simulator {
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
 	private int memoryAccessTime;
-
-	private HashMap<String, Integer> registers_status;
+	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
 	public int pc;
 	int instruction_starting_address;
 	int instructions_ending_address;
@@ -50,7 +49,7 @@ public class Simulator {
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
 			int instruction_starting_address, int memoryAccessTime,
-			HashMap<String, Integer> inputReservationStations) {
+			HashMap<String, Integer> inputReservationStations, int ROB_Size) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -60,6 +59,7 @@ public class Simulator {
 		this.initializeCaches(input_caches);
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
+		rob = new ReorderBuffer(ROB_Size);
 	}
 
 	public void InitailizeRegistersStatus() {
@@ -399,6 +399,8 @@ public class Simulator {
 	}
 
 	public boolean issuable(Instruction i) {
+<<<<<<< HEAD
+=======
 		for (int j = 0; j < reservationStations.size(); j++) {
 			if (this.reservationStations.get(j).getName().equals(i.getName())
 					&& !this.reservationStations.get(j).isBusy()
@@ -407,6 +409,7 @@ public class Simulator {
 				return true;
 			}
 		}
+>>>>>>> 00d000d25a20f28ceb72e85069ce0dd56240b99a
 		return false;
 	}
 
