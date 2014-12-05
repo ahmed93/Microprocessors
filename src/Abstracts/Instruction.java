@@ -8,10 +8,10 @@ public abstract class Instruction implements Word {
 	protected Simulator simulator;
 	protected String status ="";
 	protected int cycles = 0;
-	public final String ISSUE = "issued";
-	public final String EXECUTE = "executed";
-	public final String WRITE = "written";
-	public final String COMMIT = "commited";
+	public final String ISSUED = "issued";
+	public final String EXECUTED = "executed";
+	public final String WRITTEN = "written";
+	public final String COMMITED = "commited";
 	protected int resIndex = -1;
 
 	public int getCycles() {

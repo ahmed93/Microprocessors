@@ -37,6 +37,7 @@ public class Simulator {
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
 	ReorderBuffer rob;
+	boolean cdbAvailable;
 
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -419,7 +420,11 @@ public class Simulator {
 	}
 
 	public boolean writable(Instruction i) {
-		return false;
+		boolean tmp = i.getStatus().equals(i.EXECUTED) && this.cdbAvailable;
+		if (i.getName().equals("Store"))
+			return tmp && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+		else
+			return tmp;
 	}
 
 	public boolean committable(Instruction i) {
