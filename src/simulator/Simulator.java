@@ -5,12 +5,15 @@ import instructions.NOP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import cache.DirectMapped;
+import speculation.ReservationStation;
 import Abstracts.Cache;
 import Abstracts.Instruction;
+import cache.DirectMapped;
 import factories.CacheFactory;
 import factories.InstructionFactory;
 
@@ -22,6 +25,16 @@ public class Simulator {
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
 	private int memoryAccessTime;
+	public int pc;
+	int instruction_starting_address;
+	int instructions_ending_address;
+	Vector<String> data;
+	Vector<String> instructions;
+	public int instructions_executed;
+	public int calculatedNumberOfCycles;
+	Vector<Integer> instructions_addresses;
+	ArrayList<ReservationStation> reservationStations;
+	
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
 	}
@@ -29,21 +42,9 @@ public class Simulator {
 	public void setMemoryAccessTime(int memoryAccessTime) {
 		this.memoryAccessTime = memoryAccessTime;
 	}
-
-	public int pc;
-
-	int instruction_starting_address;
-	int instructions_ending_address;
-	Vector<String> data;
-	Vector<String> instructions;
-	public int instructions_executed;
-	public int calculatedNumberOfCycles;
-
-	Vector<Integer> instructions_addresses;
-	
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address, int memoryAccessTime) {
+			int instruction_starting_address, int memoryAccessTime, HashMap<String, Integer> inputReservationStations) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -51,6 +52,7 @@ public class Simulator {
 		this.data = data;
 		this.instructions_addresses = new Vector<Integer>();
 		this.initializeCaches(input_caches);
+		this.initializeReservationStations(inputReservationStations);
 	}
 
 	public void Initialize() throws IOException {
@@ -65,7 +67,15 @@ public class Simulator {
 		// Use Instruction Cache to create Cache
 		// Start instruction execution
 	}
-
+	public void initializeReservationStations(HashMap<String, Integer> inputReservationStations){
+		Iterator it = inputReservationStations.entrySet().iterator();
+		for (Map.Entry<String, Integer> entry : inputReservationStations.entrySet()){
+			for (int i = 0; i < entry.getValue(); i++ ){
+				ReservationStation rs = new ReservationStation(entry.getKey());
+				reservationStations.add(rs);
+			}			
+		}
+	}
 	public void initializeCaches(
 			ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];

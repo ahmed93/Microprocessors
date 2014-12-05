@@ -8,6 +8,10 @@ public class ReservationStation {
 	int Vk;
 	int Qj;
 	int Qk;
+	
+	public ReservationStation(String name){
+		this.Name = name;
+	}
 	public String getName() {
 		return Name;
 	}
