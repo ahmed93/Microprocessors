@@ -21,4 +21,9 @@ public class BEQ extends Instruction {
 			simulator.setPC(imm + simulator.getPc());
 		}
 	}
+	
+	@Override
+	public String getName() {
+		return null;
+	}
 }

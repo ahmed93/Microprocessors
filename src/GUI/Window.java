@@ -264,7 +264,7 @@ public class Window {
 									.parseInt(memoAccessTimeTF.getText()));
 					try {
 						simulator.Initialize();
-						simulator.runInstructions();
+						simulator.getInstructionsToRun();
 						simulator.printMemory();
 						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());

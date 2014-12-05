@@ -1,7 +1,5 @@
 package instructions;
 
-import simulator.Register;
-import simulator.Simulator;
 import Abstracts.Instruction;
 
 public class NOP extends Instruction {
@@ -14,6 +12,11 @@ public class NOP extends Instruction {
 	public void execute() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	public String getName() {
+		return null;
 	}
 
 }

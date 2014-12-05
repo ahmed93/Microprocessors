@@ -5,12 +5,16 @@ import instructions.NOP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import cache.DirectMapped;
+import speculation.ReorderBuffer;
+import speculation.ReservationStation;
 import Abstracts.Cache;
 import Abstracts.Instruction;
+import cache.DirectMapped;
 import factories.CacheFactory;
 import factories.InstructionFactory;
 
@@ -22,6 +26,19 @@ public class Simulator {
 	static final int REGISTERS_NUMBER = 8;
 	private Memory memory;
 	private int memoryAccessTime;
+	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
+	public int pc;
+	int instruction_starting_address;
+	int instructions_ending_address;
+	Vector<String> data;
+	Vector<String> instructions;
+	public int instructions_executed;
+	public int calculatedNumberOfCycles;
+	Vector<Integer> instructions_addresses;
+	ArrayList<ReservationStation> reservationStations;
+	ArrayList<Instruction> instructionsToRun;
+	ReorderBuffer rob;
+
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
 	}
@@ -30,20 +47,25 @@ public class Simulator {
 		this.memoryAccessTime = memoryAccessTime;
 	}
 
-	public int pc;
+	// public Simulator(Vector<String> data, Vector<String> instructions,
+	// ArrayList<HashMap<String, Integer>> input_caches,
+	// int instruction_starting_address, int memoryAccessTime, HashMap<String,
+	// Integer> inputReservationStations) {
+	// this.memory = Memory.getInstance();
+	// this.memoryAccessTime = memoryAccessTime;
+	// this.instruction_starting_address = instruction_starting_address;
+	// this.instructions = instructions;
+	// this.data = data;
+	// this.instructions_addresses = new Vector<Integer>();
+	// this.initializeCaches(input_caches);
+	// this.initializeReservationStations(inputReservationStations);
+	// this.InitailizeRegistersStatus();
+	// }
 
-	int instruction_starting_address;
-	int instructions_ending_address;
-	Vector<String> data;
-	Vector<String> instructions;
-	public int instructions_executed;
-	public int calculatedNumberOfCycles;
-
-	Vector<Integer> instructions_addresses;
-	
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
-			int instruction_starting_address, int memoryAccessTime) {
+			int instruction_starting_address, int memoryAccessTime,
+			HashMap<String, Integer> inputReservationStations, int ROB_Size) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -51,6 +73,15 @@ public class Simulator {
 		this.data = data;
 		this.instructions_addresses = new Vector<Integer>();
 		this.initializeCaches(input_caches);
+		this.initializeReservationStations(inputReservationStations);
+		this.InitailizeRegistersStatus();
+		rob = new ReorderBuffer(ROB_Size);
+	}
+
+	public void InitailizeRegistersStatus() {
+		for (int i = 0; i < 8; i++) {
+			registers_status.put("R" + i, 0);
+		}
 	}
 
 	public void Initialize() throws IOException {
@@ -66,6 +97,18 @@ public class Simulator {
 		// Start instruction execution
 	}
 
+	public void initializeReservationStations(
+			HashMap<String, Integer> inputReservationStations) {
+		Iterator it = inputReservationStations.entrySet().iterator();
+		for (Map.Entry<String, Integer> entry : inputReservationStations
+				.entrySet()) {
+			for (int i = 0; i < entry.getValue(); i++) {
+				ReservationStation rs = new ReservationStation(entry.getKey());
+				reservationStations.add(rs);
+			}
+		}
+	}
+
 	public void initializeCaches(
 			ArrayList<HashMap<String, Integer>> input_caches) {
 		this.caches = new Cache[input_caches.size()];
@@ -79,7 +122,8 @@ public class Simulator {
 			caches[i] = CacheFactory.createCache(
 					input_cache.get("associativity"),
 					input_cache.get("blockSize"), input_cache.get("cacheSize"),
-					policy, input_cache.get("hitTime"), input_cache.get("missTime"));
+					policy, input_cache.get("hitTime"),
+					input_cache.get("missTime"));
 		}
 	}
 
@@ -102,9 +146,9 @@ public class Simulator {
 		}
 	}
 
-	public void runInstructions() {
+	public void getInstructionsToRun() {
 		pc = instructions_addresses.firstElement();
-		while (pc != instructions_addresses.lastElement()+1) {
+		while (pc != instructions_addresses.lastElement() + 1) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
 				instruction = caches[j].searchInstruction(pc);
@@ -126,10 +170,10 @@ public class Simulator {
 						instruction_address);
 
 			}
-			pc++;
-			instruction.execute();
-			instructions_executed++;
-
+			instructionsToRun.add(instruction);
+			// pc++;
+			// instruction.execute();
+			// instructions_executed++;
 		}
 		// for (int i = instruction_starting_address; i<=
 		// instructions_ending_address; i++){
@@ -137,6 +181,27 @@ public class Simulator {
 		// memory.getInstructionAt(i));
 		// memory.getInstructionAt(i).execute();
 		// }
+	}
+
+	public void runInstructions() {
+		// loop until all instructions are written
+		for (Instruction instruction : instructionsToRun) {
+			// if instruction is issuable
+			// issue instructions
+			// break
+			// else if instruction is executable and executions cycle != 0
+			// decrement execution cycle
+			// else if instruction is executable and execution cycles == 0
+			// execute instruction
+			// else if instruction is writable
+			// write instruction
+			// forward value to reservation stations waiting
+			// else if instruction is commitable
+			// commit instruction
+			pc++;
+			instruction.execute();
+			instructions_executed++;
+		}
 	}
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
@@ -328,7 +393,7 @@ public class Simulator {
 		}
 		return reg;
 	}
-	
+
 	public HashMap<Integer, Integer> getMemoryValues() {
 		HashMap<Integer, Integer> tmp = new HashMap<Integer, Integer>();
 		for (int i = 0; i <= 1000; i++) {
@@ -337,35 +402,65 @@ public class Simulator {
 		}
 		return tmp;
 	}
-	
-	public void setPC(int i){
+
+	public void setPC(int i) {
 		this.pc = i;
 	}
-	
-	public int getPc(){
+
+	public int getPc() {
 		return this.pc;
 	}
-	
-	public double calculateAMAT(){
+
+	public double calculateAMAT() {
 		double amat = memoryAccessTime;
-		for (int i = caches.length-1; i>=0; i--){
+		for (int i = caches.length - 1; i >= 0; i--) {
 			Cache c = caches[i];
 			amat = c.getHitTime() + c.getMissRate() * amat;
 		}
 		return amat;
 	}
 
-	public ArrayList<String> output(){
-		ArrayList<String> output= new ArrayList<String>();
+	public ArrayList<String> output() {
+		ArrayList<String> output = new ArrayList<String>();
 		output.add("Number of instructions executed : " + instructions_executed);
-		for (int i = 0; i< caches.length; i++){
-			output.add("Cache Level " + (Integer)(i+1));
+		for (int i = 0; i < caches.length; i++) {
+			output.add("Cache Level " + (Integer) (i + 1));
 			output.add("\tHits: " + caches[i].hits);
 			output.add("\tMisses: " + caches[i].misses);
-			output.add("\tTotat number of accessess: " + caches[i].hits + caches[i].misses);
+			output.add("\tTotat number of accessess: " + caches[i].hits
+					+ caches[i].misses);
 			output.add("\tHit Rate: " + caches[i].getHitRate());
 		}
 		output.add("Global AMAT:" + calculateAMAT() + " cycles");
 		return output;
 	}
+
+	public boolean issuable(Instruction i) {
+		for (int j = 0; j < reservationStations.size(); j++) {
+			if (this.reservationStations.get(j).getName().equals(i.getName())
+					&& !this.reservationStations.get(j).isBusy()
+					&& !this.rob.isFull()) {
+				i.setResIndex(j);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean executable(Instruction i) {
+		if (this.reservationStations.get(i.getResIndex()).getQj() == 0
+				&& this.reservationStations.get(i.getResIndex()).getQk() == 0)
+			return true;
+		else
+			return false;
+	}
+
+	public boolean writable(Instruction i) {
+		return false;
+	}
+
+	public boolean committable(Instruction i) {
+		return false;
+	}
+
 }

@@ -1,6 +1,5 @@
 package instructions;
 
-import simulator.Data;
 import simulator.Register;
 import simulator.Simulator;
 import Abstracts.Instruction;
@@ -27,6 +26,11 @@ public class SW extends Instruction {
 		} else {
 			System.err.println("Wrong immediate" + imm);
 		}
+	}
+	
+	@Override
+	public String getName() {
+		return "Store";
 	}
 
 }
