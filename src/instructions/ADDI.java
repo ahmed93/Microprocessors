@@ -19,5 +19,10 @@ public class ADDI extends Instruction {
 	public void execute() {
 		regA.set_value(regB.get_value() + imm);
 	}
+	
+	@Override
+	public String getName() {
+		return "Add";
+	}
 
 }
