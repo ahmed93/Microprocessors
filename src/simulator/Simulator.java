@@ -193,63 +193,74 @@ public class Simulator {
 	public void runInstructions() {
 		int instructionsCommited = 0;
 		int instructionsToCommit = instructionsToRun.size();
-		while(instructionsCommited <= instructionsToCommit){
-			for (int i = instruction_starting_address; i <pc; i++){
+		while (instructionsCommited <= instructionsToCommit) {
+			for (int i = instruction_starting_address; i < pc; i++) {
 				Instruction instruction = instructionsToRun.get(i);
-				if (issuable(instruction)){
-					for (int j = 0; i < nWay; j++){
-						instruction = instructionsToRun.get(i+j);
-						if (issuable(instruction)){
+				int value = 0;
+				if (issuable(instruction)) {
+					for (int j = 0; i < nWay; j++) {
+						instruction = instructionsToRun.get(i + j);
+						if (issuable(instruction)) {
 							issue(instruction);
 							pc++;
-						}else {
+						} else {
 							break;
 						}
-					}					
-				}else if (executable(instruction)){
-					if (instruction.executionCycles == 1){
-						execute(instruction);
-					}else {
+					}
+				} else if (executable(instruction)) {
+					if (instruction.executionCycles == 1) {
+						if (instruction.getClass() != SW.class) {
+							value = instruction.execute();
+						} else {
+							int address = instruction.getRegB().get_value()
+									+ instruction.getImm();
+							reservationStations.get(instruction.getResIndex())
+									.setA(address);
+						}
+						instruction.executionCycles--;
+					} else {
 						instruction.executionCycles--;
 					}
-				}else if (writable(instruction) && instruction.executionCycles == 0){
-					write(instruction);
-				}else if (commitable(instruction)){
+				} else if (writable(instruction)
+						&& instruction.executionCycles == 0) {
+					write(instruction, value);
+				} else if (committable(instruction)) {
 					commit(instruction);
 					instructionsToCommit++;
 				}
 			}
 		}
-// loop until all instructions are written
-//		int instructionsCommited = 0;
-//		int instructionsToCommit = instructionsToRun.size();
-//		pc = instructions_addresses.firstElement();
-//		int instructionPointer = pc;
-//		while(instructionsCommited <= instructionsToCommit){
-//			Instruction instruction = instructionsToRun.get(instructionPointer);
-//			if (issuable(instruction)){
-//				for (int i = 0; i < nWay; i++){
-//					instruction = instructionsToRun.get(instructionPointer);
-//					if (issuable(instruction)){
-//						issue(instruction);
-//						pc++;
-//					}else {
-//						break;
-//					}
-//				}ad
-//			}else if (executable(inhetruction)){
-//				if (instruction.getExecutionCycles() == 1){
-//				execute(instruction);
-//				}else {
-//					instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
-//				}
-//			}else if (writable(instruction) && instruction.getExecutionCycles() == 0){
-//				write(instruction);
-//			}else if (commitable(instruction)){
-//				commit(instruction);
-//			}
-//			 
-//		}
+		// loop until all instructions are written
+		// int instructionsCommited = 0;
+		// int instructionsToCommit = instructionsToRun.size();
+		// pc = instructions_addresses.firstElement();
+		// int instructionPointer = pc;
+		// while(instructionsCommited <= instructionsToCommit){
+		// Instruction instruction = instructionsToRun.get(instructionPointer);
+		// if (issuable(instruction)){
+		// for (int i = 0; i < nWay; i++){
+		// instruction = instructionsToRun.get(instructionPointer);
+		// if (issuable(instruction)){
+		// issue(instruction);
+		// pc++;
+		// }else {
+		// break;
+		// }
+		// }ad
+		// }else if (executable(inhetruction)){
+		// if (instruction.getExecutionCycles() == 1){
+		// execute(instruction);
+		// }else {
+		// instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
+		// }
+		// }else if (writable(instruction) && instruction.getExecutionCycles()
+		// == 0){
+		// write(instruction);
+		// }else if (commitable(instruction)){
+		// commit(instruction);
+		// }
+		//
+		// }
 	}
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
