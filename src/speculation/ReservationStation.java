@@ -8,6 +8,8 @@ public class ReservationStation {
 	int Vk;
 	int Qj;
 	int Qk;
+	int Dest;
+	int A;
 
 	public ReservationStation(String name, boolean busy, String oP, int vj,
 			int vk, int qj, int qk, int dest, int a) {
@@ -26,7 +28,7 @@ public class ReservationStation {
 	public ReservationStation(String name) {
 		this.Name = name;
 	}
-
+	
 	public String getName() {
 		return Name;
 	}
@@ -98,8 +100,4 @@ public class ReservationStation {
 	public void setA(int a) {
 		A = a;
 	}
-
-	int Dest;
-	int A;
-
 }

@@ -7,19 +7,19 @@ import simulator.Simulator;
 public abstract class Instruction implements Word {
 	protected Simulator simulator;
 	protected String status ="";
-	protected int cycles = 0;
+	protected int executionCycles = 0;
 	public final String ISSUED = "issued";
 	public final String EXECUTED = "executed";
 	public final String WRITTEN = "written";
 	public final String COMMITED = "commited";
 	protected int resIndex = -1;
 
-	public int getCycles() {
-		return cycles;
+	public int getExecutionCycles() {
+		return executionCycles;
 	}
 
-	public void setCycles(int cycles) {
-		this.cycles = cycles;
+	public void setExecutionCycles(int executionCycles) {
+		this.executionCycles = executionCycles;
 	}
 
 	public String getStatus() {
