@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import simulator.Simulator;
-import cache.FullyAssociative;
-import factories.CacheFactory;
 
 public class Main {
 
@@ -49,9 +47,31 @@ public class Main {
 		instructions.add("SW R1, R0, 4");
 		instructions.add("LW R4, R0, 4");
 		int instruction_starting_address = 0;
+		HashMap<String, Integer> inputReservationStations = new HashMap<String, Integer>();
+		inputReservationStations.put(Simulator.INTEGER, 1);
+		inputReservationStations.put(Simulator.LOAD, 1);
+		inputReservationStations.put(Simulator.LOGIC, 1);
+		inputReservationStations.put(Simulator.MULT, 1);
+		inputReservationStations.put(Simulator.STORE, 1);
+		int ROB_Size = 4;
+		HashMap<String, Integer> inputinstructionsLatencies = new HashMap<String, Integer>();
+		inputinstructionsLatencies.put("LW", 1);
+		inputinstructionsLatencies.put("SW", 1);
+		inputinstructionsLatencies.put("JMP", 1);
+		inputinstructionsLatencies.put("BEQ", 1);
+		inputinstructionsLatencies.put("JALR", 1);
+		inputinstructionsLatencies.put("RET", 1);
+		inputinstructionsLatencies.put("ADD", 1);
+		inputinstructionsLatencies.put("SUB", 1);
+		inputinstructionsLatencies.put("ADDI", 1);
+		inputinstructionsLatencies.put("NAND", 1);
+		inputinstructionsLatencies.put("MUL", 1);
+		inputinstructionsLatencies.put("NOP", 1);
 		Simulator simulator = new Simulator(data, instructions,
-				cache_information, instruction_starting_address,
-				memoryAccessTime);
+				cache_information, instruction_starting_address, memoryAccessTime,
+				inputReservationStations, ROB_Size,
+				inputinstructionsLatencies);
+				
 		simulator.Initialize();
 		simulator.getInstructionsToRun();
 		simulator.runInstructions();
