@@ -22,7 +22,7 @@ public class ADD extends Instruction {
 	
 	@Override
 	public String getName() {
-		return "Add";
+		return getSimulator().INTEGER;
 	}
 
 }

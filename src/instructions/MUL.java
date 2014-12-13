@@ -22,6 +22,6 @@ public class MUL extends Instruction {
 	
 	@Override
 	public String getName() {
-		return "Mult";
+		return getSimulator().MULT;
 	}
 }

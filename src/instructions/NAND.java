@@ -22,7 +22,7 @@ public class NAND extends Instruction {
 	
 	@Override
 	public String getName() {
-		return null;
+		return getSimulator().LOGIC;
 	}
 
 }
