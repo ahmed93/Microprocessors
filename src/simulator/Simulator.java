@@ -497,7 +497,7 @@ public class Simulator {
 	}
 
 	public boolean committable(Instruction i) {
-		if (Integer.parseInt(this.rob.getEntryAtHead().get("Destination")) == this.reservationStations
+		if (this.rob.getHead() == this.reservationStations
 				.get(i.getResIndex()).getDest() && this.rob.getEntryAtHead().get("Ready").equals("true"))
 			return true;
 		else
