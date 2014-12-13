@@ -17,6 +17,7 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
 			i.executionCycles = simulator.instructionsLatencies.get("LW");
+			i.setRj(instructionArray[2]);
 			break;
 		case "SW":
 			i = new SW(simulator, instruction,
@@ -24,6 +25,7 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
 			i.executionCycles = simulator.instructionsLatencies.get("SW");
+			i.setRj(instructionArray[2]);
 			break;
 		case "JMP":
 			i = new JMP(simulator, instruction,
@@ -37,12 +39,14 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
 			i.executionCycles = simulator.instructionsLatencies.get("BEQ");
+			i.setRj(instructionArray[2]);
 			break;
 		case "JALR":
 			i = new JALR(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]));
 			i.executionCycles = simulator.instructionsLatencies.get("JALR");
+			i.setRj(instructionArray[2]);
 			break;
 		case "RET":
 			i = new RET(simulator, instruction,
@@ -54,6 +58,8 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			i.setRj(instructionArray[2]);
+			i.setRk(instructionArray[3]);
 			i.executionCycles = simulator.instructionsLatencies.get("ADD");
 			break;
 		case "SUB":
@@ -61,6 +67,8 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			i.setRj(instructionArray[2]);
+			i.setRk(instructionArray[3]);
 			i.executionCycles = simulator.instructionsLatencies.get("SUB");
 			break;
 		case "ADDI":
@@ -68,6 +76,7 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
+			i.setRj(instructionArray[2]);
 			i.executionCycles = simulator.instructionsLatencies.get("ADDI");
 			break;
 		case "NAND":
@@ -76,6 +85,8 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
 			i.executionCycles = simulator.instructionsLatencies.get("NAND");
+			i.setRj(instructionArray[2]);
+			i.setRk(instructionArray[3]);
 			break;
 		case "MUL":
 			i = new MUL(simulator, instruction,
@@ -83,6 +94,8 @@ public class InstructionFactory {
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
 			i.executionCycles = simulator.instructionsLatencies.get("MUL");
+			i.setRj(instructionArray[2]);
+			i.setRk(instructionArray[3]);
 			break;
 		case "NOP":
 			i = new NOP("");
@@ -91,16 +104,8 @@ public class InstructionFactory {
 			System.out.println("Error Creating Instruction");
 			return null;
 		}
-		switch (instructionArray.length) {
-		case 0:
-			i.setOp(instructionArray[0]);
-		case 1:
-			i.setRi(instructionArray[1]);
-		case 2:
-			i.setRj(instructionArray[2]);
-		case 3:
-			i.setRk(instructionArray[3]);
-		}
+		i.setOp(instructionArray[0]);
+		i.setRi(instructionArray[1]);
 
 		// Returns an object that corresponds to the instruction specified in
 		// the parameter.
