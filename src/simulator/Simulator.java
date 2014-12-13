@@ -1,5 +1,6 @@
 package simulator;
 
+import instructions.BEQ;
 import instructions.NOP;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class Simulator {
 	private int memoryAccessTime;
 	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
 	public int pc;
+	public int predictedPC;
 	int instruction_starting_address;
 	int instructions_ending_address;
 	Vector<String> data;
@@ -453,20 +455,75 @@ public class Simulator {
 		if (i.getName().equals("Store"))
 			return qj;
 		else
-			return qj && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return qj
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
 
 	}
 
 	public boolean writable(Instruction i) {
 		boolean tmp = i.getStatus().equals(i.EXECUTED) && this.cdbAvailable;
 		if (i.getName().equals("Store"))
-			return tmp && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return tmp
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
 		else
 			return tmp;
 	}
 
 	public boolean committable(Instruction i) {
 		return false;
+	}
+
+	/*
+	 * Issue—get instruction from FP Op Queue • , send the operands to the
+	 * reservation station if they are available in either the registers or the
+	 * ROB. The number of the ROB entry is also sent to the reservation station
+	 */
+	public void issue(Instruction i) {
+		String name = i.getName();
+		Boolean busy = true;
+		String operation = i.getOp();
+		int vj;
+		int vk;
+		int qj;
+		int qk;
+		int dest = rob.getTail();
+		int address = 0;
+		if(registers_status.get(i.getRj()) == 0)
+			vj = i.getRegB().get_value();
+		else
+			qj = registers_status.get(i.getRj());
+	
+		if(registers_status.get(i.getRk())== 0)
+			vk = i.getRegC().get_value();
+		else
+			qk = registers_status.get(i.getRk());
+		
+		HashMap<String, String> entry = new HashMap<String, String>();
+		entry.put("Type", operation);
+		entry.put("Destination", i.getRi());
+		entry.put("Value", "");
+		entry.put("Ready", "false");
+		rob.addEntry(entry);
+		
+		ReservationStation r =  new ReservationStation(name, busy, operation,
+				vj, vk, qj, qk, dest, address);
+		reservationStations.add(r);
+	}
+
+	public void predictBranch(BEQ i) {
+		if (i.getImm() < 0) // taken
+		{
+			pc += i.getImm();
+			predictedPC = pc;
+		}
+	}
+
+	public boolean checkBranchPrediction(int predictedPC) {
+		if (pc == predictedPC) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

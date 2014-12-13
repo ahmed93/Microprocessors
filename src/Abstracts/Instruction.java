@@ -50,6 +50,31 @@ public abstract class Instruction implements Word {
 	
 	public abstract String getName();
 
+	
+	public Register getRegA() {
+		return regA;
+	}
+
+	public void setRegA(Register regA) {
+		this.regA = regA;
+	}
+
+	public Register getRegB() {
+		return regB;
+	}
+
+	public void setRegB(Register regB) {
+		this.regB = regB;
+	}
+
+	public Register getRegC() {
+		return regC;
+	}
+
+	public void setRegC(Register regC) {
+		this.regC = regC;
+	}
+
 	public int getAddress() {
 		return address;
 	}
@@ -80,6 +105,10 @@ public abstract class Instruction implements Word {
 
 	public void setResIndex(int resIndex) {
 		this.resIndex = resIndex;
+	}
+	
+	public int getImm() {
+		return imm;
 	}
 
 }
