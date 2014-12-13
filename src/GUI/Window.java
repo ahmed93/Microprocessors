@@ -77,7 +77,6 @@ public class Window {
 	private JFrame frame;
 	private RSyntaxTextArea codeInput;
 	private JTextPane consoleTP;
-	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT, debugBT, stopBT, nextBT;
 	private JTable memoryTB, reservationStationsTB, registersStatusTB, robTB;
 	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB,
@@ -86,8 +85,8 @@ public class Window {
 			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF, l1AssociativityTF,
 			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF, l2HitTimeTF,
 			l2MissTimeTF, l1HitTimeTF, l1MissTimeTF, l3HitTimeTF, l3MissTimeTF,
-			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddTF, latMultTF,
-			latDivTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF, rsDivTF, latSubTF;
+			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF, latMultTF,
+			latLogicTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF, rsLogicTF;
 
 	/****************************
 	 ** Data Variables **
@@ -341,28 +340,6 @@ public class Window {
 		// memoryTB.add(memoryS);
 
 		MemoryPane.add(memoryS);
-
-		JLayeredPane RegisterPane = new JLayeredPane();
-		MemoRegTab.addTab("Register", null, RegisterPane, null);
-		RegisterPane.setLayout(null);
-
-		registerTB = new JTable(dataValues, columnNames);
-		registerTB.setBounds(2, 18, 206, 138);
-		registerTB.setGridColor(Color.LIGHT_GRAY);
-		registerTB.setSurrendersFocusOnKeystroke(true);
-		registerTB.setFillsViewportHeight(true);
-		registerTB.setEnabled(false);
-		registerTB
-				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
-		RegisterPane.add(registerTB);
-
-		JScrollPane regS = new JScrollPane(registerTB,
-				JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		regS.setBounds(0, 0, 225, 158);
-		RegisterPane.add(regS);
 
 		String[] CoLNames = { "Location", "Value" };
 		Integer[][] memroyData = new Integer[1][2];
@@ -741,68 +718,59 @@ public class Window {
 		tabbedPane.addTab("Latencies", null, layeredPane, null);
 
 		JLabel lblLoad = new JLabel("Load");
-		lblLoad.setBounds(25, 12, 71, 16);
+		lblLoad.setBounds(25, 25, 71, 16);
 		layeredPane.add(lblLoad);
 
 		latLDTF = new JTextField();
-		latLDTF.setBounds(101, 6, 100, 28);
+		latLDTF.setBounds(101, 19, 100, 28);
 		PlainDocument latLDTFeDoc = (PlainDocument) latLDTF.getDocument();
 		latLDTFeDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latLDTF);
 		latLDTF.setColumns(10);
 
 		JLabel lblStore = new JLabel("Store");
-		lblStore.setBounds(25, 40, 71, 16);
+		lblStore.setBounds(25, 53, 71, 16);
 		layeredPane.add(lblStore);
 
 		latSTTF = new JTextField();
 		latSTTF.setColumns(10);
 		PlainDocument latSTTFDoc = (PlainDocument) latSTTF.getDocument();
 		latSTTFDoc.setDocumentFilter(new NumbersFilter());
-		latSTTF.setBounds(101, 33, 100, 28);
+		latSTTF.setBounds(101, 46, 100, 28);
 		layeredPane.add(latSTTF);
 
-		JLabel lable111 = new JLabel("ADD");
-		lable111.setBounds(25, 66, 71, 16);
+		JLabel lable111 = new JLabel("Add/Sub");
+		lable111.setBounds(25, 79, 71, 16);
 		layeredPane.add(lable111);
 
-		latAddTF = new JTextField();
-		latAddTF.setColumns(10);
-		latAddTF.setBounds(101, 60, 100, 28);
-		PlainDocument latAddSubTFDoc = (PlainDocument) latAddTF.getDocument();
+		latAddSubTF = new JTextField();
+		latAddSubTF.setColumns(10);
+		latAddSubTF.setBounds(101, 73, 100, 28);
+		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF.getDocument();
 		latAddSubTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latAddTF);
+		layeredPane.add(latAddSubTF);
 
 		JLabel lblMulti = new JLabel("MULT");
-		lblMulti.setBounds(25, 119, 71, 16);
+		lblMulti.setBounds(25, 107, 71, 16);
 		layeredPane.add(lblMulti);
 
 		latMultTF = new JTextField();
 		latMultTF.setColumns(10);
-		latMultTF.setBounds(101, 113, 100, 28);
+		latMultTF.setBounds(101, 101, 100, 28);
 		PlainDocument latMultTFDoc = (PlainDocument) latMultTF.getDocument();
 		latMultTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latMultTF);
 
-		JLabel lblDiv = new JLabel("DIV");
-		lblDiv.setBounds(25, 146, 51, 16);
+		JLabel lblDiv = new JLabel("Logic");
+		lblDiv.setBounds(25, 134, 51, 16);
 		layeredPane.add(lblDiv);
 
-		latDivTF = new JTextField();
-		latDivTF.setColumns(10);
-		latDivTF.setBounds(101, 140, 100, 28);
-		PlainDocument latDivTFTFDoc = (PlainDocument) latDivTF.getDocument();
-		latDivTFTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latDivTF);
-
-		JLabel lblSub = new JLabel("SUB");
-		lblSub.setBounds(25, 91, 71, 16);
-		layeredPane.add(lblSub);
-
-		latSubTF = new JTextField();
-		latSubTF.setColumns(10);
-		latSubTF.setBounds(101, 85, 100, 28);
-		layeredPane.add(latSubTF);
+		latLogicTF = new JTextField();
+		latLogicTF.setColumns(10);
+		latLogicTF.setBounds(101, 128, 100, 28);
+		PlainDocument latLogicTFTFDoc = (PlainDocument) latLogicTF.getDocument();
+		latLogicTFTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(latLogicTF);
 
 		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_1.setBounds(6, 260, 243, 196);
@@ -812,7 +780,7 @@ public class Window {
 		tabbedPane_1.addTab("Reservation Stations ", null, layeredPane_1, null);
 
 		JLabel label_23 = new JLabel("Load");
-		label_23.setBounds(25, 6, 71, 16);
+		label_23.setBounds(25, 12, 71, 16);
 		layeredPane_1.add(label_23);
 
 		rsLdTF = new JTextField();
@@ -823,7 +791,7 @@ public class Window {
 		layeredPane_1.add(rsLdTF);
 
 		JLabel label_24 = new JLabel("Store");
-		label_24.setBounds(25, 31, 71, 16);
+		label_24.setBounds(25, 39, 71, 16);
 		layeredPane_1.add(label_24);
 
 		rsStTF = new JTextField();
@@ -834,7 +802,7 @@ public class Window {
 		layeredPane_1.add(rsStTF);
 
 		JLabel label_25 = new JLabel("ADD/SUB");
-		label_25.setBounds(25, 60, 71, 16);
+		label_25.setBounds(25, 66, 71, 16);
 		layeredPane_1.add(label_25);
 
 		rsAddSubTF = new JTextField();
@@ -845,7 +813,7 @@ public class Window {
 		layeredPane_1.add(rsAddSubTF);
 
 		JLabel label_26 = new JLabel("MULT");
-		label_26.setBounds(25, 87, 71, 16);
+		label_26.setBounds(25, 93, 71, 16);
 		layeredPane_1.add(label_26);
 
 		rsMultTF = new JTextField();
@@ -855,16 +823,16 @@ public class Window {
 		rsMultTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsMultTF);
 
-		JLabel label_27 = new JLabel("DIV");
-		label_27.setBounds(25, 114, 51, 16);
+		JLabel label_27 = new JLabel("Logic");
+		label_27.setBounds(25, 120, 51, 16);
 		layeredPane_1.add(label_27);
 
-		rsDivTF = new JTextField();
-		rsDivTF.setColumns(10);
-		rsDivTF.setBounds(101, 114, 100, 28);
-		PlainDocument rsDivTFDoc = (PlainDocument) rsDivTF.getDocument();
-		rsDivTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane_1.add(rsDivTF);
+		rsLogicTF = new JTextField();
+		rsLogicTF.setColumns(10);
+		rsLogicTF.setBounds(101, 114, 100, 28);
+		PlainDocument rsLogicTFDoc = (PlainDocument) rsLogicTF.getDocument();
+		rsLogicTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane_1.add(rsLogicTF);
 
 		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_2.setBounds(0, 303, 750, 209);
@@ -1255,17 +1223,17 @@ public class Window {
 	private void setRegisterData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
 			int col = (int) entry.getKey();
-			registerTB.setValueAt(entry.getValue().toString(), 1, col);
+			registersStatusTB.setValueAt(entry.getValue().toString(), 1, col);
 		}
-		registerTB.repaint();
+		registersStatusTB.repaint();
 	}
 
 	private void setRegisterStatusData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
 			int col = (int) entry.getKey();
-			registerTB.setValueAt(entry.getValue().toString(), 0, col);
+			registersStatusTB.setValueAt(entry.getValue().toString(), 0, col);
 		}
-		registerTB.repaint();
+		registersStatusTB.repaint();
 	}
 
 	private void setMamoryData(HashMap<Integer, Integer> data) {
@@ -1313,8 +1281,8 @@ public class Window {
 	 * **/
 	private HashMap<String, Integer> getinputReservationStations() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("add", Integer.parseInt(rsAddSubTF.getText()));
-		tmp.put("div", Integer.parseInt(rsDivTF.getText()));
+		tmp.put("integer", Integer.parseInt(rsAddSubTF.getText()));
+		tmp.put("logic", Integer.parseInt(rsLogicTF.getText()));
 		tmp.put("mult", Integer.parseInt(rsMultTF.getText()));
 		tmp.put("store", Integer.parseInt(rsStTF.getText()));
 		tmp.put("load", Integer.parseInt(rsLdTF.getText()));
@@ -1326,9 +1294,8 @@ public class Window {
 	 * **/
 	private HashMap<String, Integer> getinputLatencies() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("add", Integer.parseInt(latAddTF.getText()));
-		tmp.put("sub", Integer.parseInt(latSubTF.getText()));
-		tmp.put("div", Integer.parseInt(latDivTF.getText()));
+		tmp.put("integer", Integer.parseInt(latAddSubTF.getText()));
+		tmp.put("logic", Integer.parseInt(latLogicTF.getText()));
 		tmp.put("mult", Integer.parseInt(latMultTF.getText()));
 		tmp.put("store", Integer.parseInt(latSTTF.getText()));
 		tmp.put("load", Integer.parseInt(latLDTF.getText()));
