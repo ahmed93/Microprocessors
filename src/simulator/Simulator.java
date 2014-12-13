@@ -44,6 +44,7 @@ public class Simulator {
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
 	HashMap<Integer, Instruction> instructionsToRun;
+	HashMap<String, Integer> instructionsLatencies;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
 	int nWay;
@@ -74,14 +75,16 @@ public class Simulator {
 	public Simulator(Vector<String> data, Vector<String> instructions,
 			ArrayList<HashMap<String, Integer>> input_caches,
 			int instruction_starting_address, int memoryAccessTime,
-			HashMap<String, Integer> inputReservationStations, int ROB_Size) {
+			HashMap<String, Integer> inputReservationStations, int ROB_Size,
+			HashMap<String, Integer> inputinstructionsLatencies) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
 		this.instructions = instructions;
 		this.data = data;
-		this.instructions_addresses = new Vector<Integer>();
+		this.instructionsLatencies = inputinstructionsLatencies;
 		this.initializeCaches(input_caches);
+		this.instructions_addresses = new Vector<Integer>();
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
 		rob = new ReorderBuffer(ROB_Size);
@@ -213,6 +216,7 @@ public class Simulator {
 					if (instruction.executionCycles == 1) {
 						if (instruction.getClass() != SW.class) {
 							value = instruction.execute();
+							instruction.setStatus(Instruction.EXECUTED);
 						} else {
 							int address = instruction.getRegB().get_value()
 									+ instruction.getImm();
@@ -228,7 +232,7 @@ public class Simulator {
 					write(instruction, value);
 				} else if (committable(instruction)) {
 					commit(instruction);
-					instructionsToCommit++;
+					instructionsCommited++;
 				}
 			}
 		}
