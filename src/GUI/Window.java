@@ -37,6 +37,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -85,8 +86,9 @@ public class Window {
 			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF, l1AssociativityTF,
 			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF, l2HitTimeTF,
 			l2MissTimeTF, l1HitTimeTF, l1MissTimeTF, l3HitTimeTF, l3MissTimeTF,
-			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF, latMultTF,
-			latLogicTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF, rsLogicTF;
+			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF,
+			latMultTF, latLogicTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF,
+			rsLogicTF;
 
 	/****************************
 	 ** Data Variables **
@@ -264,10 +266,13 @@ public class Window {
 					ArrayList<HashMap<String, Integer>> input_caches = getCaches();
 					int instruction_starting_address = getStartingAddress();
 					HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+					HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
 					int ROB_Size = Integer.parseInt(robSizeTF.getText());
+
 					simulator = new Simulator(data, instructions, input_caches,
 							instruction_starting_address, memoryAccessTime,
-							inputReservationStations, ROB_Size);
+							inputReservationStations, ROB_Size,
+							inputinstructionsLatencies);
 					try {
 						simulator.Initialize();
 						simulator.getInstructionsToRun();
@@ -281,6 +286,7 @@ public class Window {
 				} else {
 					showErrors();
 				}
+
 				// debugBT.setEnabled(true);
 				runBT.setEnabled(true);
 			}
@@ -746,7 +752,8 @@ public class Window {
 		latAddSubTF = new JTextField();
 		latAddSubTF.setColumns(10);
 		latAddSubTF.setBounds(101, 73, 100, 28);
-		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF.getDocument();
+		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF
+				.getDocument();
 		latAddSubTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latAddSubTF);
 
@@ -768,7 +775,8 @@ public class Window {
 		latLogicTF = new JTextField();
 		latLogicTF.setColumns(10);
 		latLogicTF.setBounds(101, 128, 100, 28);
-		PlainDocument latLogicTFTFDoc = (PlainDocument) latLogicTF.getDocument();
+		PlainDocument latLogicTFTFDoc = (PlainDocument) latLogicTF
+				.getDocument();
 		latLogicTFTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latLogicTF);
 
@@ -1053,7 +1061,6 @@ public class Window {
 		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
 		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-				
 
 		InputPanel.add(Rscroll);
 		// one.start();
@@ -1197,13 +1204,14 @@ public class Window {
 	}
 
 	private void appendCode(String line) {
-		// StyledDocument doc = codeInput.get getStyledDocument();
-		// Style style = consoleTP.addStyle(line, null);
-		// StyleConstants.setForeground(style, Color.BLACK);
-		// try {
-		// doc.insertString(doc.getLength(), line + "\n", style);
-		// } catch (BadLocationException ex) {
-		// }
+
+		Document doc = codeInput.getDocument();
+		Style style = consoleTP.addStyle(line, null);
+		StyleConstants.setForeground(style, Color.BLACK);
+		try {
+			doc.insertString(doc.getLength(), line + "\n", style);
+		} catch (BadLocationException ex) {
+		}
 	}
 
 	/**
@@ -1302,15 +1310,16 @@ public class Window {
 		return tmp;
 	}
 
-	private HashMap<String, Integer> getRegisterStatusData() {
-		HashMap<String, Integer> registerDataTmp = new HashMap<String, Integer>();
-		for (int i = 0; i < RegisterStatusDV.length; i++) {
-			String data = RegisterStatusDV[i].toString();
-			data = data.substring(1, data.length());
-			registerDataTmp.put(RegisterStatusCN[i], Integer.parseInt(data));
-		}
-		return registerDataTmp;
-	}
+	// private HashMap<String, Integer> getRegisterStatusData() {
+	// HashMap<String, Integer> registerDataTmp = new HashMap<String,
+	// Integer>();
+	// for (int i = 0; i < RegisterStatusDV.length; i++) {
+	// String data = RegisterStatusDV[i].toString();
+	// data = data.substring(1, data.length());
+	// registerDataTmp.put(RegisterStatusCN[i], Integer.parseInt(data));
+	// }
+	// return registerDataTmp;
+	// }
 
 	/**
 	 * Data and Instruction Settings initializing Both data and instruction
@@ -1438,37 +1447,51 @@ public class Window {
 			onClickSaveBT();
 
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("Starting Address can't be blank. \n ====================================");
+			errors.add("- Starting Address can't be blank. \n ====================================");
 		if (memoAccessTimeTF.getText().trim().isEmpty())
-			errors.add("Memory Access Time can't be blank. \n ====================================");
+			errors.add("- Memory Access Time can't be blank. \n ====================================");
 		if (cacheLevelsCB.getSelectedIndex() == 0)
-			errors.add("Select the number of caches levels needed \n ====================================");
+			errors.add("- Select the number of caches levels needed \n ====================================");
 		else if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Cache-Size can't be blank");
+				errors.add("- L1-Cache: Cache-Size can't be blank");
 			if (l1BlockSizeTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Block-Size can't be blank");
+				errors.add("- L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Associativity can't be blank");
+				errors.add("- L1-Cache: Associativity can't be blank");
 			// errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Cache-Size can't be blank");
+					errors.add("- L2-Cache: Cache-Size can't be blank");
 				if (l2BlockSizeTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Block-Size can't be blank");
+					errors.add("- L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Associativity can't be blank");
+					errors.add("- L2-Cache: Associativity can't be blank");
 				// errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Cache-Size can't be blank");
+						errors.add("- L3-Cache: Cache-Size can't be blank");
 					if (l3BlockSizeTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Block-Size can't be blank");
+						errors.add("- L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Associativity can't be blank");
+						errors.add("- L3-Cache: Associativity can't be blank");
 					// errors.add("====================================");
 				}
 			}
+		}
+		if (latAddSubTF.getText().trim().isEmpty()
+				|| latLDTF.getText().trim().isEmpty()
+				|| latLogicTF.getText().trim().isEmpty()
+				|| latMultTF.getText().trim().isEmpty()
+				|| latSTTF.getText().trim().isEmpty()) {
+			errors.add("- Latencies can't be blank. \n ====================================");
+		}
+		if (rsAddSubTF.getText().trim().isEmpty()
+				|| rsLdTF.getText().trim().isEmpty()
+				|| rsLogicTF.getText().trim().isEmpty()
+				|| rsMultTF.getText().trim().isEmpty()
+				|| rsStTF.getText().trim().isEmpty()) {
+			errors.add("- Reservation Stations can't be blank. \n ====================================");
 		}
 		return errors.isEmpty() ? true : false;
 	}
