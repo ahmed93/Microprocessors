@@ -560,15 +560,24 @@ public class Simulator {
 		int dest = rob.getTail();
 		int address = 0;
 		i.setStatus(Instruction.ISSUED);
-		if (registers_status.get(i.getRj()) == 0)
+		if (registers_status.get(i.getRj()) == 0){
 			vj = i.getRegB().get_value();
+			qj = 0;
+		}
 		else
+		{
+			vj = 0;
 			qj = registers_status.get(i.getRj());
-
-		if (registers_status.get(i.getRk()) == 0)
+		}
+		if (registers_status.get(i.getRk()) == 0){
 			vk = i.getRegC().get_value();
+			qk = 0;
+		}
 		else
+		{
 			qk = registers_status.get(i.getRk());
+			vk = 0;
+		}
 
 		HashMap<String, String> entry = new HashMap<String, String>();
 		entry.put("Type", operation);
