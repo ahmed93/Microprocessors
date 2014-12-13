@@ -36,9 +36,10 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
-	ArrayList<Instruction> instructionsToRun;
+	HashMap<Integer ,Instruction> instructionsToRun;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
+	int nWay;
 
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -171,7 +172,7 @@ public class Simulator {
 						instruction_address);
 
 			}
-			instructionsToRun.add(instruction);
+			instructionsToRun.put(pc, instruction);
 			// pc++;
 			// instruction.execute();
 			// instructions_executed++;
@@ -186,6 +187,31 @@ public class Simulator {
 
 	public void runInstructions() {
 		// loop until all instructions are written
+		int instructionsCommited = 0;
+		int instructionsToCommit = instructionsToRun.size();
+		pc = instructions_addresses.firstElement();
+		while(instructionsCommited <= instructionsToCommit){
+			Instruction instruction = instructionsToRun.get(pc);
+			if (issuable(instruction)){
+				for (int i = 0; i < nWay; i++){
+					instruction = instructionsToRun.get(pc);
+					if (issuable(instruction)){
+						issue(instruction);
+						pc++;
+					}else {
+						break;
+					}
+				}
+			}
+			if (executable(instruction)){
+				if (instruction.executionCycles == 0){
+				execute(instruction);
+				}else {
+					instruction.executionCycles--;
+				}
+			}
+			 
+		}
 		for (Instruction instruction : instructionsToRun) {
 			// if instruction is issuable
 			// issue instructions
