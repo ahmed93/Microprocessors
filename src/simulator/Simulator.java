@@ -85,6 +85,7 @@ public class Simulator {
 		this.instructionsLatencies = inputinstructionsLatencies;
 		this.initializeCaches(input_caches);
 		this.instructions_addresses = new Vector<Integer>();
+		this.instructionsToRun = new HashMap<Integer, Instruction>();
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
 		rob = new ReorderBuffer(ROB_Size);
@@ -112,6 +113,7 @@ public class Simulator {
 	public void initializeReservationStations(
 			HashMap<String, Integer> inputReservationStations) {
 		Iterator it = inputReservationStations.entrySet().iterator();
+		reservationStations = new ArrayList<ReservationStation>();
 		for (Map.Entry<String, Integer> entry : inputReservationStations
 				.entrySet()) {
 			for (int i = 0; i < entry.getValue(); i++) {
@@ -159,13 +161,13 @@ public class Simulator {
 	}
 
 	public void getInstructionsToRun() {
-		pc = instructions_addresses.firstElement();
-		while (pc != instructions_addresses.lastElement() + 1) {
+		int counter = instructions_addresses.firstElement();
+		while (counter != instructions_addresses.lastElement() + 1) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
-				instruction = caches[j].searchInstruction(pc);
+				instruction = caches[j].searchInstruction(counter);
 				if (instruction != null && instruction.getClass() != NOP.class) {
-					updateInstructionInHigherCaches(j, pc);
+					updateInstructionInHigherCaches(j, counter);
 					// place instruction in higher cache levels(j)
 					caches[j].hits++;
 					break;
@@ -176,14 +178,14 @@ public class Simulator {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
-				int instruction_address = pc;
+				int instruction_address = counter;
 				instruction = this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
 			}
-			instructionsToRun.put(pc, instruction);
-			// pc++;
+			instructionsToRun.put(counter, instruction);
+			counter++;
 			// instruction.execute();
 			// instructions_executed++;
 		}
@@ -198,12 +200,17 @@ public class Simulator {
 	public void runInstructions() {
 		int instructionsCommited = 0;
 		int instructionsToCommit = instructionsToRun.size();
+		pc = instruction_starting_address;
 		while (instructionsCommited <= instructionsToCommit) {
-			for (int i = instruction_starting_address; i < pc; i++) {
+			System.out.println("i -> " + instruction_starting_address + "pc -> " + pc);
+			for (int i = instruction_starting_address; i <= pc; i++) {
+				System.out.println("Inside inner loop");
 				Instruction instruction = instructionsToRun.get(i);
 				int value = 0;
 				if (issuable(instruction)) {
+					System.out.println("Issuing");
 					for (int j = 0; i < nWay; j++) {
+						System.out.println("Still Issuing");
 						instruction = instructionsToRun.get(i + j);
 						if (issuable(instruction)) {
 							issue(instruction);
@@ -213,6 +220,7 @@ public class Simulator {
 						}
 					}
 				} else if (executable(instruction)) {
+					System.out.println("Executing");
 					if (instruction.executionCycles == 1) {
 						if (instruction.getClass() != SW.class) {
 							value = instruction.execute();
@@ -229,8 +237,10 @@ public class Simulator {
 					}
 				} else if (writable(instruction)
 						&& instruction.executionCycles == 0) {
+					System.out.println("Writing");
 					write(instruction, value);
 				} else if (committable(instruction)) {
+					System.out.println("Commiting");
 					commit(instruction);
 					instructionsCommited++;
 				}
@@ -268,7 +278,6 @@ public class Simulator {
 		//
 		// }
 	}
-
 	public void updateInstructionInHigherCaches(int cacheIndex,
 			int instruction_address) {
 		Instruction instruction = null;
