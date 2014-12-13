@@ -93,8 +93,12 @@ public class InstructionFactory {
 			System.out.println("Error Creating Instruction");
 			return null;
 		}
+		for (int j = 0; j < instructionArray.length; j++) {
+			System.out.println(instructionArray[j]);
+		}
 		i.setOp(instructionArray[0]);
-		i.setRi(instructionArray[1]);
+		if (!instructionArray[0].equals("NOP"))
+			i.setRi(instructionArray[1]);
 		i.executionCycles = simulator.instructionsLatencies
 				.get(instructionArray[0]);
 
