@@ -76,7 +76,7 @@ public class Simulator {
 			ArrayList<HashMap<String, Integer>> input_caches,
 			int instruction_starting_address, int memoryAccessTime,
 			HashMap<String, Integer> inputReservationStations, int ROB_Size,
-			HashMap<String, Integer> inputinstructionsLatencies) {
+			HashMap<String, Integer> inputinstructionsLatencies, int nWay) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -88,10 +88,12 @@ public class Simulator {
 		this.instructionsToRun = new HashMap<Integer, Instruction>();
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
+		this.nWay = nWay;
 		rob = new ReorderBuffer(ROB_Size);
 	}
 
 	public void InitailizeRegistersStatus() {
+		this.registers_status = new HashMap<String, Integer>();
 		for (int i = 0; i < 8; i++) {
 			registers_status.put("R" + i, 0);
 		}
@@ -213,6 +215,7 @@ public class Simulator {
 						System.out.println("Still Issuing");
 						instruction = instructionsToRun.get(i + j);
 						if (issuable(instruction)) {
+							System.out.println(instruction);
 							issue(instruction);
 							pc++;
 						} else {
@@ -578,6 +581,7 @@ public class Simulator {
 			vj = 0;
 			qj = registers_status.get(i.getRj());
 		}
+		System.out.println("RK" + i.getRk());
 		if (registers_status.get(i.getRk()) == 0){
 			vk = i.getRegC().get_value();
 			qk = 0;

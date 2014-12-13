@@ -70,7 +70,7 @@ public class Main {
 		Simulator simulator = new Simulator(data, instructions,
 				cache_information, instruction_starting_address, memoryAccessTime,
 				inputReservationStations, ROB_Size,
-				inputinstructionsLatencies);
+				inputinstructionsLatencies, 1);
 				
 		simulator.Initialize();
 		simulator.getInstructionsToRun();
