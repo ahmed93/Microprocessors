@@ -49,7 +49,7 @@ public abstract class Instruction implements Word {
 		this.simulator = simulator;
 	}
 
-	public abstract void execute();
+	public abstract int execute();
 
 	public abstract String getName();
 

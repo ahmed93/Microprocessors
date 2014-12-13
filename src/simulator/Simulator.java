@@ -533,6 +533,8 @@ public class Simulator {
 		ReservationStation r =  new ReservationStation(name, busy, operation,
 				vj, vk, qj, qk, dest, address);
 		reservationStations.add(r);
+		if(i.getClass() == BEQ.class)
+			predictBranch((BEQ)i);
 	}
 
 	public void predictBranch(BEQ i) {
