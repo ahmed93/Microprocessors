@@ -6,12 +6,12 @@ import simulator.Simulator;
 
 public abstract class Instruction implements Word {
 	protected Simulator simulator;
-	protected String status ="";
-	protected int cycles = 0;
-	public final String ISSUE = "issued";
-	public final String EXECUTE = "executed";
-	public final String WRITE = "written";
-	public final String COMMIT = "commited";
+	protected String status = "";
+	public int executionCycles = 0;
+	public final String ISSUED = "issued";
+	public final String EXECUTED = "executed";
+	public final String WRITTEN = "written";
+	public final String COMMITED = "commited";
 	protected int resIndex = -1;
 	protected String instruction;
 	protected Register regA;
@@ -20,11 +20,62 @@ public abstract class Instruction implements Word {
 	protected int imm;
 	protected int address;
 	protected boolean dirtyBit;
-	public int executionCycles;
+	protected String Ri;
+	protected String Rj;
+	protected String Rk;
+	protected String Op;
+
+	public int getExecutionCycles() {
+		return executionCycles;
+	}
+
+	public void setExecutionCycles(int executionCycles) {
+		this.executionCycles = executionCycles;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Simulator getSimulator() {
+		return simulator;
+	}
+
+	public void setSimulator(Simulator simulator) {
+		this.simulator = simulator;
+	}
 
 	public abstract int execute();
-	
+
 	public abstract String getName();
+
+	public Register getRegA() {
+		return regA;
+	}
+
+	public void setRegA(Register regA) {
+		this.regA = regA;
+	}
+
+	public Register getRegB() {
+		return regB;
+	}
+
+	public void setRegB(Register regB) {
+		this.regB = regB;
+	}
+
+	public Register getRegC() {
+		return regC;
+	}
+
+	public void setRegC(Register regC) {
+		this.regC = regC;
+	}
 
 	public int getAddress() {
 		return address;
@@ -57,29 +108,41 @@ public abstract class Instruction implements Word {
 	public void setResIndex(int resIndex) {
 		this.resIndex = resIndex;
 	}
-	public int getCycles() {
-		return cycles;
+
+	public int getImm() {
+		return imm;
 	}
 
-	public void setCycles(int cycles) {
-		this.cycles = cycles; 
+	public String getRi() {
+		return Ri;
 	}
 
-	public String getStatus() {
-		return status;
+	public void setRi(String ri) {
+		Ri = ri;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public String getRj() {
+		return Rj;
 	}
 
-	public Simulator getSimulator() {
-		return simulator;
+	public void setRj(String rj) {
+		Rj = rj;
 	}
 
-	public void setSimulator(Simulator simulator) {
-		this.simulator = simulator;
+	public String getRk() {
+		return Rk;
 	}
 
+	public void setRk(String rk) {
+		Rk = rk;
+	}
+
+	public String getOp() {
+		return Op;
+	}
+
+	public void setOp(String op) {
+		Op = op;
+	}
 
 }

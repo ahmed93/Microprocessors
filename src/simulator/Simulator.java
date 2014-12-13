@@ -2,6 +2,7 @@ package simulator;
 
 import instructions.BEQ;
 import instructions.NOP;
+import instructions.SW;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
-	HashMap<Integer ,Instruction> instructionsToRun;
+	HashMap<Integer, Instruction> instructionsToRun;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
 	int nWay;
@@ -235,8 +236,8 @@ public class Simulator {
 //					}else {
 //						break;
 //					}
-//				}
-//			}else if (executable(instruction)){
+//				}ad
+//			}else if (executable(inhetruction)){
 //				if (instruction.getExecutionCycles() == 1){
 //				execute(instruction);
 //				}else {
@@ -248,23 +249,6 @@ public class Simulator {
 //				commit(instruction);
 //			}
 //			 
-//		}
-//		for (Instruction instruction : instructionsToRun) {
-			// if instruction is issuable
-			// issue instructions
-			// break
-			// else if instruction is executable and executions cycle != 0
-			// decrement execution cycle
-			// else if instruction is executable and execution cycles == 0
-			// execute instruction
-			// else if instruction is writable
-			// write instruction
-			// forward value to reservation stations waiting
-			// else if instruction is commitable
-			// commit instruction
-//			pc++;
-//			instruction.execute();
-//			instructions_executed++;
 //		}
 	}
 
@@ -531,8 +515,9 @@ public class Simulator {
 	}
 
 	public boolean committable(Instruction i) {
-		if (this.rob.getHead() == this.reservationStations
-				.get(i.getResIndex()).getDest() && this.rob.getEntryAtHead().get("Ready").equals("true"))
+		if (this.rob.getHead() == this.reservationStations.get(i.getResIndex())
+				.getDest()
+				&& this.rob.getEntryAtHead().get("Ready").equals("true"))
 			return true;
 		else
 			return false;
@@ -548,28 +533,28 @@ public class Simulator {
 		int qk = 0;
 		int dest = rob.getTail();
 		int address = 0;
-		if(registers_status.get(i.getRj()) == 0)
+		if (registers_status.get(i.getRj()) == 0)
 			vj = i.getRegB().get_value();
 		else
 			qj = registers_status.get(i.getRj());
-	
-		if(registers_status.get(i.getRk())== 0)
+
+		if (registers_status.get(i.getRk()) == 0)
 			vk = i.getRegC().get_value();
 		else
 			qk = registers_status.get(i.getRk());
-		
+
 		HashMap<String, String> entry = new HashMap<String, String>();
 		entry.put("Type", operation);
 		entry.put("Destination", i.getRi());
 		entry.put("Value", "");
 		entry.put("Ready", "false");
 		rob.addEntry(entry);
-		
-		ReservationStation r =  new ReservationStation(name, busy, operation,
+
+		ReservationStation r = new ReservationStation(name, busy, operation,
 				vj, vk, qj, qk, dest, address);
 		reservationStations.add(r);
-		if(i.getClass() == BEQ.class)
-			predictBranch((BEQ)i);
+		if (i.getClass() == BEQ.class)
+			predictBranch((BEQ) i);
 	}
 
 	public void predictBranch(BEQ i) {
@@ -578,6 +563,25 @@ public class Simulator {
 			pc += i.getImm();
 			predictedPC = pc;
 		}
+	}
+
+	public void commit(Instruction i) {
+		if (i.getClass() == SW.class) {
+			i.execute();
+		} else {
+			if (checkBranchPrediction(predictedPC)) {
+				int rob_index = reservationStations.get(i.getResIndex())
+						.getDest();
+				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
+						"Value"));
+				registers_status.put(i.getRi(), value);
+				rob.moveHead();
+			} else {
+				rob.reset();
+				reservationStations.clear();
+			}
+		}
+
 	}
 
 	public boolean checkBranchPrediction(int predictedPC) {

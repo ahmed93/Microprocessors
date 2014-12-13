@@ -44,6 +44,12 @@ public class ReorderBuffer {
 		
 	}
 	
+	public HashMap<String,String> getEntryAt(int i)
+	{
+		return entries[i];
+		
+	}
+	
 	public void reset()
 	{
 		for (int i = 1; i <= Size; i++) {
