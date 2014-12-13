@@ -14,8 +14,9 @@ public class JMP extends Instruction {
 	}
 
 	@Override
-	public void execute() {
+	public int execute() {
 		simulator.pc = simulator.pc + regA.get_value() + imm;
+		return 1;
 	}
 	
 	@Override

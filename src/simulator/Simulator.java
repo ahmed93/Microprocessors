@@ -1,5 +1,6 @@
 package simulator;
 
+import instructions.BEQ;
 import instructions.NOP;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class Simulator {
 	private int memoryAccessTime;
 	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
 	public int pc;
+	public int predictedPC;
 	int instruction_starting_address;
 	int instructions_ending_address;
 	Vector<String> data;
@@ -204,10 +206,10 @@ public class Simulator {
 				}
 			}
 			if (executable(instruction)){
-				if (instruction.executionCycles == 0){
+				if (instruction.getExecutionCycles() == 0){
 				execute(instruction);
 				}else {
-					instruction.executionCycles--;
+					instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
 				}
 			}
 			 
@@ -499,6 +501,56 @@ public class Simulator {
 			return true;
 		else
 			return false;
+	}
+
+	public void issue(Instruction i) {
+		String name = i.getName();
+		Boolean busy = true;
+		String operation = i.getOp();
+		int vj = 0;
+		int vk = 0;
+		int qj = 0;
+		int qk = 0;
+		int dest = rob.getTail();
+		int address = 0;
+		if(registers_status.get(i.getRj()) == 0)
+			vj = i.getRegB().get_value();
+		else
+			qj = registers_status.get(i.getRj());
+	
+		if(registers_status.get(i.getRk())== 0)
+			vk = i.getRegC().get_value();
+		else
+			qk = registers_status.get(i.getRk());
+		
+		HashMap<String, String> entry = new HashMap<String, String>();
+		entry.put("Type", operation);
+		entry.put("Destination", i.getRi());
+		entry.put("Value", "");
+		entry.put("Ready", "false");
+		rob.addEntry(entry);
+		
+		ReservationStation r =  new ReservationStation(name, busy, operation,
+				vj, vk, qj, qk, dest, address);
+		reservationStations.add(r);
+		if(i.getClass() == BEQ.class)
+			predictBranch((BEQ)i);
+	}
+
+	public void predictBranch(BEQ i) {
+		if (i.getImm() < 0) // taken
+		{
+			pc += i.getImm();
+			predictedPC = pc;
+		}
+	}
+
+	public boolean checkBranchPrediction(int predictedPC) {
+		if (pc == predictedPC) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

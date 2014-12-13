@@ -16,10 +16,12 @@ public class BEQ extends Instruction {
 	}
 
 	@Override
-	public void execute() {
+	public int execute() {
 		if (regA.get_value() == regB.get_value()) {
 			simulator.setPC(imm + simulator.getPc());
+			return 1;
 		}
+		return 0;
 	}
 	
 	@Override

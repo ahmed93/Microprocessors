@@ -17,13 +17,14 @@ public class LW extends Instruction {
 	}
 
 	@Override
-	public void execute() {
+	public int execute() {
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
 			Data data = this.simulator.getCachedOrMemoryData(address);
-			regA.set_value(data.get_value());
+			return data.get_value();
 		} else {
 			System.err.println("Wrong immediate" + imm);
+			return -1;
 		}
 	}
 	
