@@ -36,6 +36,12 @@ public class ReorderBuffer {
 	public int getTail() {
 		return tail;
 	}
+	
+	public HashMap<String,String> getEntryAtHead()
+	{
+		return entries[head];
+		
+	}
 
 	public void moveHead() {
 		head = (head + 1) % Size;
