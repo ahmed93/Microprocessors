@@ -30,7 +30,7 @@ public class LW extends Instruction {
 	
 	@Override
 	public String getName() {
-		return "Load";
+		return getSimulator().LOAD;
 	}
 
 }

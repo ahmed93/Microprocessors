@@ -24,7 +24,12 @@ public class Simulator {
 	public Cache[] caches;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
-	static final int REGISTERS_NUMBER = 8;
+	public static final int REGISTERS_NUMBER = 8;
+	public static final String INTEGER = "integer";
+	public static final String LOGIC = "logic";
+	public static final String LOAD = "load";
+	public static final String STORE = "store";
+	public static final String MULT = "mult";
 	private Memory memory;
 	private int memoryAccessTime;
 	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
@@ -492,6 +497,7 @@ public class Simulator {
 	}
 
 	public boolean issuable(Instruction i) {
+		if(i.getStatus() == ""){
 		for (int j = 0; j < reservationStations.size(); j++) {
 			if (this.reservationStations.get(j).getName().equals(i.getName())
 					&& !this.reservationStations.get(j).isBusy()
@@ -500,16 +506,20 @@ public class Simulator {
 				return true;
 			}
 		}
+		}
 		return false;
 	}
 
 	public boolean executable(Instruction i) {
+		if(i.getStatus() == i.ISSUED){
 		boolean qj = this.reservationStations.get(i.getResIndex()).getQj() == 0;
 		if (i.getName().equals("Store"))
 			return qj;
 		else
 			return qj
 					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
+		}
+		return false;
 
 	}
 
@@ -523,12 +533,16 @@ public class Simulator {
 	}
 
 	public boolean committable(Instruction i) {
+		if(i.getStatus() == i.WRITTEN){
 		if (this.rob.getHead() == this.reservationStations.get(i.getResIndex())
 				.getDest()
 				&& this.rob.getEntryAtHead().get("Ready").equals("true"))
 			return true;
 		else
 			return false;
+		}
+		return false;
+		
 	}
 
 	public void issue(Instruction i) {
@@ -541,6 +555,7 @@ public class Simulator {
 		int qk = 0;
 		int dest = rob.getTail();
 		int address = 0;
+		i.setStatus(Instruction.ISSUED);
 		if (registers_status.get(i.getRj()) == 0)
 			vj = i.getRegB().get_value();
 		else
@@ -577,7 +592,7 @@ public class Simulator {
 		if (i.getClass() == SW.class) {
 			i.execute();
 		} else {
-			if (checkBranchPrediction(predictedPC)) {
+			if (i.getClass() == BEQ.class && checkBranchPrediction(predictedPC)) {
 				int rob_index = reservationStations.get(i.getResIndex())
 						.getDest();
 				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
@@ -585,9 +600,10 @@ public class Simulator {
 				registers_status.put(i.getRi(), 0);
 				i.getRegA().set_value(value);
 				rob.moveHead();
+				i.setStatus(Instruction.COMMITED);
 			} else {
 				rob.reset();
-				reservationStations.clear();
+				reservationStations.clear(); 
 			}
 		}
 
@@ -617,6 +633,7 @@ public class Simulator {
 		}
 		this.reservationStations.set(i.getResIndex(), new ReservationStation(
 				this.reservationStations.get(i.getResIndex()).getName()));
+		i.setStatus(Instruction.WRITTEN);
 	}
 
 }

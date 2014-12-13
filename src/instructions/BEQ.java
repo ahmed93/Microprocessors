@@ -26,6 +26,6 @@ public class BEQ extends Instruction {
 	
 	@Override
 	public String getName() {
-		return null;
+		return getSimulator().LOGIC;
 	}
 }

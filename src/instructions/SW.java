@@ -31,7 +31,7 @@ public class SW extends Instruction {
 	
 	@Override
 	public String getName() {
-		return "Store";
+		return getSimulator().STORE;
 	}
 
 }
