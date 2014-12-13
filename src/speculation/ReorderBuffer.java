@@ -26,6 +26,7 @@ public class ReorderBuffer {
 	public void addEntry(HashMap<String, String> entry) {
 		if (!full) {
 			entries[tail] = entry;
+			moveTail();
 		}
 	}
 
@@ -35,6 +36,30 @@ public class ReorderBuffer {
 
 	public int getTail() {
 		return tail;
+	}
+	
+	public HashMap<String,String> getEntryAtHead()
+	{
+		return entries[head];
+		
+	}
+	
+	public HashMap<String,String> getEntryAt(int i)
+	{
+		return entries[i];
+		
+	}
+	
+	public void reset()
+	{
+		for (int i = 1; i <= Size; i++) {
+			HashMap<String, String> entry = new HashMap<String, String>();
+			entry.put("Type", "");
+			entry.put("Destination", "");
+			entry.put("Value", "");
+			entry.put("Ready", "");
+			entries[i] = entry;
+		}
 	}
 
 	public void moveHead() {
@@ -46,12 +71,10 @@ public class ReorderBuffer {
 	}
 
 	public void moveTail() {
-		if (!full) {
 			tail = (tail + 1) % Size;
 			if (tail == 0)
 				tail = 1;
 			setFull();
-		}
 	}
 
 	private void setFull() {

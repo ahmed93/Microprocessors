@@ -13,12 +13,13 @@ public class RET extends Instruction {
 	}
 
 	@Override
-	public void execute() {
+	public int execute() {
 		simulator.pc = regA.get_value();
+		return 1;
 	}
 	
 	@Override
 	public String getName() {
-		return null;
+		return getSimulator().INTEGER;
 	}
 }

@@ -15,14 +15,15 @@ public class JALR extends Instruction {
 	}
 
 	@Override
-	public void execute() {
-		this.regA.set_value(this.simulator.pc);
+	public int execute() {
+		int PC =  this.simulator.pc;
 		this.simulator.pc = this.regB.get_value();
+		return PC;
 
 	}
 	
 	@Override
 	public String getName() {
-		return null;
+		return getSimulator().INTEGER;
 	}
 }

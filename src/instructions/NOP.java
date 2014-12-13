@@ -9,9 +9,8 @@ public class NOP extends Instruction {
 	}
 
 	@Override
-	public void execute() {
-		// TODO Auto-generated method stub
-		
+	public int execute() {
+		return -1;
 	}
 	
 	@Override

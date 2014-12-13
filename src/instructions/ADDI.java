@@ -16,13 +16,13 @@ public class ADDI extends Instruction {
 	}
 
 	@Override
-	public void execute() {
-		regA.set_value(regB.get_value() + imm);
+	public int execute() {
+		return regB.get_value() + imm;
 	}
 	
 	@Override
 	public String getName() {
-		return "Add";
+		return getSimulator().INTEGER;
 	}
 
 }

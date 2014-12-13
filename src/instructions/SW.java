@@ -16,21 +16,22 @@ public class SW extends Instruction {
 	}
 
 	@Override
-	public void execute() {
-
+	public int execute() {
 		if (imm >= -64 || imm <= 63) {
 			int address = regB.get_value() + imm;
 			// Write Policy
 			 this.simulator.writeDataWithPolicies(address, regA.get_value());
+			 return 1;
 //			this.simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
 			System.err.println("Wrong immediate" + imm);
+			return -1;
 		}
 	}
 	
 	@Override
 	public String getName() {
-		return "Store";
+		return getSimulator().STORE;
 	}
 
 }

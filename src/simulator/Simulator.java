@@ -1,6 +1,8 @@
 package simulator;
 
+import instructions.BEQ;
 import instructions.NOP;
+import instructions.SW;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +11,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-
 import speculation.ReorderBuffer;
 import speculation.ReservationStation;
 import Abstracts.Cache;
@@ -23,11 +24,17 @@ public class Simulator {
 	public Cache[] caches;
 	HashMap<String, Register> registers;
 	String inputFile = "input.txt";
-	static final int REGISTERS_NUMBER = 8;
+	public static final int REGISTERS_NUMBER = 8;
+	public static final String INTEGER = "integer";
+	public static final String LOGIC = "logic";
+	public static final String LOAD = "load";
+	public static final String STORE = "store";
+	public static final String MULT = "mult";
 	private Memory memory;
 	private int memoryAccessTime;
 	private HashMap<String, Integer> registers_status = new HashMap<String, Integer>();
 	public int pc;
+	public int predictedPC;
 	int instruction_starting_address;
 	int instructions_ending_address;
 	Vector<String> data;
@@ -36,9 +43,10 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
-	ArrayList<Instruction> instructionsToRun;
+	HashMap<Integer, Instruction> instructionsToRun;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
+	int nWay;
 
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -171,7 +179,7 @@ public class Simulator {
 						instruction_address);
 
 			}
-			instructionsToRun.add(instruction);
+			instructionsToRun.put(pc, instruction);
 			// pc++;
 			// instruction.execute();
 			// instructions_executed++;
@@ -185,24 +193,76 @@ public class Simulator {
 	}
 
 	public void runInstructions() {
-		// loop until all instructions are written
-		for (Instruction instruction : instructionsToRun) {
-			// if instruction is issuable
-			// issue instructions
-			// break
-			// else if instruction is executable and executions cycle != 0
-			// decrement execution cycle
-			// else if instruction is executable and execution cycles == 0
-			// execute instruction
-			// else if instruction is writable
-			// write instruction
-			// forward value to reservation stations waiting
-			// else if instruction is commitable
-			// commit instruction
-			pc++;
-			instruction.execute();
-			instructions_executed++;
+		int instructionsCommited = 0;
+		int instructionsToCommit = instructionsToRun.size();
+		while (instructionsCommited <= instructionsToCommit) {
+			for (int i = instruction_starting_address; i < pc; i++) {
+				Instruction instruction = instructionsToRun.get(i);
+				int value = 0;
+				if (issuable(instruction)) {
+					for (int j = 0; i < nWay; j++) {
+						instruction = instructionsToRun.get(i + j);
+						if (issuable(instruction)) {
+							issue(instruction);
+							pc++;
+						} else {
+							break;
+						}
+					}
+				} else if (executable(instruction)) {
+					if (instruction.executionCycles == 1) {
+						if (instruction.getClass() != SW.class) {
+							value = instruction.execute();
+						} else {
+							int address = instruction.getRegB().get_value()
+									+ instruction.getImm();
+							reservationStations.get(instruction.getResIndex())
+									.setA(address);
+						}
+						instruction.executionCycles--;
+					} else {
+						instruction.executionCycles--;
+					}
+				} else if (writable(instruction)
+						&& instruction.executionCycles == 0) {
+					write(instruction, value);
+				} else if (committable(instruction)) {
+					commit(instruction);
+					instructionsToCommit++;
+				}
+			}
 		}
+		// loop until all instructions are written
+		// int instructionsCommited = 0;
+		// int instructionsToCommit = instructionsToRun.size();
+		// pc = instructions_addresses.firstElement();
+		// int instructionPointer = pc;
+		// while(instructionsCommited <= instructionsToCommit){
+		// Instruction instruction = instructionsToRun.get(instructionPointer);
+		// if (issuable(instruction)){
+		// for (int i = 0; i < nWay; i++){
+		// instruction = instructionsToRun.get(instructionPointer);
+		// if (issuable(instruction)){
+		// issue(instruction);
+		// pc++;
+		// }else {
+		// break;
+		// }
+		// }ad
+		// }else if (executable(inhetruction)){
+		// if (instruction.getExecutionCycles() == 1){
+		// execute(instruction);
+		// }else {
+		// instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
+		// }
+		// }else if (writable(instruction) && instruction.getExecutionCycles()
+		// == 0){
+		// write(instruction);
+		// }else if (commitable(instruction)){
+		// commit(instruction);
+		// }
+		//
+		// }
 	}
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
@@ -437,6 +497,7 @@ public class Simulator {
 	}
 
 	public boolean issuable(Instruction i) {
+		if(i.getStatus() == ""){
 		for (int j = 0; j < reservationStations.size(); j++) {
 			if (this.reservationStations.get(j).getName().equals(i.getName())
 					&& !this.reservationStations.get(j).isBusy()
@@ -445,28 +506,134 @@ public class Simulator {
 				return true;
 			}
 		}
+		}
 		return false;
 	}
 
 	public boolean executable(Instruction i) {
+		if(i.getStatus() == i.ISSUED){
 		boolean qj = this.reservationStations.get(i.getResIndex()).getQj() == 0;
 		if (i.getName().equals("Store"))
 			return qj;
 		else
-			return qj && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return qj
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
+		}
+		return false;
 
 	}
 
 	public boolean writable(Instruction i) {
 		boolean tmp = i.getStatus().equals(i.EXECUTED) && this.cdbAvailable;
 		if (i.getName().equals("Store"))
-			return tmp && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return tmp
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
 		else
 			return tmp;
 	}
 
 	public boolean committable(Instruction i) {
+		if(i.getStatus() == i.WRITTEN){
+		if (this.rob.getHead() == this.reservationStations.get(i.getResIndex())
+				.getDest()
+				&& this.rob.getEntryAtHead().get("Ready").equals("true"))
+			return true;
+		else
+			return false;
+		}
 		return false;
+		
+	}
+
+	public void issue(Instruction i) {
+		String name = i.getName();
+		Boolean busy = true;
+		String operation = i.getOp();
+		int vj = 0;
+		int vk = 0;
+		int qj = 0;
+		int qk = 0;
+		int dest = rob.getTail();
+		int address = 0;
+		i.setStatus(Instruction.ISSUED);
+		if (registers_status.get(i.getRj()) == 0)
+			vj = i.getRegB().get_value();
+		else
+			qj = registers_status.get(i.getRj());
+
+		if (registers_status.get(i.getRk()) == 0)
+			vk = i.getRegC().get_value();
+		else
+			qk = registers_status.get(i.getRk());
+
+		HashMap<String, String> entry = new HashMap<String, String>();
+		entry.put("Type", operation);
+		entry.put("Destination", i.getRi());
+		entry.put("Value", "");
+		entry.put("Ready", "false");
+		rob.addEntry(entry);
+
+		ReservationStation r = new ReservationStation(name, busy, operation,
+				vj, vk, qj, qk, dest, address);
+		reservationStations.add(r);
+		if (i.getClass() == BEQ.class)
+			predictBranch((BEQ) i);
+	}
+
+	public void predictBranch(BEQ i) {
+		if (i.getImm() < 0) // taken
+		{
+			pc += i.getImm();
+			predictedPC = pc;
+		}
+	}
+
+	public void commit(Instruction i) {
+		if (i.getClass() == SW.class) {
+			i.execute();
+		} else {
+			if (i.getClass() == BEQ.class && checkBranchPrediction(predictedPC)) {
+				int rob_index = reservationStations.get(i.getResIndex())
+						.getDest();
+				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
+						"Value"));
+				registers_status.put(i.getRi(), 0);
+				i.getRegA().set_value(value);
+				rob.moveHead();
+				i.setStatus(Instruction.COMMITED);
+			} else {
+				rob.reset();
+				reservationStations.clear(); 
+			}
+		}
+
+	}
+
+	public boolean checkBranchPrediction(int predictedPC) {
+		if (pc == predictedPC) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void write(Instruction i, int value) {
+		int dest = this.registers_status.get(i.getRi());
+		this.rob.getEntryAt(dest).put("Value", "" + value);
+		this.rob.getEntryAt(dest).put("Ready", "true");
+		for (int j = 0; j < this.reservationStations.size(); j++) {
+			if (this.reservationStations.get(j).getQj() == dest) {
+				this.reservationStations.get(j).setVj(value);
+				this.reservationStations.get(j).setQj(0);
+			}
+			if (this.reservationStations.get(j).getQk() == dest) {
+				this.reservationStations.get(j).setVk(value);
+				this.reservationStations.get(j).setQk(0);
+			}
+		}
+		this.reservationStations.set(i.getResIndex(), new ReservationStation(
+				this.reservationStations.get(i.getResIndex()).getName()));
+		i.setStatus(Instruction.WRITTEN);
 	}
 
 }
