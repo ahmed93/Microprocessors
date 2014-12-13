@@ -2,6 +2,7 @@ package simulator;
 
 import instructions.BEQ;
 import instructions.NOP;
+import instructions.SW;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -544,7 +545,16 @@ public class Simulator {
 			predictedPC = pc;
 		}
 	}
-
+	
+	
+	public void commit(Instruction i) {
+		if(i.getClass() == SW.class)
+		{
+			
+		}
+		
+	}
+	
 	public boolean checkBranchPrediction(int predictedPC) {
 		if (pc == predictedPC) {
 			return true;
