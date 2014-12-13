@@ -216,7 +216,7 @@ public class Simulator {
 			}
 
 		}
-		for (Instruction instruction : instructionsToRun) {
+//		for (Instruction instruction : instructionsToRun) {
 			// if instruction is issuable
 			// issue instructions
 			// break
@@ -229,10 +229,10 @@ public class Simulator {
 			// forward value to reservation stations waiting
 			// else if instruction is commitable
 			// commit instruction
-			pc++;
-			instruction.execute();
-			instructions_executed++;
-		}
+//			pc++;
+//			instruction.execute();
+//			instructions_executed++;
+//		}
 	}
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
@@ -550,7 +550,19 @@ public class Simulator {
 
 	public void commit(Instruction i) {
 		if (i.getClass() == SW.class) {
-
+			i.execute();
+		} else {
+			if (checkBranchPrediction(predictedPC)) {
+				int rob_index = reservationStations.get(i.getResIndex())
+						.getDest();
+				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
+						"Value"));
+				registers_status.put(i.getRi(), value);
+				rob.moveHead();
+			} else {
+				rob.reset();
+				reservationStations.clear();
+			}
 		}
 
 	}
