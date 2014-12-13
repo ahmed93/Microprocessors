@@ -39,7 +39,7 @@ public class Simulator {
 	public int calculatedNumberOfCycles;
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
-	HashMap<Integer ,Instruction> instructionsToRun;
+	HashMap<Integer, Instruction> instructionsToRun;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
 	int nWay;
@@ -193,27 +193,28 @@ public class Simulator {
 		int instructionsCommited = 0;
 		int instructionsToCommit = instructionsToRun.size();
 		pc = instructions_addresses.firstElement();
-		while(instructionsCommited <= instructionsToCommit){
+		while (instructionsCommited <= instructionsToCommit) {
 			Instruction instruction = instructionsToRun.get(pc);
-			if (issuable(instruction)){
-				for (int i = 0; i < nWay; i++){
+			if (issuable(instruction)) {
+				for (int i = 0; i < nWay; i++) {
 					instruction = instructionsToRun.get(pc);
-					if (issuable(instruction)){
+					if (issuable(instruction)) {
 						issue(instruction);
 						pc++;
-					}else {
+					} else {
 						break;
 					}
 				}
 			}
-			if (executable(instruction)){
-				if (instruction.getExecutionCycles() == 0){
-				execute(instruction);
-				}else {
-					instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
+			if (executable(instruction)) {
+				if (instruction.getExecutionCycles() == 0) {
+					execute(instruction);
+				} else {
+					instruction.setExecutionCycles(instruction
+							.getExecutionCycles() - 1);
 				}
 			}
-			 
+
 		}
 		for (Instruction instruction : instructionsToRun) {
 			// if instruction is issuable
@@ -497,8 +498,9 @@ public class Simulator {
 	}
 
 	public boolean committable(Instruction i) {
-		if (this.rob.getHead() == this.reservationStations
-				.get(i.getResIndex()).getDest() && this.rob.getEntryAtHead().get("Ready").equals("true"))
+		if (this.rob.getHead() == this.reservationStations.get(i.getResIndex())
+				.getDest()
+				&& this.rob.getEntryAtHead().get("Ready").equals("true"))
 			return true;
 		else
 			return false;
@@ -514,28 +516,28 @@ public class Simulator {
 		int qk = 0;
 		int dest = rob.getTail();
 		int address = 0;
-		if(registers_status.get(i.getRj()) == 0)
+		if (registers_status.get(i.getRj()) == 0)
 			vj = i.getRegB().get_value();
 		else
 			qj = registers_status.get(i.getRj());
-	
-		if(registers_status.get(i.getRk())== 0)
+
+		if (registers_status.get(i.getRk()) == 0)
 			vk = i.getRegC().get_value();
 		else
 			qk = registers_status.get(i.getRk());
-		
+
 		HashMap<String, String> entry = new HashMap<String, String>();
 		entry.put("Type", operation);
 		entry.put("Destination", i.getRi());
 		entry.put("Value", "");
 		entry.put("Ready", "false");
 		rob.addEntry(entry);
-		
-		ReservationStation r =  new ReservationStation(name, busy, operation,
+
+		ReservationStation r = new ReservationStation(name, busy, operation,
 				vj, vk, qj, qk, dest, address);
 		reservationStations.add(r);
-		if(i.getClass() == BEQ.class)
-			predictBranch((BEQ)i);
+		if (i.getClass() == BEQ.class)
+			predictBranch((BEQ) i);
 	}
 
 	public void predictBranch(BEQ i) {
@@ -545,22 +547,38 @@ public class Simulator {
 			predictedPC = pc;
 		}
 	}
-	
-	
+
 	public void commit(Instruction i) {
-		if(i.getClass() == SW.class)
-		{
-			
+		if (i.getClass() == SW.class) {
+
 		}
-		
+
 	}
-	
+
 	public boolean checkBranchPrediction(int predictedPC) {
 		if (pc == predictedPC) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	public void write(Instruction i, int value) {
+		int dest = this.registers_status.get(i.getRi());
+		this.rob.getEntryAt(dest).put("Value", "" + value);
+		this.rob.getEntryAt(dest).put("Ready", "true");
+		for (int j = 0; j < this.reservationStations.size(); j++) {
+			if (this.reservationStations.get(j).getQj() == dest) {
+				this.reservationStations.get(j).setVj(value);
+				this.reservationStations.get(j).setQj(0);
+			}
+			if (this.reservationStations.get(j).getQk() == dest) {
+				this.reservationStations.get(j).setVk(value);
+				this.reservationStations.get(j).setQk(0);
+			}
+		}
+		this.reservationStations.set(i.getResIndex(), new ReservationStation(
+				this.reservationStations.get(i.getResIndex()).getName()));
 	}
 
 }
