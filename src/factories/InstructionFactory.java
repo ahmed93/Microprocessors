@@ -9,68 +9,92 @@ public class InstructionFactory {
 	public static Instruction create_instruction(String instruction,
 			Simulator simulator) {
 		String[] instructionArray = instruction.split("(?: |, )");
+		Instruction i = null;
 		switch (instructionArray[0]) {
 		case "LW":
-			return new LW(simulator, instruction,
+			i = new LW(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
+			break;
 		case "SW":
-			return new SW(simulator, instruction,
+			i = new SW(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
+			break;
 		case "JMP":
-			return new JMP(simulator, instruction,
+			i = new JMP(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					Integer.parseInt(instructionArray[2]));
+			break;
 		case "BEQ":
-			return new BEQ(simulator, instruction,
+			i = new BEQ(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
+			break;
 		case "JALR":
-			return new JALR(simulator, instruction,
+			i = new JALR(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]));
+			break;
 		case "RET":
-			return new RET(simulator, instruction,
+			i = new RET(simulator, instruction,
 					simulator.getRegister(instructionArray[1]));
+			break;
 		case "ADD":
-			return new ADD(simulator, instruction,
+			i = new ADD(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			break;
 		case "SUB":
-			return new SUB(simulator, instruction,
+			i = new SUB(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			break;
 		case "ADDI":
-			return new ADDI(simulator, instruction,
+			i = new ADDI(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					Integer.parseInt(instructionArray[3]));
+			break;
 		case "NAND":
-			return new NAND(simulator, instruction,
+			i = new NAND(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			break;
 		case "MUL":
-			return new MUL(simulator, instruction,
+			i = new MUL(simulator, instruction,
 					simulator.getRegister(instructionArray[1]),
 					simulator.getRegister(instructionArray[2]),
 					simulator.getRegister(instructionArray[3]));
+			break;
 		case "NOP":
-			return new NOP("");
-
+			i = new NOP("");
+			break;
+		default:
+			System.out.println("Error Creating Instruction");
+			return null;
+		}
+		switch (instructionArray.length) {
+		case 0:
+			i.setOp(instructionArray[0]);
+		case 1:
+			i.setRi(instructionArray[1]);
+		case 2:
+			i.setRj(instructionArray[2]);
+		case 3:
+			i.setRk(instructionArray[3]);
 		}
 
 		// Returns an object that corresponds to the instruction specified in
 		// the parameter.
-
-		System.out.println("Error Creating Instruction");
-		return null;
+		
+		return i;
 	}
 
 }

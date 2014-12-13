@@ -503,19 +503,14 @@ public class Simulator {
 			return false;
 	}
 
-	/*
-	 * Issue—get instruction from FP Op Queue • , send the operands to the
-	 * reservation station if they are available in either the registers or the
-	 * ROB. The number of the ROB entry is also sent to the reservation station
-	 */
 	public void issue(Instruction i) {
 		String name = i.getName();
 		Boolean busy = true;
 		String operation = i.getOp();
-		int vj;
-		int vk;
-		int qj;
-		int qk;
+		int vj = 0;
+		int vk = 0;
+		int qj = 0;
+		int qk = 0;
 		int dest = rob.getTail();
 		int address = 0;
 		if(registers_status.get(i.getRj()) == 0)

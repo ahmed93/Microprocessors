@@ -6,13 +6,24 @@ import simulator.Simulator;
 
 public abstract class Instruction implements Word {
 	protected Simulator simulator;
-	protected String status ="";
+	protected String status = "";
 	protected int executionCycles = 0;
 	public final String ISSUED = "issued";
 	public final String EXECUTED = "executed";
 	public final String WRITTEN = "written";
 	public final String COMMITED = "commited";
 	protected int resIndex = -1;
+	protected String instruction;
+	protected Register regA;
+	protected Register regB;
+	protected Register regC;
+	protected int imm;
+	protected int address;
+	protected boolean dirtyBit;
+	protected String Ri;
+	protected String Rj;
+	protected String Rk;
+	protected String Op;
 
 	public int getExecutionCycles() {
 		return executionCycles;
@@ -38,19 +49,10 @@ public abstract class Instruction implements Word {
 		this.simulator = simulator;
 	}
 
-	protected String instruction;
-	protected Register regA;
-	protected Register regB;
-	protected Register regC;
-	protected int imm;
-	protected int address;
-	protected boolean dirtyBit;
-
 	public abstract void execute();
-	
+
 	public abstract String getName();
 
-	
 	public Register getRegA() {
 		return regA;
 	}
@@ -106,9 +108,41 @@ public abstract class Instruction implements Word {
 	public void setResIndex(int resIndex) {
 		this.resIndex = resIndex;
 	}
-	
+
 	public int getImm() {
 		return imm;
+	}
+
+	public String getRi() {
+		return Ri;
+	}
+
+	public void setRi(String ri) {
+		Ri = ri;
+	}
+
+	public String getRj() {
+		return Rj;
+	}
+
+	public void setRj(String rj) {
+		Rj = rj;
+	}
+
+	public String getRk() {
+		return Rk;
+	}
+
+	public void setRk(String rk) {
+		Rk = rk;
+	}
+
+	public String getOp() {
+		return Op;
+	}
+
+	public void setOp(String op) {
+		Op = op;
 	}
 
 }
