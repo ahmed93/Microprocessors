@@ -11,9 +11,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-
-import com.sun.org.apache.bcel.internal.generic.InstructionComparator;
-
 import speculation.ReorderBuffer;
 import speculation.ReservationStation;
 import Abstracts.Cache;
@@ -574,7 +571,8 @@ public class Simulator {
 						.getDest();
 				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
 						"Value"));
-				registers_status.put(i.getRi(), value);
+				registers_status.put(i.getRi(), 0);
+				i.getRegA().set_value(value);
 				rob.moveHead();
 			} else {
 				rob.reset();
