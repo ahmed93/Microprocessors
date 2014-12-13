@@ -13,6 +13,7 @@ public class BEQ extends Instruction {
 		this.regA = regA;
 		this.regB = regB;
 		this.imm = imm;
+		this.status = "";
 	}
 
 	@Override

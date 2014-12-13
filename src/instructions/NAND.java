@@ -13,6 +13,7 @@ public class NAND extends Instruction {
 		this.regA = regA;
 		this.regB = regB;
 		this.regC = regC;
+		this.status = "";
 	}
 
 	@Override

@@ -10,6 +10,7 @@ public class RET extends Instruction {
 		this.simulator = simulator;
 		this.instruction = instruction;
 		this.regA = regA;
+		this.status = "";
 	}
 
 	@Override

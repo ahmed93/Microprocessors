@@ -6,6 +6,7 @@ public class NOP extends Instruction {
 	public NOP(String instruction) {
 		super();
 		this.instruction = instruction;
+		this.status = "";
 	}
 
 	@Override
