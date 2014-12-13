@@ -592,4 +592,22 @@ public class Simulator {
 		}
 	}
 
+	public void write(Instruction i, int value) {
+		int dest = this.registers_status.get(i.getRi());
+		this.rob.getEntryAt(dest).put("Value", "" + value);
+		this.rob.getEntryAt(dest).put("Ready", "true");
+		for (int j = 0; j < this.reservationStations.size(); j++) {
+			if (this.reservationStations.get(j).getQj() == dest) {
+				this.reservationStations.get(j).setVj(value);
+				this.reservationStations.get(j).setQj(0);
+			}
+			if (this.reservationStations.get(j).getQk() == dest) {
+				this.reservationStations.get(j).setVk(value);
+				this.reservationStations.get(j).setQk(0);
+			}
+		}
+		this.reservationStations.set(i.getResIndex(), new ReservationStation(
+				this.reservationStations.get(i.getResIndex()).getName()));
+	}
+
 }
