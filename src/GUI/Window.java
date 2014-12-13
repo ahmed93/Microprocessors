@@ -272,7 +272,7 @@ public class Window {
 					simulator = new Simulator(data, instructions, input_caches,
 							instruction_starting_address, memoryAccessTime,
 							inputReservationStations, ROB_Size,
-							inputinstructionsLatencies);
+							inputinstructionsLatencies, 1);
 					try {
 						simulator.Initialize();
 						simulator.getInstructionsToRun();
@@ -309,9 +309,9 @@ public class Window {
 
 		nextBT = new JButton("");
 		nextBT.setEnabled(false);
-		nextBT.setIcon(new ImageIcon(
-				Window.class
-						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
+//		nextBT.setIcon(new ImageIcon(
+//				Window.class
+//						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 		nextBT.setBounds(299, 8, 28, 20);
 		nextBT.addActionListener(new ActionListener() {
 			@Override

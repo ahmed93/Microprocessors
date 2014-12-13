@@ -301,6 +301,7 @@ public class Simulator {
 		for (int i = 0; i < REGISTERS_NUMBER; i++) {
 			Register Ri = (i == 0) ? new Register(0, true) : new Register(0,
 					false);
+			Ri.setName("R" + i); 
 			registers.put("R" + i, Ri);
 		}
 	}
