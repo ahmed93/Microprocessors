@@ -8,6 +8,8 @@ public class ReservationStation {
 	int Vk;
 	int Qj;
 	int Qk;
+	int Dest;
+	int A;
 	
 	public ReservationStation(String name){
 		this.Name = name;	
@@ -66,7 +68,5 @@ public class ReservationStation {
 	public void setA(int a) {
 		A = a;
 	}
-	int Dest;
-	int A;
 
 }

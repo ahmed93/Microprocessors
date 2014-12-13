@@ -453,20 +453,26 @@ public class Simulator {
 		if (i.getName().equals("Store"))
 			return qj;
 		else
-			return qj && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return qj
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
 
 	}
 
 	public boolean writable(Instruction i) {
 		boolean tmp = i.getStatus().equals(i.EXECUTED) && this.cdbAvailable;
 		if (i.getName().equals("Store"))
-			return tmp && this.reservationStations.get(i.getResIndex()).getQk() == 0;
+			return tmp
+					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
 		else
 			return tmp;
 	}
 
 	public boolean committable(Instruction i) {
-		return false;
+		if (Integer.parseInt(this.rob.getEntryAtHead().get("Destination")) == this.reservationStations
+				.get(i.getResIndex()).getDest() && this.rob.getEntryAtHead().get("Ready").equals("true"))
+			return true;
+		else
+			return false;
 	}
 
 }
