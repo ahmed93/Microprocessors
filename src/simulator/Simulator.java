@@ -217,12 +217,13 @@ public class Simulator {
 				int value = 0;
 				if (issuable(instruction)) {
 					System.out.println("Issuing");
-					for (int j = 0; i < nWay; j++) {
+					for (int j = 0; j < nWay; j++) {
 						System.out.println("Still Issuing");
 						instruction = instructionsToRun.get(i + j);
 						if (issuable(instruction)) {
 							System.out.println(instruction);
 							issue(instruction);
+							System.out.println("Issued instruction " + i);
 							pc++;
 						} else {
 							break;
