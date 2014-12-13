@@ -13,31 +13,6 @@ public abstract class Instruction implements Word {
 	public final String WRITTEN = "written";
 	public final String COMMITED = "commited";
 	protected int resIndex = -1;
-
-	public int getCycles() {
-		return cycles;
-	}
-
-	public void setCycles(int cycles) {
-		this.cycles = cycles;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public Simulator getSimulator() {
-		return simulator;
-	}
-
-	public void setSimulator(Simulator simulator) {
-		this.simulator = simulator;
-	}
-
 	protected String instruction;
 	protected Register regA;
 	protected Register regB;
@@ -45,6 +20,10 @@ public abstract class Instruction implements Word {
 	protected int imm;
 	protected int address;
 	protected boolean dirtyBit;
+	protected String Ri;
+	protected String Rj;
+	protected String Rk;
+	protected String Op;
 
 	public abstract void execute();
 	
@@ -80,6 +59,62 @@ public abstract class Instruction implements Word {
 
 	public void setResIndex(int resIndex) {
 		this.resIndex = resIndex;
+	}
+	
+	public String getRi() {
+		return Ri;
+	}
+
+	public void setRi(String ri) {
+		Ri = ri;
+	}
+
+	public String getRj() {
+		return Rj;
+	}
+
+	public void setRj(String rj) {
+		Rj = rj;
+	}
+
+	public String getRk() {
+		return Rk;
+	}
+
+	public void setRk(String rk) {
+		Rk = rk;
+	}
+
+	public int getCycles() {
+		return cycles;
+	}
+
+	public void setCycles(int cycles) {
+		this.cycles = cycles;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Simulator getSimulator() {
+		return simulator;
+	}
+
+	public void setSimulator(Simulator simulator) {
+		this.simulator = simulator;
+	}
+
+	public String getOp() {
+		return Op;
+	}
+
+	public void setOp(String op) {
+		Op = op;
 	}
 
 }
