@@ -44,7 +44,7 @@ public class Simulator {
 	Vector<Integer> instructions_addresses;
 	ArrayList<ReservationStation> reservationStations;
 	HashMap<Integer, Instruction> instructionsToRun;
-	HashMap<String, Integer> instructionsLatencies;
+	public HashMap<String, Integer> instructionsLatencies;
 	ReorderBuffer rob;
 	boolean cdbAvailable;
 	int nWay;

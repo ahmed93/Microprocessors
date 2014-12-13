@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -33,12 +32,10 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -47,18 +44,40 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.BasicCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.ShorthandCompletion;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import simulator.Simulator;
 import GUI.utilities.NumbersFilter;
 
-import java.awt.GridBagLayout;
-
 public class Window {
 
+	public static final Color DEFAULT_KEYWORD_COLOR = Color.blue;
+
+	public static final String[] JAVA_KEYWORDS = new String[] { "ADDI", "MUL",
+			"SUB" };
+	public static String JAVA_KEYWORDS_REGEX;
+
+	static {
+		StringBuilder buff = new StringBuilder("");
+		buff.append("(");
+		for (String keyword : JAVA_KEYWORDS) {
+			buff.append("\\b").append(keyword).append("\\b").append("|");
+		}
+		buff.deleteCharAt(buff.length() - 1);
+		buff.append(")");
+		JAVA_KEYWORDS_REGEX = buff.toString();
+	}
+
 	private JFrame frame;
-	private JTextPane codeInput;
+	private RSyntaxTextArea codeInput;
 	private JTextPane consoleTP;
-	private JTable registerTB;
 	private JButton loadBT, saveBT, runBT, debugBT, stopBT, nextBT;
 	private JTable memoryTB, reservationStationsTB, registersStatusTB, robTB;
 	private JComboBox<String> cacheLevelsCB, Miss1CB, Miss2CB, Miss3CB, Hit1CB,
@@ -68,7 +87,8 @@ public class Window {
 			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF, l2HitTimeTF,
 			l2MissTimeTF, l1HitTimeTF, l1MissTimeTF, l3HitTimeTF, l3MissTimeTF,
 			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF,
-			latMultTF, latDivTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF, rsDivTF;
+			latMultTF, latLogicTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF,
+			rsLogicTF;
 
 	/****************************
 	 ** Data Variables **
@@ -81,11 +101,16 @@ public class Window {
 	private Simulator simulator;
 	private String columnNames[] = { "Register", "Value" };
 	private String dataValues[][];
-	private DefaultTableModel dataModel;
+	// private DefaultTableModel dataModel;
 
-	private String MemoryColumnNames[] = { "Location", "value" };
+	private final String MemoryColumnNames[] = { "Location", "value" };
 	private String MemoryDataValues[][];
-	private DefaultTableModel MemoryDataModel;
+	// private DefaultTableModel MemoryDataModel;
+
+	private final String RegisterStatusCN[] = { "Registers", "R0", "R1", "R2",
+			"R3", "R4", "R5", "R6", "R7" };
+	private String RegisterStatusDV[][];
+	// private DefaultTableModel RegisterStatusDM;
 
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
@@ -126,10 +151,6 @@ public class Window {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		HITPOLISYS.add("WB");
-		HITPOLISYS.add("WT");
-		MISSPOLISYS.add("WA");
-		MISSPOLISYS.add("WL");
 		initData();
 		/*************************************
 		 ** Initializing the Frame **
@@ -153,7 +174,6 @@ public class Window {
 		/*****************************************************
 		 ** DebuggingPanel: Registers/Caches/.. **
 		 *****************************************************/
-		createRegisterPanel();
 
 		createOptionPanel();
 	}
@@ -246,10 +266,13 @@ public class Window {
 					ArrayList<HashMap<String, Integer>> input_caches = getCaches();
 					int instruction_starting_address = getStartingAddress();
 					HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+					HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
 					int ROB_Size = Integer.parseInt(robSizeTF.getText());
+
 					simulator = new Simulator(data, instructions, input_caches,
 							instruction_starting_address, memoryAccessTime,
-							inputReservationStations, ROB_Size);
+							inputReservationStations, ROB_Size,
+							inputinstructionsLatencies);
 					try {
 						simulator.Initialize();
 						simulator.getInstructionsToRun();
@@ -263,6 +286,7 @@ public class Window {
 				} else {
 					showErrors();
 				}
+
 				// debugBT.setEnabled(true);
 				runBT.setEnabled(true);
 			}
@@ -317,33 +341,11 @@ public class Window {
 		MemoryPane.add(memoryTB);
 
 		JScrollPane memoryS = new JScrollPane(memoryTB,
-				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		// memoryTB.add(memoryS);
 
 		MemoryPane.add(memoryS);
-
-		JLayeredPane RegisterPane = new JLayeredPane();
-		MemoRegTab.addTab("Register", null, RegisterPane, null);
-		RegisterPane.setLayout(null);
-
-		registerTB = new JTable(dataValues, columnNames);
-		registerTB.setBounds(2, 18, 206, 138);
-		registerTB.setGridColor(Color.LIGHT_GRAY);
-		registerTB.setSurrendersFocusOnKeystroke(true);
-		registerTB.setFillsViewportHeight(true);
-		registerTB.setEnabled(false);
-		registerTB
-				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		registerTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
-		RegisterPane.add(registerTB);
-
-		JScrollPane regS = new JScrollPane(registerTB,
-				JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		regS.setBounds(0, 0, 225, 158);
-		RegisterPane.add(regS);
 
 		String[] CoLNames = { "Location", "Value" };
 		Integer[][] memroyData = new Integer[1][2];
@@ -710,120 +712,135 @@ public class Window {
 		robSizeTF = new JTextField();
 		robSizeTF.setBounds(142, 4, 107, 28);
 		TomasuloSettingsTab.add(robSizeTF);
+		PlainDocument robSizeTFDoc = (PlainDocument) robSizeTF.getDocument();
+		robSizeTFDoc.setDocumentFilter(new NumbersFilter());
 		robSizeTF.setColumns(10);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(6, 38, 243, 196);
+		tabbedPane.setBounds(6, 38, 243, 220);
 		TomasuloSettingsTab.add(tabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
 		tabbedPane.addTab("Latencies", null, layeredPane, null);
 
 		JLabel lblLoad = new JLabel("Load");
-		lblLoad.setBounds(25, 6, 71, 16);
+		lblLoad.setBounds(25, 25, 71, 16);
 		layeredPane.add(lblLoad);
 
 		latLDTF = new JTextField();
-		latLDTF.setBounds(101, 6, 100, 28);
+		latLDTF.setBounds(101, 19, 100, 28);
 		PlainDocument latLDTFeDoc = (PlainDocument) latLDTF.getDocument();
 		latLDTFeDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latLDTF);
 		latLDTF.setColumns(10);
 
 		JLabel lblStore = new JLabel("Store");
-		lblStore.setBounds(25, 31, 71, 16);
+		lblStore.setBounds(25, 53, 71, 16);
 		layeredPane.add(lblStore);
 
 		latSTTF = new JTextField();
 		latSTTF.setColumns(10);
 		PlainDocument latSTTFDoc = (PlainDocument) latSTTF.getDocument();
 		latSTTFDoc.setDocumentFilter(new NumbersFilter());
-		latSTTF.setBounds(101, 33, 100, 28);
+		latSTTF.setBounds(101, 46, 100, 28);
 		layeredPane.add(latSTTF);
 
-		JLabel lblAddsub = new JLabel("ADD/SUB");
-		lblAddsub.setBounds(25, 60, 71, 16);
-		layeredPane.add(lblAddsub);
+		JLabel lable111 = new JLabel("Add/Sub");
+		lable111.setBounds(25, 79, 71, 16);
+		layeredPane.add(lable111);
 
 		latAddSubTF = new JTextField();
 		latAddSubTF.setColumns(10);
-		latAddSubTF.setBounds(101, 60, 100, 28);
+		latAddSubTF.setBounds(101, 73, 100, 28);
 		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF
 				.getDocument();
 		latAddSubTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latAddSubTF);
 
 		JLabel lblMulti = new JLabel("MULT");
-		lblMulti.setBounds(25, 87, 71, 16);
+		lblMulti.setBounds(25, 107, 71, 16);
 		layeredPane.add(lblMulti);
 
 		latMultTF = new JTextField();
 		latMultTF.setColumns(10);
-		latMultTF.setBounds(101, 87, 100, 28);
+		latMultTF.setBounds(101, 101, 100, 28);
+		PlainDocument latMultTFDoc = (PlainDocument) latMultTF.getDocument();
+		latMultTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane.add(latMultTF);
 
-		JLabel lblDiv = new JLabel("DIV");
-		lblDiv.setBounds(25, 114, 51, 16);
+		JLabel lblDiv = new JLabel("Logic");
+		lblDiv.setBounds(25, 134, 51, 16);
 		layeredPane.add(lblDiv);
 
-		latDivTF = new JTextField();
-		latDivTF.setColumns(10);
-		latDivTF.setBounds(101, 114, 100, 28);
-		PlainDocument latDivTFTFDoc = (PlainDocument) latDivTF.getDocument();
-		latDivTFTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latDivTF);
+		latLogicTF = new JTextField();
+		latLogicTF.setColumns(10);
+		latLogicTF.setBounds(101, 128, 100, 28);
+		PlainDocument latLogicTFTFDoc = (PlainDocument) latLogicTF
+				.getDocument();
+		latLogicTFTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane.add(latLogicTF);
 
 		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setBounds(6, 239, 243, 196);
+		tabbedPane_1.setBounds(6, 260, 243, 196);
 		TomasuloSettingsTab.add(tabbedPane_1);
 
 		JLayeredPane layeredPane_1 = new JLayeredPane();
 		tabbedPane_1.addTab("Reservation Stations ", null, layeredPane_1, null);
 
 		JLabel label_23 = new JLabel("Load");
-		label_23.setBounds(25, 6, 71, 16);
+		label_23.setBounds(25, 12, 71, 16);
 		layeredPane_1.add(label_23);
 
 		rsLdTF = new JTextField();
 		rsLdTF.setColumns(10);
 		rsLdTF.setBounds(101, 6, 100, 28);
+		PlainDocument rsLdTFDoc = (PlainDocument) rsLdTF.getDocument();
+		rsLdTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsLdTF);
 
 		JLabel label_24 = new JLabel("Store");
-		label_24.setBounds(25, 31, 71, 16);
+		label_24.setBounds(25, 39, 71, 16);
 		layeredPane_1.add(label_24);
 
 		rsStTF = new JTextField();
 		rsStTF.setColumns(10);
 		rsStTF.setBounds(101, 33, 100, 28);
+		PlainDocument rsStTFDoc = (PlainDocument) rsStTF.getDocument();
+		rsStTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsStTF);
 
 		JLabel label_25 = new JLabel("ADD/SUB");
-		label_25.setBounds(25, 60, 71, 16);
+		label_25.setBounds(25, 66, 71, 16);
 		layeredPane_1.add(label_25);
 
 		rsAddSubTF = new JTextField();
 		rsAddSubTF.setColumns(10);
 		rsAddSubTF.setBounds(101, 60, 100, 28);
+		PlainDocument rsAddSubTFDoc = (PlainDocument) rsAddSubTF.getDocument();
+		rsAddSubTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsAddSubTF);
 
 		JLabel label_26 = new JLabel("MULT");
-		label_26.setBounds(25, 87, 71, 16);
+		label_26.setBounds(25, 93, 71, 16);
 		layeredPane_1.add(label_26);
 
 		rsMultTF = new JTextField();
 		rsMultTF.setColumns(10);
 		rsMultTF.setBounds(101, 87, 100, 28);
+		PlainDocument rsMultTFDoc = (PlainDocument) rsMultTF.getDocument();
+		rsMultTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsMultTF);
 
-		JLabel label_27 = new JLabel("DIV");
-		label_27.setBounds(25, 114, 51, 16);
+		JLabel label_27 = new JLabel("Logic");
+		label_27.setBounds(25, 120, 51, 16);
 		layeredPane_1.add(label_27);
 
-		rsDivTF = new JTextField();
-		rsDivTF.setColumns(10);
-		rsDivTF.setBounds(101, 114, 100, 28);
-		layeredPane_1.add(rsDivTF);
+		rsLogicTF = new JTextField();
+		rsLogicTF.setColumns(10);
+		rsLogicTF.setBounds(101, 114, 100, 28);
+		PlainDocument rsLogicTFDoc = (PlainDocument) rsLogicTF.getDocument();
+		rsLogicTFDoc.setDocumentFilter(new NumbersFilter());
+		layeredPane_1.add(rsLogicTF);
 
 		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_2.setBounds(0, 303, 750, 209);
@@ -837,7 +854,7 @@ public class Window {
 		layeredPane_2.add(reservationStationsTB, BorderLayout.CENTER);
 
 		JTabbedPane tabbedPane_3 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_3.setBounds(0, 498, 750, 167);
+		tabbedPane_3.setBounds(0, 498, 750, 177);
 		frame.getContentPane().add(tabbedPane_3);
 
 		JLayeredPane layeredPane_3 = new JLayeredPane();
@@ -848,15 +865,28 @@ public class Window {
 		layeredPane_3.add(robTB, BorderLayout.CENTER);
 
 		JTabbedPane tabbedPane_4 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_4.setBounds(0, 650, 750, 122);
+		tabbedPane_4.setBounds(0, 670, 750, 102);
 		frame.getContentPane().add(tabbedPane_4);
 
 		JLayeredPane layeredPane_4 = new JLayeredPane();
 		tabbedPane_4.addTab("Registers status", null, layeredPane_4, null);
 		layeredPane_4.setLayout(new BorderLayout(0, 0));
 
-		registersStatusTB = new JTable();
+		registersStatusTB = new JTable(RegisterStatusDV, RegisterStatusCN);
+		registersStatusTB.setGridColor(Color.LIGHT_GRAY);
+		registersStatusTB.setSurrendersFocusOnKeystroke(true);
+		registersStatusTB.setFillsViewportHeight(true);
+		registersStatusTB.setEnabled(false);
+		registersStatusTB
+				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		registersStatusTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		layeredPane_4.add(registersStatusTB, BorderLayout.CENTER);
+
+		JScrollPane registerStatusScrollPane = new JScrollPane(
+				registersStatusTB, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		layeredPane_4.add(registerStatusScrollPane);
+
 	}
 
 	private void onClickSaveBT() {
@@ -953,7 +983,7 @@ public class Window {
 		consoleTP.setEditable(false);
 		consolePannel.add(consoleTP);
 		JScrollPane consoleScroll = new JScrollPane(consoleTP,
-				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		consolePannel.add(consoleScroll);
 	}
@@ -1004,12 +1034,16 @@ public class Window {
 		InputPanel.setBounds(6, 6, 734, 295);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
-		codeInput = new JTextPane();
+		codeInput = new RSyntaxTextArea();
+		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+		codeInput.setCodeFoldingEnabled(true);
+		codeInput.setAntiAliasingEnabled(true);
+		// StyledDocument doc = codeInput.getStyledDocument();
+		// doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-
 			}
 
 			@Override
@@ -1024,17 +1058,89 @@ public class Window {
 				saveBT.setEnabled(true);
 			}
 		});
-		InputPanel.add(codeInput);
+		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
+		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-		JScrollPane scroll = new JScrollPane(codeInput,
-				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-		InputPanel.add(scroll);
+		InputPanel.add(Rscroll);
+		// one.start();
+		// JScrollPane scroll = new JScrollPane(codeInput,
+		// JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+		// ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		//
+		// InputPanel.add(scroll);
+		CompletionProvider provider = createCompletionProvider();
+		AutoCompletion ac = new AutoCompletion(provider);
+		ac.install(codeInput);
 	}
 
-	private void createRegisterPanel() {
+	private CompletionProvider createCompletionProvider() {
+
+		// A DefaultCompletionProvider is the simplest concrete implementation
+		// of CompletionProvider. This provider has no understanding of
+		// language semantics. It simply checks the text entered up to the
+		// caret position for a match against known completions. This is all
+		// that is needed in the majority of cases.
+		DefaultCompletionProvider provider = new DefaultCompletionProvider();
+
+		// Add completions for all Java keywords. A BasicCompletion is just
+		// a straightforward word completion.
+		provider.addCompletion(new BasicCompletion(provider, "abstract %d, %d"));
+		provider.addCompletion(new BasicCompletion(provider, "assert"));
+		provider.addCompletion(new BasicCompletion(provider, "break"));
+		provider.addCompletion(new BasicCompletion(provider, "case"));
+		provider.addCompletion(new BasicCompletion(provider, "catch"));
+		provider.addCompletion(new BasicCompletion(provider, "class"));
+		provider.addCompletion(new BasicCompletion(provider, "const"));
+		provider.addCompletion(new BasicCompletion(provider, "continue"));
+		provider.addCompletion(new BasicCompletion(provider, "default"));
+		provider.addCompletion(new BasicCompletion(provider, "do"));
+		provider.addCompletion(new BasicCompletion(provider, "else"));
+		provider.addCompletion(new BasicCompletion(provider, "enum"));
+		provider.addCompletion(new BasicCompletion(provider, "extends"));
+		provider.addCompletion(new BasicCompletion(provider, "final"));
+		provider.addCompletion(new BasicCompletion(provider, "finally"));
+		provider.addCompletion(new BasicCompletion(provider, "for"));
+		provider.addCompletion(new BasicCompletion(provider, "goto"));
+		provider.addCompletion(new BasicCompletion(provider, "if"));
+		provider.addCompletion(new BasicCompletion(provider, "implements"));
+		provider.addCompletion(new BasicCompletion(provider, "import"));
+		provider.addCompletion(new BasicCompletion(provider, "instanceof"));
+		provider.addCompletion(new BasicCompletion(provider, "interface"));
+		provider.addCompletion(new BasicCompletion(provider, "native"));
+		provider.addCompletion(new BasicCompletion(provider, "new"));
+		provider.addCompletion(new BasicCompletion(provider, "package"));
+		provider.addCompletion(new BasicCompletion(provider, "private"));
+		provider.addCompletion(new BasicCompletion(provider, "protected"));
+		provider.addCompletion(new BasicCompletion(provider, "public"));
+		provider.addCompletion(new BasicCompletion(provider, "return"));
+		provider.addCompletion(new BasicCompletion(provider, "static"));
+		provider.addCompletion(new BasicCompletion(provider, "strictfp"));
+		provider.addCompletion(new BasicCompletion(provider, "super"));
+		provider.addCompletion(new BasicCompletion(provider, "switch"));
+		provider.addCompletion(new BasicCompletion(provider, "synchronized"));
+		provider.addCompletion(new BasicCompletion(provider, "this"));
+		provider.addCompletion(new BasicCompletion(provider, "throw"));
+		provider.addCompletion(new BasicCompletion(provider, "throws"));
+		provider.addCompletion(new BasicCompletion(provider, "transient"));
+		provider.addCompletion(new BasicCompletion(provider, "try"));
+		provider.addCompletion(new BasicCompletion(provider, "void"));
+		provider.addCompletion(new BasicCompletion(provider, "volatile"));
+		provider.addCompletion(new BasicCompletion(provider, "while"));
+
+		// Add a couple of "shorthand" completions. These completions don't
+		// require the input text to be the same thing as the replacement text.
+		provider.addCompletion(new ShorthandCompletion(provider, "sysout",
+				"System.out.println(", "System.out.println("));
+		provider.addCompletion(new ShorthandCompletion(provider, "syserr",
+				"System.err.println(", "System.err.println("));
+
+		return provider;
+
 	}
+
+	// private void createRegisterPanel() {
+	// }
 
 	/*************************************
 	 ******** Other Methods ********
@@ -1094,10 +1200,12 @@ public class Window {
 		}
 
 		modified = false;
+
 	}
 
 	private void appendCode(String line) {
-		StyledDocument doc = codeInput.getStyledDocument();
+
+		Document doc = codeInput.getDocument();
 		Style style = consoleTP.addStyle(line, null);
 		StyleConstants.setForeground(style, Color.BLACK);
 		try {
@@ -1111,16 +1219,29 @@ public class Window {
 	 * Registers Table. initData: Calls the methods for init the table
 	 * */
 	private void initData() {
+		HITPOLISYS.add("WB");
+		HITPOLISYS.add("WT");
+		MISSPOLISYS.add("WA");
+		MISSPOLISYS.add("WL");
 		CreateData();
 		CreateMemoryData();
+		CreateRegisterStatusData();
 	}
 
 	private void setRegisterData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
-			registerTB.setValueAt(entry.getValue().toString(),
-					(int) entry.getKey(), 1);
+			int col = (int) entry.getKey();
+			registersStatusTB.setValueAt(entry.getValue().toString(), 1, col);
 		}
-		registerTB.repaint();
+		registersStatusTB.repaint();
+	}
+
+	private void setRegisterStatusData(HashMap<Integer, Integer> data) {
+		for (Entry<Integer, Integer> entry : data.entrySet()) {
+			int col = (int) entry.getKey();
+			registersStatusTB.setValueAt(entry.getValue().toString(), 0, col);
+		}
+		registersStatusTB.repaint();
 	}
 
 	private void setMamoryData(HashMap<Integer, Integer> data) {
@@ -1134,7 +1255,7 @@ public class Window {
 		memoryTB.repaint();
 	}
 
-	public void CreateData() {
+	private void CreateData() {
 		// Create data for each element
 		dataValues = new String[8][2];
 		for (int i = 0; i < 8; i++)
@@ -1143,11 +1264,16 @@ public class Window {
 			dataValues[i][1] = "0";
 	}
 
-	public void CreateMemoryData() {
-		// Create data for each element
+	private void CreateMemoryData() {
 		MemoryDataValues = new String[32768][2];
-		// for (int i = 0; i < 32768; i++)
-		// MemoryDataValues[i][0] = i + "";
+	}
+
+	private void CreateRegisterStatusData() {
+		RegisterStatusDV = new String[2][9];
+		RegisterStatusDV[0][0] = "Status";
+		RegisterStatusDV[1][0] = "Value";
+		for (int i = 1; i < 9; i++)
+			RegisterStatusDV[1][i] = "0";
 	}
 
 	/**
@@ -1163,26 +1289,37 @@ public class Window {
 	 * **/
 	private HashMap<String, Integer> getinputReservationStations() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("add", Integer.parseInt(rsAddSubTF.getText()));
-		tmp.put("div", Integer.parseInt(rsDivTF.getText()));
+		tmp.put("integer", Integer.parseInt(rsAddSubTF.getText()));
+		tmp.put("logic", Integer.parseInt(rsLogicTF.getText()));
 		tmp.put("mult", Integer.parseInt(rsMultTF.getText()));
 		tmp.put("store", Integer.parseInt(rsStTF.getText()));
 		tmp.put("load", Integer.parseInt(rsLdTF.getText()));
 		return tmp;
 	}
-	
+
 	/**
 	 * Getting Input Latencies
 	 * **/
 	private HashMap<String, Integer> getinputLatencies() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("add", Integer.parseInt(latAddSubTF.getText()));
-		tmp.put("div", Integer.parseInt(latDivTF.getText()));
+		tmp.put("integer", Integer.parseInt(latAddSubTF.getText()));
+		tmp.put("logic", Integer.parseInt(latLogicTF.getText()));
 		tmp.put("mult", Integer.parseInt(latMultTF.getText()));
 		tmp.put("store", Integer.parseInt(latSTTF.getText()));
 		tmp.put("load", Integer.parseInt(latLDTF.getText()));
 		return tmp;
 	}
+
+	// private HashMap<String, Integer> getRegisterStatusData() {
+	// HashMap<String, Integer> registerDataTmp = new HashMap<String,
+	// Integer>();
+	// for (int i = 0; i < RegisterStatusDV.length; i++) {
+	// String data = RegisterStatusDV[i].toString();
+	// data = data.substring(1, data.length());
+	// registerDataTmp.put(RegisterStatusCN[i], Integer.parseInt(data));
+	// }
+	// return registerDataTmp;
+	// }
 
 	/**
 	 * Data and Instruction Settings initializing Both data and instruction
@@ -1310,37 +1447,51 @@ public class Window {
 			onClickSaveBT();
 
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("Starting Address can't be blank. \n ====================================");
+			errors.add("- Starting Address can't be blank. \n ====================================");
 		if (memoAccessTimeTF.getText().trim().isEmpty())
-			errors.add("Memory Access Time can't be blank. \n ====================================");
+			errors.add("- Memory Access Time can't be blank. \n ====================================");
 		if (cacheLevelsCB.getSelectedIndex() == 0)
-			errors.add("Select the number of caches levels needed \n ====================================");
+			errors.add("- Select the number of caches levels needed \n ====================================");
 		else if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Cache-Size can't be blank");
+				errors.add("- L1-Cache: Cache-Size can't be blank");
 			if (l1BlockSizeTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Block-Size can't be blank");
+				errors.add("- L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
-				errors.add("L1-Cache: Associativity can't be blank");
+				errors.add("- L1-Cache: Associativity can't be blank");
 			// errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Cache-Size can't be blank");
+					errors.add("- L2-Cache: Cache-Size can't be blank");
 				if (l2BlockSizeTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Block-Size can't be blank");
+					errors.add("- L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
-					errors.add("L2-Cache: Associativity can't be blank");
+					errors.add("- L2-Cache: Associativity can't be blank");
 				// errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Cache-Size can't be blank");
+						errors.add("- L3-Cache: Cache-Size can't be blank");
 					if (l3BlockSizeTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Block-Size can't be blank");
+						errors.add("- L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
-						errors.add("L3-Cache: Associativity can't be blank");
+						errors.add("- L3-Cache: Associativity can't be blank");
 					// errors.add("====================================");
 				}
 			}
+		}
+		if (latAddSubTF.getText().trim().isEmpty()
+				|| latLDTF.getText().trim().isEmpty()
+				|| latLogicTF.getText().trim().isEmpty()
+				|| latMultTF.getText().trim().isEmpty()
+				|| latSTTF.getText().trim().isEmpty()) {
+			errors.add("- Latencies can't be blank. \n ====================================");
+		}
+		if (rsAddSubTF.getText().trim().isEmpty()
+				|| rsLdTF.getText().trim().isEmpty()
+				|| rsLogicTF.getText().trim().isEmpty()
+				|| rsMultTF.getText().trim().isEmpty()
+				|| rsStTF.getText().trim().isEmpty()) {
+			errors.add("- Reservation Stations can't be blank. \n ====================================");
 		}
 		return errors.isEmpty() ? true : false;
 	}
