@@ -95,9 +95,11 @@ public class InstructionFactory {
 		}
 		i.setOp(instructionArray[0]);
 		i.setRi(instructionArray[1]);
-		i.executionCycles = simulator.instructionsLatencies
+		if (instructionArray[0] != "NOP"){
+			i.executionCycles = simulator.instructionsLatencies
 				.get(instructionArray[0]);
 
+		}
 		// Returns an object that corresponds to the instruction specified in
 		// the parameter.
 
