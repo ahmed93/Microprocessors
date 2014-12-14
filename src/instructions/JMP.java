@@ -11,6 +11,7 @@ public class JMP extends Instruction {
 		this.instruction = instruction;
 		this.regA = regA;
 		this.imm = imm;
+		this.status = "";
 	}
 
 	@Override

@@ -14,6 +14,7 @@ public class LW extends Instruction {
 		this.regA = regA;
 		this.regB = regB;
 		this.imm = imm;
+		this.status = "";
 	}
 
 	@Override

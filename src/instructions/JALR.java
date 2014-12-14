@@ -12,6 +12,7 @@ public class JALR extends Instruction {
 		this.instruction = instruction;
 		this.regA = regA;
 		this.regB = regB;
+		this.status = "";
 	}
 
 	@Override

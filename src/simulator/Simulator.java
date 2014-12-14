@@ -1,7 +1,12 @@
 package simulator;
 
+import instructions.ADDI;
 import instructions.BEQ;
+import instructions.JALR;
+import instructions.JMP;
+import instructions.LW;
 import instructions.NOP;
+import instructions.RET;
 import instructions.SW;
 
 import java.io.IOException;
@@ -77,7 +82,7 @@ public class Simulator {
 			ArrayList<HashMap<String, Integer>> input_caches,
 			int instruction_starting_address, int memoryAccessTime,
 			HashMap<String, Integer> inputReservationStations, int ROB_Size,
-			HashMap<String, Integer> inputinstructionsLatencies) {
+			HashMap<String, Integer> inputinstructionsLatencies, int nWay) {
 		this.memory = Memory.getInstance();
 		this.memoryAccessTime = memoryAccessTime;
 		this.instruction_starting_address = instruction_starting_address;
@@ -86,12 +91,15 @@ public class Simulator {
 		this.instructionsLatencies = inputinstructionsLatencies;
 		this.initializeCaches(input_caches);
 		this.instructions_addresses = new Vector<Integer>();
+		this.instructionsToRun = new HashMap<Integer, Instruction>();
 		this.initializeReservationStations(inputReservationStations);
 		this.InitailizeRegistersStatus();
+		this.nWay = nWay;
 		rob = new ReorderBuffer(ROB_Size);
 	}
 
 	public void InitailizeRegistersStatus() {
+		this.registers_status = new HashMap<String, Integer>();
 		for (int i = 0; i < 8; i++) {
 			registers_status.put("R" + i, 0);
 		}
@@ -113,6 +121,7 @@ public class Simulator {
 	public void initializeReservationStations(
 			HashMap<String, Integer> inputReservationStations) {
 		Iterator it = inputReservationStations.entrySet().iterator();
+		reservationStations = new ArrayList<ReservationStation>();
 		for (Map.Entry<String, Integer> entry : inputReservationStations
 				.entrySet()) {
 			for (int i = 0; i < entry.getValue(); i++) {
@@ -160,13 +169,13 @@ public class Simulator {
 	}
 
 	public void getInstructionsToRun() {
-		pc = instructions_addresses.firstElement();
-		while (pc != instructions_addresses.lastElement() + 1) {
+		int counter = instructions_addresses.firstElement();
+		while (counter != instructions_addresses.lastElement() + 1) {
 			Instruction instruction = null;
 			for (int j = 0; j < this.caches.length; j++) {
-				instruction = caches[j].searchInstruction(pc);
+				instruction = caches[j].searchInstruction(counter);
 				if (instruction != null && instruction.getClass() != NOP.class) {
-					updateInstructionInHigherCaches(j, pc);
+					updateInstructionInHigherCaches(j, counter);
 					// place instruction in higher cache levels(j)
 					caches[j].hits++;
 					break;
@@ -177,14 +186,14 @@ public class Simulator {
 				// place instruction in higher levels of cache.(number of
 				// caches)
 				// miss
-				int instruction_address = pc;
+				int instruction_address = counter;
 				instruction = this.memory.getInstructionAt(instruction_address);
 				updateInstructionInHigherCaches(caches.length,
 						instruction_address);
 
 			}
-			instructionsToRun.put(pc, instruction);
-			// pc++;
+			instructionsToRun.put(counter, instruction);
+			counter++;
 			// instruction.execute();
 			// instructions_executed++;
 		}
@@ -199,14 +208,21 @@ public class Simulator {
 	public void runInstructions() {
 		int instructionsCommited = 0;
 		int instructionsToCommit = instructionsToRun.size();
+		pc = instruction_starting_address;
 		while (instructionsCommited <= instructionsToCommit) {
-			for (int i = instruction_starting_address; i < pc; i++) {
+			System.out.println("i -> " + instruction_starting_address
+					+ "pc -> " + pc);
+			for (int i = instruction_starting_address; i <= pc; i++) {
+				System.out.println("Inside inner loop");
 				Instruction instruction = instructionsToRun.get(i);
 				int value = 0;
 				if (issuable(instruction)) {
+					System.out.println("Issuing");
 					for (int j = 0; i < nWay; j++) {
+						System.out.println("Still Issuing");
 						instruction = instructionsToRun.get(i + j);
 						if (issuable(instruction)) {
+							System.out.println(instruction);
 							issue(instruction);
 							pc++;
 						} else {
@@ -214,6 +230,7 @@ public class Simulator {
 						}
 					}
 				} else if (executable(instruction)) {
+					System.out.println("Executing");
 					if (instruction.executionCycles == 1) {
 						if (instruction.getClass() != SW.class) {
 							value = instruction.execute();
@@ -230,8 +247,10 @@ public class Simulator {
 					}
 				} else if (writable(instruction)
 						&& instruction.executionCycles == 0) {
+					System.out.println("Writing");
 					write(instruction, value);
 				} else if (committable(instruction)) {
+					System.out.println("Commiting");
 					commit(instruction);
 					instructionsCommited++;
 				}
@@ -502,27 +521,29 @@ public class Simulator {
 	}
 
 	public boolean issuable(Instruction i) {
-		if(i.getStatus() == ""){
-		for (int j = 0; j < reservationStations.size(); j++) {
-			if (this.reservationStations.get(j).getName().equals(i.getName())
-					&& !this.reservationStations.get(j).isBusy()
-					&& !this.rob.isFull()) {
-				i.setResIndex(j);
-				return true;
+		if (i.getStatus() == "") {
+			for (int j = 0; j < reservationStations.size(); j++) {
+				if (this.reservationStations.get(j).getName()
+						.equals(i.getName())
+						&& !this.reservationStations.get(j).isBusy()
+						&& !this.rob.isFull()) {
+					i.setResIndex(j);
+					return true;
+				}
 			}
-		}
 		}
 		return false;
 	}
 
 	public boolean executable(Instruction i) {
-		if(i.getStatus() == i.ISSUED){
-		boolean qj = this.reservationStations.get(i.getResIndex()).getQj() == 0;
-		if (i.getName().equals("Store"))
-			return qj;
-		else
-			return qj
-					&& this.reservationStations.get(i.getResIndex()).getQk() == 0;
+		if (i.getStatus() == i.ISSUED) {
+			boolean qj = this.reservationStations.get(i.getResIndex()).getQj() == 0;
+			if (i.getName().equals("Store"))
+				return qj;
+			else
+				return qj
+						&& this.reservationStations.get(i.getResIndex())
+								.getQk() == 0;
 		}
 		return false;
 
@@ -538,16 +559,16 @@ public class Simulator {
 	}
 
 	public boolean committable(Instruction i) {
-		if(i.getStatus() == i.WRITTEN){
-		if (this.rob.getHead() == this.reservationStations.get(i.getResIndex())
-				.getDest()
-				&& this.rob.getEntryAtHead().get("Ready").equals("true"))
-			return true;
-		else
-			return false;
+		if (i.getStatus() == i.WRITTEN) {
+			if (this.rob.getHead() == this.reservationStations.get(
+					i.getResIndex()).getDest()
+					&& this.rob.getEntryAtHead().get("Ready").equals("true"))
+				return true;
+			else
+				return false;
 		}
 		return false;
-		
+
 	}
 
 	public void issue(Instruction i) {
@@ -561,16 +582,27 @@ public class Simulator {
 		int dest = rob.getTail();
 		int address = 0;
 		i.setStatus(Instruction.ISSUED);
-		if (registers_status.get(i.getRj()) == 0)
-			vj = i.getRegB().get_value();
-		else
-			qj = registers_status.get(i.getRj());
-
-		if (registers_status.get(i.getRk()) == 0)
-			vk = i.getRegC().get_value();
-		else
-			qk = registers_status.get(i.getRk());
-
+		if (i.getClass() != JMP.class && i.getClass() != RET.class) {
+			if (registers_status.get(i.getRj()) == 0) {
+				vj = i.getRegB().get_value();
+				qj = 0;
+			} else {
+				vj = 0;
+				qj = registers_status.get(i.getRj());
+			}
+		}
+		if (i.getClass() != ADDI.class && i.getClass() != BEQ.class
+				&& i.getClass() != JALR.class && i.getClass() != JMP.class
+				&& i.getClass() != LW.class && i.getClass() != RET.class
+				&& i.getClass() != SW.class) {
+			if (registers_status.get(i.getRk()) == 0) {
+				vk = i.getRegC().get_value();
+				qk = 0;
+			} else {
+				qk = registers_status.get(i.getRk());
+				vk = 0;
+			}
+		}
 		HashMap<String, String> entry = new HashMap<String, String>();
 		entry.put("Type", operation);
 		entry.put("Destination", i.getRi());
@@ -580,7 +612,7 @@ public class Simulator {
 
 		ReservationStation r = new ReservationStation(name, busy, operation,
 				vj, vk, qj, qk, dest, address);
-		reservationStations.add(r);
+		reservationStations.set(i.getResIndex(),r);
 		if (i.getClass() == BEQ.class)
 			predictBranch((BEQ) i);
 	}
@@ -608,7 +640,7 @@ public class Simulator {
 				i.setStatus(Instruction.COMMITED);
 			} else {
 				rob.reset();
-				reservationStations.clear(); 
+				reservationStations.clear();
 			}
 		}
 
