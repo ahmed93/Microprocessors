@@ -111,9 +111,13 @@ public class Window {
 			"R3", "R4", "R5", "R6", "R7" };
 	private String RegisterStatusDV[][];
 
-	private final Vector<String> ROBDV = new Vector<String>();
+	private Vector<String> ROBDV = new Vector<String>();
 	private final Vector<String> ROBCN = new Vector<String>();
 	private DefaultTableModel ROBDM;
+	
+	private Vector<String> RSDV = new Vector<String>();
+	private final Vector<String> RSCN = new Vector<String>();
+	private DefaultTableModel RSDM;
 
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
@@ -126,6 +130,7 @@ public class Window {
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
+	private JTextField nWayTF;
 
 	/**
 	 * Launch the application.
@@ -579,7 +584,7 @@ public class Window {
 		robSizeTF.setColumns(10);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(6, 38, 243, 220);
+		tabbedPane.setBounds(6, 80, 243, 220);
 		TomasuloSettingsTab.add(tabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
@@ -643,7 +648,7 @@ public class Window {
 		layeredPane.add(latLogicTF);
 
 		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setBounds(6, 260, 243, 196);
+		tabbedPane_1.setBounds(6, 312, 243, 196);
 		TomasuloSettingsTab.add(tabbedPane_1);
 
 		JLayeredPane layeredPane_1 = new JLayeredPane();
@@ -704,6 +709,17 @@ public class Window {
 		rsLogicTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsLogicTF);
 
+		JLabel lblMultiissuesNo = new JLabel("Multi-Issues No.:");
+		lblMultiissuesNo.setBounds(6, 50, 130, 16);
+		TomasuloSettingsTab.add(lblMultiissuesNo);
+
+		nWayTF = new JTextField();
+		nWayTF.setColumns(10);
+		nWayTF.setBounds(142, 44, 107, 28);
+		PlainDocument nWayTFDoc = (PlainDocument) nWayTF.getDocument();
+		nWayTFDoc.setDocumentFilter(new NumbersFilter());
+		TomasuloSettingsTab.add(nWayTF);
+
 		JTabbedPane ResTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		ResTabbedPane.setBounds(0, 303, 750, 209);
 		frame.getContentPane().add(ResTabbedPane);
@@ -712,8 +728,18 @@ public class Window {
 		ResTabbedPane.addTab("Reservation Stations", null, layeredPane_2, null);
 		layeredPane_2.setLayout(new BorderLayout(0, 0));
 
-		reservationStationsTB = new JTable();
-		layeredPane_2.add(reservationStationsTB, BorderLayout.CENTER);
+		reservationStationsTB = new JTable(RSDM);
+		reservationStationsTB.setGridColor(Color.LIGHT_GRAY);
+		reservationStationsTB.setSurrendersFocusOnKeystroke(true);
+		reservationStationsTB.setFillsViewportHeight(true);
+		reservationStationsTB.setEnabled(false);
+		reservationStationsTB
+				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		reservationStationsTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		JScrollPane scrollRSTB = new JScrollPane(reservationStationsTB,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		layeredPane_2.add(scrollRSTB, BorderLayout.CENTER);
 
 		JTabbedPane RobTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		RobTabbedPane.setBounds(0, 513, 750, 151);
@@ -778,11 +804,13 @@ public class Window {
 					HashMap<String, Integer> inputReservationStations = getinputReservationStations();
 					HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
 					int ROB_Size = Integer.parseInt(robSizeTF.getText());
+					int nWay = Integer.parseInt(nWayTF.getText());
 
 					simulator = new Simulator(data, instructions, input_caches,
 							instruction_starting_address, memoryAccessTime,
 							inputReservationStations, ROB_Size,
-							inputinstructionsLatencies);
+							inputinstructionsLatencies, nWay);
+
 					try {
 						simulator.Initialize();
 						simulator.getInstructionsToRun();
@@ -798,6 +826,7 @@ public class Window {
 				}
 
 				initROBTable();
+				initRSTable();
 
 				// debugBT.setEnabled(true);
 				runBT.setEnabled(true);
@@ -1044,13 +1073,6 @@ public class Window {
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
 		codeInput = new RSyntaxTextArea();
-		// AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory)
-		// TokenMakerFactory
-		// .getDefaultInstance();
-		// atmf.putMapping("text/MICRO",
-		// "../../../../Microprocessor/src/GUI/utilities/MicroTokenMaker.java");
-		// codeInput.setSyntaxEditingStyle("text/MICRO");
-
 		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ACM);
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
@@ -1090,7 +1112,6 @@ public class Window {
 		provider.addCompletion(new BasicCompletion(provider, "ADD",
 				"ADD RI, RS, RD"));
 		provider.addCompletion(new BasicCompletion(provider, "SUB"));
-
 		provider.addCompletion(new BasicCompletion(provider, "NAND"));
 		provider.addCompletion(new BasicCompletion(provider, "BEQ"));
 		provider.addCompletion(new BasicCompletion(provider, "JALR"));
@@ -1196,8 +1217,19 @@ public class Window {
 		ROBCN.add("Dest");
 		ROBCN.add("Value");
 		ROBCN.add("Ready");
-
 		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+		
+		RSCN.add("Wait");
+		RSCN.add("Name");
+		RSCN.add("Busy");
+		RSCN.add("Op");
+		RSCN.add("Vj");
+		RSCN.add("Vk");
+		RSCN.add("Qj");
+		RSCN.add("Qk");
+		RSCN.add("Dest");
+		RSCN.add("A");
+		RSDM = new DefaultTableModel(RSDV,RSCN);
 
 		CreateMemoryData();
 		CreateRegisterStatusData();
@@ -1317,11 +1349,11 @@ public class Window {
 	}
 
 	private void initROBTable() {
-		int Rows = Integer.parseInt(robSizeTF.getText());
-		for (int i = 0; i < ROBDM.getRowCount(); i++) {
-			ROBDM.removeRow(i);
-		}
+		ROBDV = new Vector<String>();
+		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+		robTB.setModel(ROBDM);
 
+		int Rows = Integer.parseInt(robSizeTF.getText());
 		for (int i = 0; i < Rows; i++) {
 			Vector<String> dataTmp = new Vector<String>();
 			dataTmp.add(" ");
@@ -1337,7 +1369,37 @@ public class Window {
 		ROBDM.setValueAt("Tail", 0, 1);
 		robTB.repaint();
 	}
-
+	
+	private void createRowsRS(String name, int count) {
+		for (int i = 0; i < count; i++) {
+			Vector<String> dataTmp = new Vector<String>();
+			dataTmp.add(" ");
+			dataTmp.add(name+"_"+(i+1));
+			dataTmp.add("N");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			RSDM.addRow(dataTmp);
+		}
+		robTB.repaint();
+	}
+	
+	private void initRSTable() {
+		RSDV = new Vector<String>();
+		RSDM = new DefaultTableModel(RSDV, RSCN);
+		reservationStationsTB.setModel(RSDM);
+		
+		createRowsRS("LOAD", Integer.parseInt(rsLdTF.getText()));
+		createRowsRS("STORE", Integer.parseInt(rsStTF.getText()));
+		createRowsRS("LOGIC", Integer.parseInt(rsLogicTF.getText()));
+		createRowsRS("MULT", Integer.parseInt(rsMultTF.getText()));
+		createRowsRS("INTEGER", Integer.parseInt(rsAddSubTF.getText()));
+	}
+	
 	/**
 	 * Cache Settings initCache all three caches : Init the cache Array with the
 	 * Three Level Cache return Array of Caches
@@ -1429,18 +1491,18 @@ public class Window {
 		errors = new ArrayList<String>();
 		warrnings = new ArrayList<String>();
 		if (codeInput.getText().trim().isEmpty()) {
-			errors.add("Can't run, Please Enter code first \n ====================================");
+			errors.add("Can't run, Please Enter code first ");
 			return false;
 		}
 		if (modified)
 			onClickSaveBT();
 
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("- Starting Address can't be blank. \n ====================================");
+			errors.add("- Starting Address can't be blank. ");
 		if (memoAccessTimeTF.getText().trim().isEmpty())
-			errors.add("- Memory Access Time can't be blank. \n ====================================");
+			errors.add("- Memory Access Time can't be blank. ");
 		if (cacheLevelsCB.getSelectedIndex() == 0)
-			errors.add("- Select the number of caches levels needed \n ====================================");
+			errors.add("- Select the number of caches levels needed ");
 		else if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
 				errors.add("- L1-Cache: Cache-Size can't be blank");
@@ -1448,7 +1510,6 @@ public class Window {
 				errors.add("- L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
 				errors.add("- L1-Cache: Associativity can't be blank");
-			// errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
 					errors.add("- L2-Cache: Cache-Size can't be blank");
@@ -1456,7 +1517,6 @@ public class Window {
 					errors.add("- L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
 					errors.add("- L2-Cache: Associativity can't be blank");
-				// errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
 						errors.add("- L3-Cache: Cache-Size can't be blank");
@@ -1464,24 +1524,34 @@ public class Window {
 						errors.add("- L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
 						errors.add("- L3-Cache: Associativity can't be blank");
-					// errors.add("====================================");
 				}
 			}
 		}
+
+		if (robSizeTF.getText().trim().isEmpty())
+			errors.add("- ROB Size can't be blank. ");
+		else if (Integer.parseInt(robSizeTF.getText()) == 0)
+			errors.add("- ROB Size can't be 0");
+
+		if (nWayTF.getText().trim().isEmpty())
+			errors.add("- Multi-Iussing can't be blank. ");
+		else if (Integer.parseInt(nWayTF.getText()) == 0)
+			errors.add("- Multi-Iusseing can't be 0");
+
 		if (latAddSubTF.getText().trim().isEmpty()
 				|| latLDTF.getText().trim().isEmpty()
 				|| latLogicTF.getText().trim().isEmpty()
 				|| latMultTF.getText().trim().isEmpty()
-				|| latSTTF.getText().trim().isEmpty()) {
-			errors.add("- Latencies can't be blank. \n ====================================");
-		}
+				|| latSTTF.getText().trim().isEmpty())
+			errors.add("- Latencies can't be blank. ");
+
 		if (rsAddSubTF.getText().trim().isEmpty()
 				|| rsLdTF.getText().trim().isEmpty()
 				|| rsLogicTF.getText().trim().isEmpty()
 				|| rsMultTF.getText().trim().isEmpty()
-				|| rsStTF.getText().trim().isEmpty()) {
-			errors.add("- Reservation Stations can't be blank. \n ====================================");
-		}
+				|| rsStTF.getText().trim().isEmpty())
+			errors.add("- Reservation Stations can't be blank. ");
+
 		return errors.isEmpty() ? true : false;
 	}
 }
