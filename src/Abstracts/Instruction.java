@@ -24,6 +24,16 @@ public abstract class Instruction implements Word {
 	protected String Rj;
 	protected String Rk;
 	protected String Op;
+	protected int executionValue;
+	protected int ROBIndex;
+
+	public int getROBIndex() {
+		return ROBIndex;
+	}
+
+	public void setROBIndex(int rOBIndex) {
+		ROBIndex = rOBIndex;
+	}
 
 	public int getExecutionCycles() {
 		return executionCycles;
@@ -143,6 +153,14 @@ public abstract class Instruction implements Word {
 
 	public void setOp(String op) {
 		Op = op;
+	}
+	
+	public int getExecutionValue(){
+		return this.executionValue;
+	}
+	
+	public void setExecutionValue(int executionValue){
+		this.executionValue = executionValue;
 	}
 
 }

@@ -95,6 +95,7 @@ public class Simulator {
 		this.InitailizeRegistersStatus();
 		this.nWay = nWay;
 		rob = new ReorderBuffer(ROB_Size);
+		this.cdbAvailable = true;
 	}
 
 	public void InitailizeRegistersStatus() {
@@ -208,38 +209,25 @@ public class Simulator {
 		int instructionsCommited = 0;
 		int instructionsToCommit = instructionsToRun.size();
 		pc = instruction_starting_address;
+		int cycles = 0;
 		while (instructionsCommited <= instructionsToCommit) {
-			System.out.println("i -> " + instruction_starting_address
-					+ "pc -> " + pc);
+			cycles++;
+			int instructionsToIssue = nWay;
 			for (int i = instruction_starting_address; i <= pc; i++) {
-				System.out.println("Inside inner loop");
 				Instruction instruction = instructionsToRun.get(i);
-				int value = 0;
-				if (issuable(instruction)) {
-					System.out.println("Issuing");
-					for (int j = 0; j < nWay; j++) {
-						System.out.println("Still Issuing");
-						instruction = instructionsToRun.get(i + j);
-						if (issuable(instruction)) {
-							System.out.println(instruction);
-							issue(instruction);
-							System.out.println("Issued instruction " + i);
-							pc++;
-						} else {
-							break;
-						}
-					}
-				} else if (executable(instruction)) {
+				if (executable(instruction)) {
 					System.out.println("Executing");
 					if (instruction.executionCycles == 1) {
 						if (instruction.getClass() != SW.class) {
-							value = instruction.execute();
+							instruction
+									.setExecutionValue(instruction.execute());
 							instruction.setStatus(Instruction.EXECUTED);
 						} else {
 							int address = instruction.getRegB().get_value()
 									+ instruction.getImm();
 							reservationStations.get(instruction.getResIndex())
 									.setA(address);
+							instruction.setStatus(Instruction.EXECUTED);
 						}
 						instruction.executionCycles--;
 					} else {
@@ -248,14 +236,33 @@ public class Simulator {
 				} else if (writable(instruction)
 						&& instruction.executionCycles == 0) {
 					System.out.println("Writing");
-					write(instruction, value);
+					System.out.println("Value to be written " +  instruction.getExecutionValue());
+					write(instruction, instruction.getExecutionValue());
 				} else if (committable(instruction)) {
 					System.out.println("Commiting");
 					commit(instruction);
 					instructionsCommited++;
 				}
 			}
+			while (instructionsToIssue != 0 && pc != instructions_ending_address) {
+				System.out.println("Issuing");
+				Instruction instruction = instructionsToRun
+						.get(pc + 1);
+				if (issuable(instruction)) {
+					issue(instruction);
+					pc++;
+					instructionsToIssue--;
+				}else {
+					break;
+				}
+			}
+			String rs = this.printrs();
+			System.out.println(rs);
+			System.out.println("####");
+			System.out.println(this.printROB());
+			System.out.println(this.printRegisterStatus());
 		}
+		
 		// loop until all instructions are written
 		// int instructionsCommited = 0;
 		// int instructionsToCommit = instructionsToRun.size();
@@ -309,7 +316,7 @@ public class Simulator {
 		for (int i = 0; i < REGISTERS_NUMBER; i++) {
 			Register Ri = (i == 0) ? new Register(0, true) : new Register(0,
 					false);
-			Ri.setName("R" + i); 
+			Ri.setName("R" + i);
 			registers.put("R" + i, Ri);
 		}
 	}
@@ -524,6 +531,7 @@ public class Simulator {
 	public boolean issuable(Instruction i) {
 		if (i.getStatus() == "") {
 			for (int j = 0; j < reservationStations.size(); j++) {
+				ReservationStation rs = this.reservationStations.get(j);
 				if (this.reservationStations.get(j).getName()
 						.equals(i.getName())
 						&& !this.reservationStations.get(j).isBusy()
@@ -561,8 +569,11 @@ public class Simulator {
 
 	public boolean committable(Instruction i) {
 		if (i.getStatus() == i.WRITTEN) {
-			if (this.rob.getHead() == this.reservationStations.get(
-					i.getResIndex()).getDest()
+			int resIndex = i.getResIndex();
+			ReservationStation rs = this.reservationStations.get(i
+					.getResIndex());
+			int dest = rs.getDest();
+			if (this.rob.getHead() == i.getROBIndex()
 					&& this.rob.getEntryAtHead().get("Ready").equals("true"))
 				return true;
 			else
@@ -613,9 +624,11 @@ public class Simulator {
 
 		ReservationStation r = new ReservationStation(name, busy, operation,
 				vj, vk, qj, qk, dest, address);
-		reservationStations.set(i.getResIndex(),r);
+		reservationStations.set(i.getResIndex(), r);
+		i.setROBIndex(dest);
 		if (i.getClass() == BEQ.class)
 			predictBranch((BEQ) i);
+		registers_status.put(i.getRi(), dest);
 	}
 
 	public void predictBranch(BEQ i) {
@@ -630,9 +643,11 @@ public class Simulator {
 		if (i.getClass() == SW.class) {
 			i.execute();
 		} else {
-			if (i.getClass() == BEQ.class && checkBranchPrediction(predictedPC)) {
-				int rob_index = reservationStations.get(i.getResIndex())
-						.getDest();
+			if ((i.getClass() == BEQ.class && checkBranchPrediction(predictedPC))
+					|| i.getClass() != BEQ.class) {
+				// int rob_index = reservationStations.get(i.getResIndex())
+				// .getDest();
+				int rob_index = i.getROBIndex();
 				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
 						"Value"));
 				registers_status.put(i.getRi(), 0);
@@ -656,7 +671,7 @@ public class Simulator {
 	}
 
 	public void write(Instruction i, int value) {
-		int dest = this.registers_status.get(i.getRi());
+		int dest = i.getROBIndex();
 		this.rob.getEntryAt(dest).put("Value", "" + value);
 		this.rob.getEntryAt(dest).put("Ready", "true");
 		for (int j = 0; j < this.reservationStations.size(); j++) {
@@ -674,4 +689,48 @@ public class Simulator {
 		i.setStatus(Instruction.WRITTEN);
 	}
 
+	public String printrs() {
+		String result = "";
+		for (int i = 0; i < reservationStations.size(); i++) {
+			ReservationStation rs = reservationStations.get(i);
+			result += rs.getName() + " | " + rs.getOP() + " | " + rs.getDest()
+					+ " | " + rs.getQj() + " | " + rs.getQk() + " | "
+					+ rs.getVj() + " | " + rs.getVk() + "\n";
+		}
+		return result;
+	}
+
+	public String printROB() {
+		String result = "\n________________________________________________\n";
+		HashMap<String, String>[] rob = this.rob.getEntries();
+		result += "Index | Type |  Destination  |  Value  |  Ready ";
+		for (int i = 1; i < rob.length; i++) {
+			String type = (rob[i].get("Type") == null) ? "  " : rob[i]
+					.get("Type");
+			String destination = (rob[i].get("Destination") == null) ? "  "
+					: rob[i].get("Destination");
+			String value = (rob[i].get("Value") == null) ? "  " : rob[i]
+					.get("Value");
+			String ready = (rob[i].get("Ready") == null) ? "  " : rob[i]
+					.get("Ready");
+			String line = i + "	" + type + "	 	" + destination + "	 " + value
+					+ "	 " + ready + "	 " + "";
+			result += "\n" + line;
+		}
+		result += "\n___________________________\n";
+		return result;
+	}
+
+	public String printRegisterStatus() {
+		String result = "";
+		for (Map.Entry<String, Integer> entry : registers_status.entrySet()) {
+			result += entry.getKey() + "	";
+		}
+		result += "\n";
+		for (Map.Entry<String, Integer> entry : registers_status.entrySet()) {
+			result += entry.getValue() + "	";
+		}
+		result += "\n";
+		return result;
+	}
 }

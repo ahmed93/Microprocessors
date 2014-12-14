@@ -86,4 +86,8 @@ public class ReorderBuffer {
 	{
 		return full;
 	}
+	
+	public HashMap<String, String>[] getEntries(){
+		return this.entries;
+	}
 }
