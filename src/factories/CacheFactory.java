@@ -1,9 +1,9 @@
 package factories;
 
+import Abstracts.Cache;
 import cache.DirectMapped;
 import cache.FullyAssociative;
 import cache.SetAssociative;
-import Abstracts.Cache;
 
 public class CacheFactory {
 

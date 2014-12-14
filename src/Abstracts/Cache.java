@@ -1,6 +1,5 @@
 package Abstracts;
 
-import factories.InstructionFactory;
 import interfaces.Word;
 import simulator.Block;
 import simulator.Data;

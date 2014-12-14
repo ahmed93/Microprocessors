@@ -1,6 +1,17 @@
 package factories;
 
-import instructions.*;
+import instructions.ADD;
+import instructions.ADDI;
+import instructions.BEQ;
+import instructions.JALR;
+import instructions.JMP;
+import instructions.LW;
+import instructions.MUL;
+import instructions.NAND;
+import instructions.NOP;
+import instructions.RET;
+import instructions.SUB;
+import instructions.SW;
 import simulator.Simulator;
 import Abstracts.Instruction;
 

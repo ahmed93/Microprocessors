@@ -1,12 +1,12 @@
 package cache;
 
 import factories.InstructionFactory;
+import instructions.NOP;
 import interfaces.Word;
 import simulator.Block;
 import simulator.Data;
 import Abstracts.Cache;
 import Abstracts.Instruction;
-import instructions.*;
 
 public class FullyAssociative extends Cache {
 	int instruction_index = 0; // last inserted index in instruction cache
