@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -43,6 +44,10 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.fife.com.swabunga.spell.engine.SpellDictionary;
+import org.fife.com.swabunga.spell.event.SpellCheckEvent;
+import org.fife.com.swabunga.spell.event.SpellCheckListener;
+import org.fife.com.swabunga.spell.event.SpellChecker;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -101,12 +106,10 @@ public class Window {
 
 	private final String MemoryColumnNames[] = { "Location", "value" };
 	private String MemoryDataValues[][];
-	// private DefaultTableModel MemoryDataModel;
 
 	private final String RegisterStatusCN[] = { "Registers", "R0", "R1", "R2",
 			"R3", "R4", "R5", "R6", "R7" };
 	private String RegisterStatusDV[][];
-	// private DefaultTableModel RegisterStatusDM;
 
 	private final Vector<String> ROBDV = new Vector<String>();
 	private final Vector<String> ROBCN = new Vector<String>();
@@ -207,11 +210,6 @@ public class Window {
 		// memoryTB.add(memoryS);
 
 		MemoryPane.add(memoryS);
-
-		String[] CoLNames = { "Location", "Value" };
-		Integer[][] memroyData = new Integer[1][2];
-		memroyData[0][0] = 0;
-		memroyData[0][1] = 0;
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		SettingsTabbedPane.setBounds(741, 38, 276, 579);
@@ -1046,10 +1044,13 @@ public class Window {
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
 		codeInput = new RSyntaxTextArea();
-		// AbstractTokenMakerFactory atmf =
-		// (AbstractTokenMakerFactory)TokenMakerFactory.getDefaultInstance();
-		// atmf.putMapping("text/myLanguage", "Test.java");
-		// codeInput.setSyntaxEditingStyle("text/myLanguage");
+		// AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory)
+		// TokenMakerFactory
+		// .getDefaultInstance();
+		// atmf.putMapping("text/MICRO",
+		// "../../../../Microprocessor/src/GUI/utilities/MicroTokenMaker.java");
+		// codeInput.setSyntaxEditingStyle("text/MICRO");
+
 		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ACM);
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
@@ -1089,8 +1090,7 @@ public class Window {
 		provider.addCompletion(new BasicCompletion(provider, "ADD",
 				"ADD RI, RS, RD"));
 		provider.addCompletion(new BasicCompletion(provider, "SUB"));
-		// provider.addCompletion(new BasicCompletion(provider, "MUL"));
-		// provider.addCompletion(new BasicCompletion(provider, "ADDI"));
+
 		provider.addCompletion(new BasicCompletion(provider, "NAND"));
 		provider.addCompletion(new BasicCompletion(provider, "BEQ"));
 		provider.addCompletion(new BasicCompletion(provider, "JALR"));
@@ -1214,7 +1214,8 @@ public class Window {
 	private void setRegisterStatusData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
 			int col = (int) entry.getKey();
-			registersStatusTB.setValueAt(entry.getValue().toString(), 0, col);
+			registersStatusTB.setValueAt("#" + entry.getValue().toString(), 0,
+					col);
 		}
 		registersStatusTB.repaint();
 	}
