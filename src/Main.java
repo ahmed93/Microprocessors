@@ -38,12 +38,9 @@ public class Main {
 		cache.put("missTime", 1);
 		cache_information.add(cache);
 		instructions.add("ADDI R1, R0, 1");
-		instructions.add("ADDI R2, R0, 10");
-		instructions.add("ADDI R3, R0, 0");
 		instructions.add("ADD R1, R1, R1");
-		instructions.add("ADDI R3, R3, 1");
-		instructions.add("BEQ R2, R3, 1");
-		instructions.add("JMP R0, -4");
+//		instructions.add("BEQ R2, R3, 1");
+//		instructions.add("JMP R0, -4");
 		instructions.add("SW R1, R0, 4");
 		instructions.add("LW R4, R0, 4");
 		int instruction_starting_address = 0;

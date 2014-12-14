@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -44,10 +43,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.fife.com.swabunga.spell.engine.SpellDictionary;
-import org.fife.com.swabunga.spell.event.SpellCheckEvent;
-import org.fife.com.swabunga.spell.event.SpellCheckListener;
-import org.fife.com.swabunga.spell.event.SpellChecker;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
