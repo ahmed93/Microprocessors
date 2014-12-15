@@ -26,6 +26,15 @@ public abstract class Instruction implements Word {
 	protected String Op;
 	protected int executionValue;
 	protected int ROBIndex;
+	protected int storeAddress;
+
+	public int getStoreAddress() {
+		return storeAddress;
+	}
+
+	public void setStoreAddress(int storeAddress) {
+		this.storeAddress = storeAddress;
+	}
 
 	public int getROBIndex() {
 		return ROBIndex;

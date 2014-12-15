@@ -63,7 +63,7 @@ public class ReorderBuffer {
 	}
 
 	public void moveHead() {
-		head = (head + 1) % Size;
+		head = (head + 1) % (Size + 1);
 		if (head == 0)
 			head = 1;
 		setFull();
@@ -71,7 +71,7 @@ public class ReorderBuffer {
 	}
 
 	public void moveTail() {
-			tail = (tail + 1) % Size;
+			tail = (tail + 1) % (Size+1);
 			if (tail == 0)
 				tail = 1;
 			setFull();
