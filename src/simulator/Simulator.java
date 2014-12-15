@@ -222,6 +222,7 @@ public class Simulator {
 				if (issuable(instruction)) {
 					issue(instruction);
 					pc++;
+					predictedPC++;
 					instructionsToIssue--;
 					issuedNow.add(instruction);
 				} else {
@@ -237,7 +238,7 @@ public class Simulator {
 				if (executable(instruction)) {
 					System.out.println("Executing");
 					if (instruction.executionCycles == 1) {
-						if (instruction.getClass() != SW.class || instruction.getClass() != LW.class) {
+						if (instruction.getClass() != SW.class && instruction.getClass() != LW.class) {
 							System.out
 									.println("##################Executing for real");
 							instruction
@@ -256,7 +257,7 @@ public class Simulator {
 					}
 				} else if (writable(instruction)
 						&& instruction.executionCycles == 0) {
-					if (instruction.getClass() == SW.class) {
+					if (instruction.getClass() == SW.class || instruction.getClass() == LW.class) {
 						instruction.setExecutionValue(instruction.execute());
 						write(instruction, instruction.getExecutionValue());
 					}
@@ -544,6 +545,9 @@ public class Simulator {
 
 	public boolean issuable(Instruction i) {
 		if (i.getStatus() == "") {
+			if (i.getClass() == LW.class && storeBuffer.contains(storeBuffer.indexOf(i.getStoreAddress()))){
+				return false;
+			}
 			for (int j = 0; j < reservationStations.size(); j++) {
 				ReservationStation rs = this.reservationStations.get(j);
 				if (this.reservationStations.get(j).getName()
@@ -710,8 +714,10 @@ public class Simulator {
 				this.reservationStations.get(j).setQk(0);
 			}
 		}
-		this.reservationStations.set(i.getResIndex(), new ReservationStation(
-				this.reservationStations.get(i.getResIndex()).getName()));
+		System.out.println(i.getClass());
+		System.out.println(">>Res. St. size>>> " + this.reservationStations.size());
+		String name = this.reservationStations.get(i.getResIndex()).getName();
+		this.reservationStations.set(i.getResIndex(), new ReservationStation(name));
 		i.setStatus(Instruction.WRITTEN);
 		registers_status.put(i.getRi(), 0);
 	}

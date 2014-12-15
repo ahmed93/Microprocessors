@@ -39,9 +39,12 @@ public class Main {
 		cache_information.add(cache);
 		instructions.add("ADDI R1, R0, 1");
 		instructions.add("ADD R1, R1, R1");
-//		instructions.add("BEQ R2, R3, 1");
+//		instructions.add("BEQ R1, R0, 1");
 //		instructions.add("JMP R0, -4");
 		instructions.add("SW R1, R0, 4");
+//		instructions.add("SW R1, R0, 4");
+//		instructions.add("ADDI R1, R0, 1");
+//		instructions.add("ADD R1, R1, R1");
 		instructions.add("LW R4, R0, 4");
 		int instruction_starting_address = 0;
 		HashMap<String, Integer> inputReservationStations = new HashMap<String, Integer>();
@@ -67,7 +70,7 @@ public class Main {
 		Simulator simulator = new Simulator(data, instructions,
 				cache_information, instruction_starting_address, memoryAccessTime,
 				inputReservationStations, ROB_Size,
-				inputinstructionsLatencies, 1);
+				inputinstructionsLatencies, 2);
 				
 		simulator.Initialize();
 		simulator.getInstructionsToRun();
