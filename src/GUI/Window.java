@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -32,6 +34,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -50,31 +53,17 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
+import org.fife.ui.rsyntaxtextarea.CodeTemplateManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.templates.CodeTemplate;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import simulator.Simulator;
+import GUI.utilities.ArtemisCodeTemplate;
 import GUI.utilities.NumbersFilter;
 
 public class Window {
-
-	public static final Color DEFAULT_KEYWORD_COLOR = Color.blue;
-
-	public static final String[] JAVA_KEYWORDS = new String[] { "ADDI", "MUL",
-			"SUB" };
-	public static String JAVA_KEYWORDS_REGEX;
-
-	static {
-		StringBuilder buff = new StringBuilder("");
-		buff.append("(");
-		for (String keyword : JAVA_KEYWORDS) {
-			buff.append("\\b").append(keyword).append("\\b").append("|");
-		}
-		buff.deleteCharAt(buff.length() - 1);
-		buff.append(")");
-		JAVA_KEYWORDS_REGEX = buff.toString();
-	}
 
 	private JFrame frame;
 	private RSyntaxTextArea codeInput;
@@ -204,13 +193,9 @@ public class Window {
 		memoryTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		memoryTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-		MemoryPane.add(memoryTB);
-
 		JScrollPane memoryS = new JScrollPane(memoryTB,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		// memoryTB.add(memoryS);
-
 		MemoryPane.add(memoryS);
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -1076,22 +1061,32 @@ public class Window {
 		InputPanel.setBounds(6, 6, 734, 295);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
+
 		codeInput = new RSyntaxTextArea();
 		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ACM);
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
 
-		// InputStream in =
-		// getClass().getResourceAsStream("src/Themes/dark.xml");
-		//
-		// System.out.println(in);
-		// try {
-		// Theme theme = Theme.load(in);
-		// theme.apply(codeInput);
-		// } catch (IOException ioe) {
-		// ioe.printStackTrace();
-		// }
+		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
+		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
+		InputPanel.add(Rscroll);
+
+//		RSyntaxTextArea.setTemplatesEnabled(true);
+//		CodeTemplateManager ctm = RSyntaxTextArea.getCodeTemplateManager();
+//		ctm.setInsertTrigger(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,
+//				InputEvent.CTRL_DOWN_MASK));
+//		System.out.println(ctm.getInsertTriggerString());
+//		CodeTemplate ct = new ArtemisCodeTemplate("s", "System.out.println(","<replaceme>", ");");
+//		
+//		
+//		ctm.addTemplate(ct);
+
+		 CompletionProvider provider = createCompletionProvider();
+		 AutoCompletion ac = new AutoCompletion(provider);
+		 ac.install(codeInput);
+		
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
@@ -1109,15 +1104,6 @@ public class Window {
 				saveBT.setEnabled(true);
 			}
 		});
-		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
-		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-		InputPanel.add(Rscroll);
-
-		CompletionProvider provider = createCompletionProvider();
-		AutoCompletion ac = new AutoCompletion(provider);
-		ac.install(codeInput);
 	}
 
 	private CompletionProvider createCompletionProvider() {
@@ -1143,7 +1129,6 @@ public class Window {
 				"#Instructions", "Instructions:\n\t"));
 		provider.addCompletion(new ShorthandCompletion(provider, "#data",
 				"data:\n\t"));
-
 		return provider;
 	}
 
