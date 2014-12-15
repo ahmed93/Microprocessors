@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
 
+import javafx.util.Pair;
+
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -109,7 +111,7 @@ public class Window {
 	private Vector<String> ROBDV = new Vector<String>();
 	private final Vector<String> ROBCN = new Vector<String>();
 	private DefaultTableModel ROBDM;
-	
+
 	private Vector<String> RSDV = new Vector<String>();
 	private final Vector<String> RSCN = new Vector<String>();
 	private DefaultTableModel RSDM;
@@ -787,32 +789,20 @@ public class Window {
 		runBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				runBT.setEnabled(false);
-				// debugBT.setEnabled(false);
+				debugBT.setEnabled(false);
 
 				if (validate()) {
-					showWarrnings();
-					setSimulatorVectors();
-					int memoryAccessTime = Integer.parseInt(memoAccessTimeTF
-							.getText());
-					ArrayList<HashMap<String, Integer>> input_caches = getCaches();
-					int instruction_starting_address = getStartingAddress();
-					HashMap<String, Integer> inputReservationStations = getinputReservationStations();
-					HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
-					int ROB_Size = Integer.parseInt(robSizeTF.getText());
-					int nWay = Integer.parseInt(nWayTF.getText());
-
-					simulator = new Simulator(data, instructions, input_caches,
-							instruction_starting_address, memoryAccessTime,
-							inputReservationStations, ROB_Size,
-							inputinstructionsLatencies, nWay);
-
 					try {
-						simulator.Initialize();
+						basicStartConfigurations();
 						simulator.getInstructionsToRun();
-						simulator.printMemory();
+
 						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());
 						setRegisterData(simulator.getRegistersValues());
+						setRegisterStatusData(simulator
+								.getRegisterStatusValues());
+						setROBTable(simulator.getROBTable());
+
 					} catch (IOException ea) {
 						ea.printStackTrace();
 					}
@@ -820,15 +810,14 @@ public class Window {
 					showErrors();
 				}
 
-				initROBTable();
-				initRSTable();
-
-				// debugBT.setEnabled(true);
+				debugBT.setEnabled(true);
 				runBT.setEnabled(true);
 			}
+
 		});
 
 		stopBT = new JButton("Stop");
+		stopBT.setEnabled(false);
 		stopBT.setBounds(1088, 6, 85, 30);
 		frame.getContentPane().add(stopBT);
 		stopBT.addActionListener(new ActionListener() {
@@ -840,7 +829,6 @@ public class Window {
 				printE("******* **** Session has been terminated by the user **** *******");
 			}
 		});
-		stopBT.setEnabled(false);
 
 		// Save Button
 		saveBT = new JButton("Save");
@@ -856,7 +844,6 @@ public class Window {
 		debugBT = new JButton("Debug");
 		debugBT.setBounds(947, 6, 85, 29);
 		frame.getContentPane().add(debugBT);
-		debugBT.setEnabled(false);
 
 		nextBT = new JButton("");
 		nextBT.setBounds(1044, 10, 28, 20);
@@ -892,34 +879,56 @@ public class Window {
 		debugBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// if (validate()) {
-				// showWarrnings();
-				// runBT.setEnabled(false);
-				// debugBT.setEnabled(false);
-				// stopBT.setEnabled(true);
-				// nextBT.setEnabled(true);
-				// } else {
-				// showErrors();
-				// runBT.setEnabled(true);
-				// debugBT.setEnabled(true);
-				// stopBT.setEnabled(false);
-				// nextBT.setEnabled(false);
-				// }
+				if (validate()) {
+					showWarrnings();
+					runBT.setEnabled(false);
+					debugBT.setEnabled(false);
+					stopBT.setEnabled(true);
+					nextBT.setEnabled(true);
 
-				HashMap<Integer, Integer> ssss = new HashMap<Integer, Integer>();
-				ssss.put(2, 2);
-				ssss.put(1, 200000000);
-				ssss.put(444, 200);
+					try {
+						basicStartConfigurations();
+						/**
+						 * Calling the Simulator start debug function
+						 * **/
+						// showMessages(simulator.output());
+						// setMamoryData(simulator.getMemoryValues());
+						// setRegisterData(simulator.getRegistersValues());
+						// setRegisterStatusData(simulator
+						// .getRegisterStatusValues());
+						// setROBTable(simulator.getROBTable());
 
-				setMamoryData(ssss);
-				//
-				// memoryTB.setValueAt(200, 1, 1);
-				// memoryTB.repaint();
+					} catch (IOException ea) {
+						ea.printStackTrace();
+					}
 
+				} else {
+					showErrors();
+					runBT.setEnabled(true);
+					debugBT.setEnabled(true);
+					stopBT.setEnabled(false);
+					nextBT.setEnabled(false);
+				}
 			}
-
 		});
+	}
 
+	private void basicStartConfigurations() throws IOException {
+		showWarrnings();
+		setSimulatorVectors();
+		int memoryAccessTime = Integer.parseInt(memoAccessTimeTF.getText());
+		ArrayList<HashMap<String, Integer>> input_caches = getCaches();
+		int instruction_starting_address = getStartingAddress();
+		HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
+		int ROB_Size = Integer.parseInt(robSizeTF.getText());
+		int nWay = Integer.parseInt(nWayTF.getText());
+
+		simulator = new Simulator(data, instructions, input_caches,
+				instruction_starting_address, memoryAccessTime,
+				inputReservationStations, ROB_Size, inputinstructionsLatencies,
+				nWay);
+		simulator.Initialize();
 	}
 
 	private void onClickSaveBT() {
@@ -1072,6 +1081,17 @@ public class Window {
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
 
+		// InputStream in =
+		// getClass().getResourceAsStream("src/Themes/dark.xml");
+		//
+		// System.out.println(in);
+		// try {
+		// Theme theme = Theme.load(in);
+		// theme.apply(codeInput);
+		// } catch (IOException ioe) {
+		// ioe.printStackTrace();
+		// }
+
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
@@ -1213,7 +1233,7 @@ public class Window {
 		ROBCN.add("Value");
 		ROBCN.add("Ready");
 		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
-		
+
 		RSCN.add("Wait");
 		RSCN.add("Name");
 		RSCN.add("Busy");
@@ -1224,7 +1244,7 @@ public class Window {
 		RSCN.add("Qk");
 		RSCN.add("Dest");
 		RSCN.add("A");
-		RSDM = new DefaultTableModel(RSDV,RSCN);
+		RSDM = new DefaultTableModel(RSDV, RSCN);
 
 		CreateMemoryData();
 		CreateRegisterStatusData();
@@ -1343,7 +1363,10 @@ public class Window {
 		System.out.println(Arrays.toString(instructions.toArray()));
 	}
 
-	private void initROBTable() {
+	/**
+	 * Called While debugging .. Needs more work.
+	 * */
+	private void initROBTableDebuging() {
 		ROBDV = new Vector<String>();
 		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
 		robTB.setModel(ROBDM);
@@ -1364,12 +1387,27 @@ public class Window {
 		ROBDM.setValueAt("Tail", 0, 1);
 		robTB.repaint();
 	}
-	
+
+	private void setROBTable(ArrayList<Vector<String>> data) {
+		ROBDV = new Vector<String>();
+		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+		robTB.setModel(ROBDM);
+
+		for (Vector<String> vec : data) {
+			ROBDM.addRow(vec);
+		}
+
+		Pair<Integer, Integer> status = simulator.getHeadTail();
+		ROBDM.setValueAt("Head", status.getKey(), 0);
+		ROBDM.setValueAt("Tail", status.getValue(), 1);
+		robTB.repaint();
+	}
+
 	private void createRowsRS(String name, int count) {
 		for (int i = 0; i < count; i++) {
 			Vector<String> dataTmp = new Vector<String>();
 			dataTmp.add(" ");
-			dataTmp.add(name+"_"+(i+1));
+			dataTmp.add(name + "_" + (i + 1));
 			dataTmp.add("N");
 			dataTmp.add(" ");
 			dataTmp.add(" ");
@@ -1382,19 +1420,19 @@ public class Window {
 		}
 		robTB.repaint();
 	}
-	
+
 	private void initRSTable() {
 		RSDV = new Vector<String>();
 		RSDM = new DefaultTableModel(RSDV, RSCN);
 		reservationStationsTB.setModel(RSDM);
-		
+
 		createRowsRS("LOAD", Integer.parseInt(rsLdTF.getText()));
 		createRowsRS("STORE", Integer.parseInt(rsStTF.getText()));
 		createRowsRS("LOGIC", Integer.parseInt(rsLogicTF.getText()));
 		createRowsRS("MULT", Integer.parseInt(rsMultTF.getText()));
 		createRowsRS("INTEGER", Integer.parseInt(rsAddSubTF.getText()));
 	}
-	
+
 	/**
 	 * Cache Settings initCache all three caches : Init the cache Array with the
 	 * Three Level Cache return Array of Caches
