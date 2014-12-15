@@ -53,6 +53,7 @@ public class Simulator {
 	ReorderBuffer rob;
 	boolean cdbAvailable;
 	int nWay;
+	ArrayList<Integer> storeBuffer = new ArrayList<Integer>();
 
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -210,15 +211,35 @@ public class Simulator {
 		int instructionsToCommit = instructionsToRun.size();
 		pc = instruction_starting_address;
 		int cycles = 0;
-		while (instructionsCommited <= instructionsToCommit) {
+		while (instructionsCommited < instructionsToCommit) {
 			cycles++;
 			int instructionsToIssue = nWay;
-			for (int i = instruction_starting_address; i <= pc; i++) {
+			ArrayList<Instruction> issuedNow = new ArrayList<Instruction>();
+			while (instructionsToIssue != 0
+					&& pc <= instructions_ending_address) {
+				System.out.println("Issuing");
+				Instruction instruction = instructionsToRun.get(pc);
+				if (issuable(instruction)) {
+					issue(instruction);
+					pc++;
+					instructionsToIssue--;
+					issuedNow.add(instruction);
+				} else {
+					break;
+				}
+			}
+			for (int i = instruction_starting_address; i < pc; i++) {
 				Instruction instruction = instructionsToRun.get(i);
+				if (issuedNow.contains(instruction))
+					break;
+				if (instruction.getStatus() == Instruction.COMMITED)
+					continue;
 				if (executable(instruction)) {
 					System.out.println("Executing");
 					if (instruction.executionCycles == 1) {
-						if (instruction.getClass() != SW.class) {
+						if (instruction.getClass() != SW.class || instruction.getClass() != LW.class) {
+							System.out
+									.println("##################Executing for real");
 							instruction
 									.setExecutionValue(instruction.execute());
 							instruction.setStatus(Instruction.EXECUTED);
@@ -235,25 +256,18 @@ public class Simulator {
 					}
 				} else if (writable(instruction)
 						&& instruction.executionCycles == 0) {
+					if (instruction.getClass() == SW.class) {
+						instruction.setExecutionValue(instruction.execute());
+						write(instruction, instruction.getExecutionValue());
+					}
 					System.out.println("Writing");
-					System.out.println("Value to be written " +  instruction.getExecutionValue());
+					System.out.println("Value to be written "
+							+ instruction.getExecutionValue());
 					write(instruction, instruction.getExecutionValue());
 				} else if (committable(instruction)) {
 					System.out.println("Commiting");
 					commit(instruction);
 					instructionsCommited++;
-				}
-			}
-			while (instructionsToIssue != 0 && pc != instructions_ending_address) {
-				System.out.println("Issuing");
-				Instruction instruction = instructionsToRun
-						.get(pc + 1);
-				if (issuable(instruction)) {
-					issue(instruction);
-					pc++;
-					instructionsToIssue--;
-				}else {
-					break;
 				}
 			}
 			String rs = this.printrs();
@@ -262,7 +276,7 @@ public class Simulator {
 			System.out.println(this.printROB());
 			System.out.println(this.printRegisterStatus());
 		}
-		
+
 		// loop until all instructions are written
 		// int instructionsCommited = 0;
 		// int instructionsToCommit = instructionsToRun.size();
@@ -559,6 +573,10 @@ public class Simulator {
 	}
 
 	public boolean writable(Instruction i) {
+		if (i.getClass() == LW.class
+				&& storeBuffer.contains(storeBuffer.indexOf(i.getStoreAddress()))) {
+			return false;
+		}
 		boolean tmp = i.getStatus().equals(i.EXECUTED) && this.cdbAvailable;
 		if (i.getName().equals("Store"))
 			return tmp
@@ -614,6 +632,12 @@ public class Simulator {
 				qk = registers_status.get(i.getRk());
 				vk = 0;
 			}
+		} else {
+			if (i.getClass() == SW.class) {
+				int storeAddress = i.getRegB().get_value() + i.getImm();
+				storeBuffer.add(storeAddress);
+				i.setStoreAddress(storeAddress);
+			}
 		}
 		HashMap<String, String> entry = new HashMap<String, String>();
 		entry.put("Type", operation);
@@ -642,6 +666,9 @@ public class Simulator {
 	public void commit(Instruction i) {
 		if (i.getClass() == SW.class) {
 			i.execute();
+			rob.moveHead();
+			i.setStatus(Instruction.COMMITED);
+			storeBuffer.remove(storeBuffer.indexOf(i.getStoreAddress()));
 		} else {
 			if ((i.getClass() == BEQ.class && checkBranchPrediction(predictedPC))
 					|| i.getClass() != BEQ.class) {
@@ -650,7 +677,6 @@ public class Simulator {
 				int rob_index = i.getROBIndex();
 				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
 						"Value"));
-				registers_status.put(i.getRi(), 0);
 				i.getRegA().set_value(value);
 				rob.moveHead();
 				i.setStatus(Instruction.COMMITED);
@@ -687,10 +713,11 @@ public class Simulator {
 		this.reservationStations.set(i.getResIndex(), new ReservationStation(
 				this.reservationStations.get(i.getResIndex()).getName()));
 		i.setStatus(Instruction.WRITTEN);
+		registers_status.put(i.getRi(), 0);
 	}
 
 	public String printrs() {
-		String result = "";
+		String result = "Name|OP|Dest| Qj | Qk | Vj | Vk\n";
 		for (int i = 0; i < reservationStations.size(); i++) {
 			ReservationStation rs = reservationStations.get(i);
 			result += rs.getName() + " | " + rs.getOP() + " | " + rs.getDest()

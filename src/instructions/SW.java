@@ -22,7 +22,7 @@ public class SW extends Instruction {
 			int address = regB.get_value() + imm;
 			// Write Policy
 			 this.simulator.writeDataWithPolicies(address, regA.get_value());
-			 return 1;
+			 return regA.get_value();
 //			this.simulator.getMemory().storeDataAtAddress(regA.get_value(), address);
 		} else {
 			System.err.println("Wrong immediate" + imm);
