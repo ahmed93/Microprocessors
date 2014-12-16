@@ -70,8 +70,8 @@ public class Window {
 			l2AssociativityTF, l1CacheSizeTF, l1BlockSizeTF, l1AssociativityTF,
 			l3CacheSizeTF, l3BlockSizeTF, l3AssociativityTF, l2HitTimeTF,
 			l2MissTimeTF, l1HitTimeTF, l1MissTimeTF, l3HitTimeTF, l3MissTimeTF,
-			memoAccessTimeTF, robSizeTF, latLDTF, latSTTF, latAddSubTF,
-			latMultTF, latLogicTF, rsLdTF, rsStTF, rsAddSubTF, rsMultTF,
+			memoAccessTimeTF, robSizeTF, TF_LatLW, TF_LatSW, TF_LatAdd,
+			TF_LatMul, TF_LatAddi, rsLdTF, rsStTF, rsAddSubTF, rsMultTF,
 			rsLogicTF;
 
 	/****************************
@@ -82,7 +82,7 @@ public class Window {
 	// private ArrayList<String> output;
 	private boolean modified;
 	private String FilePath;
-	
+
 	private String MainFilePath, SettingsFilePath;
 	private static Simulator simulator;
 
@@ -113,6 +113,13 @@ public class Window {
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
 	private JTextField nWayTF;
+	private JTextField TF_LatSub;
+	private JTextField TF_LatJmp;
+	private JTextField TF_LatJalr;
+	private JTextField TF_LatRet;
+	private JTextField TF_LatNand;
+	private JTextField TF_LatBeq;
+	private JTextField TF_LatNop;
 
 	/**
 	 * Launch the application.
@@ -562,71 +569,133 @@ public class Window {
 		robSizeTF.setColumns(10);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(6, 80, 243, 220);
+		tabbedPane.setBounds(6, 80, 243, 255);
 		TomasuloSettingsTab.add(tabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
 		tabbedPane.addTab("Latencies", null, layeredPane, null);
 
-		JLabel lblLoad = new JLabel("Load");
-		lblLoad.setBounds(25, 25, 71, 16);
+		JLabel lblLoad = new JLabel("LW");
+		lblLoad.setBounds(6, 12, 34, 16);
 		layeredPane.add(lblLoad);
 
-		latLDTF = new JTextField();
-		latLDTF.setBounds(101, 19, 100, 28);
-		PlainDocument latLDTFeDoc = (PlainDocument) latLDTF.getDocument();
+		TF_LatLW = new JTextField();
+		TF_LatLW.setBounds(52, 6, 51, 28);
+		PlainDocument latLDTFeDoc = (PlainDocument) TF_LatLW.getDocument();
 		latLDTFeDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latLDTF);
-		latLDTF.setColumns(10);
+		layeredPane.add(TF_LatLW);
+		TF_LatLW.setColumns(10);
 
-		JLabel lblStore = new JLabel("Store");
-		lblStore.setBounds(25, 53, 71, 16);
+		JLabel lblStore = new JLabel("SW");
+		lblStore.setBounds(110, 12, 34, 16);
 		layeredPane.add(lblStore);
 
-		latSTTF = new JTextField();
-		latSTTF.setColumns(10);
-		PlainDocument latSTTFDoc = (PlainDocument) latSTTF.getDocument();
+		TF_LatSW = new JTextField();
+		TF_LatSW.setColumns(10);
+		PlainDocument latSTTFDoc = (PlainDocument) TF_LatSW.getDocument();
 		latSTTFDoc.setDocumentFilter(new NumbersFilter());
-		latSTTF.setBounds(101, 46, 100, 28);
-		layeredPane.add(latSTTF);
+		TF_LatSW.setBounds(156, 6, 51, 28);
+		layeredPane.add(TF_LatSW);
 
-		JLabel lable111 = new JLabel("Add/Sub");
-		lable111.setBounds(25, 79, 71, 16);
+		JLabel lable111 = new JLabel("ADD");
+		lable111.setBounds(6, 40, 34, 16);
 		layeredPane.add(lable111);
 
-		latAddSubTF = new JTextField();
-		latAddSubTF.setColumns(10);
-		latAddSubTF.setBounds(101, 73, 100, 28);
-		PlainDocument latAddSubTFDoc = (PlainDocument) latAddSubTF
-				.getDocument();
+		TF_LatAdd = new JTextField();
+		TF_LatAdd.setColumns(10);
+		TF_LatAdd.setBounds(52, 34, 51, 28);
+		PlainDocument latAddSubTFDoc = (PlainDocument) TF_LatAdd.getDocument();
 		latAddSubTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latAddSubTF);
+		layeredPane.add(TF_LatAdd);
 
-		JLabel lblMulti = new JLabel("MULT");
-		lblMulti.setBounds(25, 107, 71, 16);
+		JLabel lblMulti = new JLabel("MUL");
+		lblMulti.setBounds(6, 70, 34, 16);
 		layeredPane.add(lblMulti);
 
-		latMultTF = new JTextField();
-		latMultTF.setColumns(10);
-		latMultTF.setBounds(101, 101, 100, 28);
-		PlainDocument latMultTFDoc = (PlainDocument) latMultTF.getDocument();
+		TF_LatMul = new JTextField();
+		TF_LatMul.setColumns(10);
+		TF_LatMul.setBounds(52, 65, 51, 28);
+		PlainDocument latMultTFDoc = (PlainDocument) TF_LatMul.getDocument();
 		latMultTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latMultTF);
+		layeredPane.add(TF_LatMul);
 
-		JLabel lblDiv = new JLabel("Logic");
-		lblDiv.setBounds(25, 134, 51, 16);
+		JLabel lblDiv = new JLabel("ADDI");
+		lblDiv.setBounds(6, 102, 34, 16);
 		layeredPane.add(lblDiv);
 
-		latLogicTF = new JTextField();
-		latLogicTF.setColumns(10);
-		latLogicTF.setBounds(101, 128, 100, 28);
-		PlainDocument latLogicTFTFDoc = (PlainDocument) latLogicTF
+		TF_LatAddi = new JTextField();
+		TF_LatAddi.setColumns(10);
+		TF_LatAddi.setBounds(52, 96, 51, 28);
+		PlainDocument latLogicTFTFDoc = (PlainDocument) TF_LatAddi
 				.getDocument();
 		latLogicTFTFDoc.setDocumentFilter(new NumbersFilter());
-		layeredPane.add(latLogicTF);
+		layeredPane.add(TF_LatAddi);
+
+		JLabel lblSub = new JLabel("SUB");
+		lblSub.setBounds(110, 40, 34, 16);
+		layeredPane.add(lblSub);
+
+		TF_LatSub = new JTextField();
+		TF_LatSub.setColumns(10);
+		TF_LatSub.setBounds(156, 34, 51, 28);
+		layeredPane.add(TF_LatSub);
+
+		JLabel lblJmp = new JLabel("JMP");
+		lblJmp.setBounds(6, 136, 34, 16);
+		layeredPane.add(lblJmp);
+
+		TF_LatJmp = new JTextField();
+		TF_LatJmp.setColumns(10);
+		TF_LatJmp.setBounds(52, 130, 51, 28);
+		layeredPane.add(TF_LatJmp);
+
+		JLabel lblJalr = new JLabel("JALR");
+		lblJalr.setBounds(6, 170, 34, 16);
+		layeredPane.add(lblJalr);
+
+		TF_LatJalr = new JTextField();
+		TF_LatJalr.setColumns(10);
+		TF_LatJalr.setBounds(52, 164, 51, 28);
+		layeredPane.add(TF_LatJalr);
+
+		JLabel lblDiv_1 = new JLabel("RET");
+		lblDiv_1.setBounds(110, 70, 34, 16);
+		layeredPane.add(lblDiv_1);
+
+		TF_LatRet = new JTextField();
+		TF_LatRet.setColumns(10);
+		TF_LatRet.setBounds(156, 65, 51, 28);
+		layeredPane.add(TF_LatRet);
+
+		JLabel lblNand = new JLabel("NAND");
+		lblNand.setBounds(110, 102, 51, 16);
+		layeredPane.add(lblNand);
+
+		TF_LatNand = new JTextField();
+		TF_LatNand.setColumns(10);
+		TF_LatNand.setBounds(156, 96, 51, 28);
+		layeredPane.add(TF_LatNand);
+
+		JLabel lblBeq = new JLabel("BEQ");
+		lblBeq.setBounds(110, 136, 34, 16);
+		layeredPane.add(lblBeq);
+
+		TF_LatBeq = new JTextField();
+		TF_LatBeq.setColumns(10);
+		TF_LatBeq.setBounds(156, 130, 51, 28);
+		layeredPane.add(TF_LatBeq);
+
+		JLabel lblNop = new JLabel("NOP");
+		lblNop.setBounds(110, 170, 34, 16);
+		layeredPane.add(lblNop);
+
+		TF_LatNop = new JTextField();
+		TF_LatNop.setColumns(10);
+		TF_LatNop.setBounds(156, 164, 51, 28);
+		layeredPane.add(TF_LatNop);
 
 		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setBounds(6, 312, 243, 196);
+		tabbedPane_1.setBounds(6, 335, 243, 196);
 		TomasuloSettingsTab.add(tabbedPane_1);
 
 		JLayeredPane layeredPane_1 = new JLayeredPane();
@@ -846,13 +915,14 @@ public class Window {
 				chooser.setFileFilter(filter);
 				int returnVal = chooser.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					String ParentDirectory = chooser.getSelectedFile().getParentFile().getPath();
+					String ParentDirectory = chooser.getSelectedFile()
+							.getParentFile().getPath();
 					String fileName = chooser.getSelectedFile().getName();
-					
-					MainFilePath = ParentDirectory+"/"+fileName;
-					SettingsFilePath = ParentDirectory+"/."+fileName;
+
+					MainFilePath = ParentDirectory + "/" + fileName;
+					SettingsFilePath = ParentDirectory + "/." + fileName;
 					FilePath = chooser.getSelectedFile().getPath();
-//					loadFile();
+					// loadFile();
 					readFile(FilePath);
 				}
 			}
@@ -899,36 +969,65 @@ public class Window {
 			}
 		});
 	}
-	
+
 	private void loadFile() {
 		LoadMainFile();
 		if (!LoadSettingsFile())
 			SaveSettingsFile();
 	}
-	
-//	private void saveFile() {
-//		LoadMainFile();
-//		if (!LoadSettingsFile())
-//			SaveSettingsFile();
-//	}
+
+	// private void saveFile() {
+	// LoadMainFile();
+	// if (!LoadSettingsFile())
+	// SaveSettingsFile();
+	// }
 
 	private boolean LoadMainFile() {
 		return true;
 	}
-	
+
 	private boolean LoadSettingsFile() {
 		return true;
-		
+
 	}
-	
+
 	private void SaveMainFile() {
-		
+
 	}
-	
+
 	private void SaveSettingsFile() {
-		
+		int memoryAccessTime = Integer.parseInt(memoAccessTimeTF.getText());
+		ArrayList<HashMap<String, Integer>> input_caches = getCaches();
+		int instruction_starting_address = getStartingAddress();
+		HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
+		int ROB_Size = Integer.parseInt(robSizeTF.getText());
+		int nWay = Integer.parseInt(nWayTF.getText());
+
+		File file = new File(SettingsFilePath);
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(file.getAbsoluteFile(), false);
+			fw.write("######################################### \n#### This is the Settings for the code for quick loading of the code Settings.\n #### DON'T Edit THIS FILE\n#########################################\n\n\n");
+			fw.write(memoryAccessTime);
+			fw.write(ROB_Size);
+			fw.write(nWay);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (fw != null) {
+				try {
+					fw.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
 	}
-	
+
 	private void basicStartConfigurations() throws IOException {
 		showWarrnings();
 		setSimulatorVectors();
@@ -939,15 +1038,12 @@ public class Window {
 		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
 		int ROB_Size = Integer.parseInt(robSizeTF.getText());
 		int nWay = Integer.parseInt(nWayTF.getText());
-		
-		
-		
-		
+
 		simulator = new Simulator(data, instructions, input_caches,
 				instruction_starting_address, memoryAccessTime,
 				inputReservationStations, ROB_Size, inputinstructionsLatencies,
 				nWay);
-		
+
 		simulator.Initialize();
 	}
 
@@ -973,7 +1069,6 @@ public class Window {
 		}
 	}
 
-	
 	private void EnableCacheLevel(int level, boolean status) {
 		switch (level) {
 		case 1:
@@ -1315,11 +1410,11 @@ public class Window {
 	 * **/
 	private HashMap<String, Integer> getinputReservationStations() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("integer", Integer.parseInt(rsAddSubTF.getText()));
-		tmp.put("logic", Integer.parseInt(rsLogicTF.getText()));
-		tmp.put("mult", Integer.parseInt(rsMultTF.getText()));
-		tmp.put("store", Integer.parseInt(rsStTF.getText()));
-		tmp.put("load", Integer.parseInt(rsLdTF.getText()));
+		tmp.put(Simulator.INTEGER, Integer.parseInt(rsAddSubTF.getText()));
+		tmp.put(Simulator.LOGIC, Integer.parseInt(rsLogicTF.getText()));
+		tmp.put(Simulator.MULT, Integer.parseInt(rsMultTF.getText()));
+		tmp.put(Simulator.STORE, Integer.parseInt(rsStTF.getText()));
+		tmp.put(Simulator.LOAD, Integer.parseInt(rsLdTF.getText()));
 		return tmp;
 	}
 
@@ -1328,11 +1423,18 @@ public class Window {
 	 * **/
 	private HashMap<String, Integer> getinputLatencies() {
 		HashMap<String, Integer> tmp = new HashMap<String, Integer>();
-		tmp.put("integer", Integer.parseInt(latAddSubTF.getText()));
-		tmp.put("logic", Integer.parseInt(latLogicTF.getText()));
-		tmp.put("mult", Integer.parseInt(latMultTF.getText()));
-		tmp.put("store", Integer.parseInt(latSTTF.getText()));
-		tmp.put("load", Integer.parseInt(latLDTF.getText()));
+		tmp.put("ADD", Integer.parseInt(TF_LatAdd.getText()));
+		tmp.put("ADDI", Integer.parseInt(TF_LatAddi.getText()));
+		tmp.put("MUL", Integer.parseInt(TF_LatMul.getText()));
+		tmp.put("SW", Integer.parseInt(TF_LatSW.getText()));
+		tmp.put("LW", Integer.parseInt(TF_LatLW.getText()));
+		tmp.put("BEQ", Integer.parseInt(TF_LatBeq.getText()));
+		tmp.put("JALR", Integer.parseInt(TF_LatJalr.getText()));
+		tmp.put("JMP", Integer.parseInt(TF_LatJmp.getText()));
+		tmp.put("NAND", Integer.parseInt(TF_LatNand.getText()));
+		tmp.put("NOP", Integer.parseInt(TF_LatNop.getText()));
+		tmp.put("RET", Integer.parseInt(TF_LatRet.getText()));
+		tmp.put("RUB", Integer.parseInt(TF_LatSub.getText()));
 		return tmp;
 	}
 
@@ -1586,11 +1688,18 @@ public class Window {
 		else if (Integer.parseInt(nWayTF.getText()) == 0)
 			errors.add("- Multi-Iusseing can't be 0");
 
-		if (latAddSubTF.getText().trim().isEmpty()
-				|| latLDTF.getText().trim().isEmpty()
-				|| latLogicTF.getText().trim().isEmpty()
-				|| latMultTF.getText().trim().isEmpty()
-				|| latSTTF.getText().trim().isEmpty())
+		if (TF_LatAdd.getText().trim().isEmpty()
+				|| TF_LatLW.getText().trim().isEmpty()
+				|| TF_LatAddi.getText().trim().isEmpty()
+				|| TF_LatMul.getText().trim().isEmpty()
+				|| TF_LatSW.getText().trim().isEmpty()
+				|| TF_LatSub.getText().trim().isEmpty()
+				|| TF_LatRet.getText().trim().isEmpty()
+				|| TF_LatBeq.getText().trim().isEmpty()
+				|| TF_LatNand.getText().trim().isEmpty()
+				|| TF_LatNop.getText().trim().isEmpty()
+				|| TF_LatJmp.getText().trim().isEmpty()
+				|| TF_LatJalr.getText().trim().isEmpty())
 			errors.add("- Latencies can't be blank. ");
 
 		if (rsAddSubTF.getText().trim().isEmpty()
