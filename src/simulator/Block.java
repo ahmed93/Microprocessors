@@ -1,11 +1,9 @@
 package simulator;
 
-import javax.script.AbstractScriptEngine;
-
 import factories.InstructionFactory;
+import interfaces.Word;
 import Abstracts.Cache;
 import Abstracts.Instruction;
-import interfaces.Word;
 
 public class Block {
 	public Word[] words;

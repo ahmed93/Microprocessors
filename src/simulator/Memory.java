@@ -1,10 +1,11 @@
 package simulator;
 
+import interfaces.Word;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import interfaces.Word;
 import Abstracts.Instruction;
 
 public class Memory {

@@ -2,7 +2,6 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +15,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
+
+import javafx.util.Pair;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -36,6 +37,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -43,7 +45,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.eclipse.wb.swing.FocusTraversalOnArray;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -57,23 +58,6 @@ import simulator.Simulator;
 import GUI.utilities.NumbersFilter;
 
 public class Window {
-
-	public static final Color DEFAULT_KEYWORD_COLOR = Color.blue;
-
-	public static final String[] JAVA_KEYWORDS = new String[] { "ADDI", "MUL",
-			"SUB" };
-	public static String JAVA_KEYWORDS_REGEX;
-
-	static {
-		StringBuilder buff = new StringBuilder("");
-		buff.append("(");
-		for (String keyword : JAVA_KEYWORDS) {
-			buff.append("\\b").append(keyword).append("\\b").append("|");
-		}
-		buff.deleteCharAt(buff.length() - 1);
-		buff.append(")");
-		JAVA_KEYWORDS_REGEX = buff.toString();
-	}
 
 	private JFrame frame;
 	private RSyntaxTextArea codeInput;
@@ -95,22 +79,27 @@ public class Window {
 	 ****************************/
 	private ArrayList<String> errors;
 	private ArrayList<String> warrnings;
-	private ArrayList<String> output;
+	// private ArrayList<String> output;
 	private boolean modified;
 	private String FilePath;
-	private Simulator simulator;
-	private String columnNames[] = { "Register", "Value" };
-	private String dataValues[][];
-	// private DefaultTableModel dataModel;
+	
+	private String MainFilePath, SettingsFilePath;
+	private static Simulator simulator;
 
 	private final String MemoryColumnNames[] = { "Location", "value" };
 	private String MemoryDataValues[][];
-	// private DefaultTableModel MemoryDataModel;
 
 	private final String RegisterStatusCN[] = { "Registers", "R0", "R1", "R2",
 			"R3", "R4", "R5", "R6", "R7" };
 	private String RegisterStatusDV[][];
-	// private DefaultTableModel RegisterStatusDM;
+
+	private Vector<String> ROBDV = new Vector<String>();
+	private final Vector<String> ROBCN = new Vector<String>();
+	private DefaultTableModel ROBDM;
+
+	private Vector<String> RSDV = new Vector<String>();
+	private final Vector<String> RSCN = new Vector<String>();
+	private DefaultTableModel RSDM;
 
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
@@ -123,6 +112,7 @@ public class Window {
 	private static final String FILE_TYPE = "txt";
 	private Vector<String> HITPOLISYS = new Vector<String>();
 	private Vector<String> MISSPOLISYS = new Vector<String>();
+	private JTextField nWayTF;
 
 	/**
 	 * Launch the application.
@@ -182,146 +172,6 @@ public class Window {
 	 ** Buttons Settings Options **
 	 *************************************/
 	private void createOptionPanel() {
-		JPanel OptionsPanel = new JPanel();
-		OptionsPanel.setBounds(752, 5, 522, 34);
-		frame.getContentPane().add(OptionsPanel);
-
-		// Load Button
-		loadBT = new JButton("Load");
-		loadBT.setBounds(6, 4, 85, 29);
-		loadBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser chooser = new JFileChooser();
-				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-						FILE_TYPE_Viewed, FILE_TYPE);
-				chooser.setFileFilter(filter);
-				int returnVal = chooser.showOpenDialog(frame);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					FilePath = chooser.getSelectedFile().getPath();
-					readFile(FilePath);
-				}
-			}
-		});
-		OptionsPanel.setLayout(null);
-		OptionsPanel.add(loadBT);
-
-		// Save Button
-		saveBT = new JButton("Save");
-		saveBT.setBounds(103, 4, 85, 29);
-		saveBT.setEnabled(false);
-		saveBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				onClickSaveBT();
-			}
-		});
-		OptionsPanel.add(saveBT);
-
-		debugBT = new JButton("Debug");
-		debugBT.setBounds(202, 4, 85, 29);
-		debugBT.setEnabled(false);
-		debugBT.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// if (validate()) {
-				// showWarrnings();
-				// runBT.setEnabled(false);
-				// debugBT.setEnabled(false);
-				// stopBT.setEnabled(true);
-				// nextBT.setEnabled(true);
-				// } else {
-				// showErrors();
-				// runBT.setEnabled(true);
-				// debugBT.setEnabled(true);
-				// stopBT.setEnabled(false);
-				// nextBT.setEnabled(false);
-				// }
-
-				HashMap<Integer, Integer> ssss = new HashMap<Integer, Integer>();
-				ssss.put(2, 2);
-				ssss.put(1, 200000000);
-				ssss.put(444, 200);
-
-				setMamoryData(ssss);
-				//
-				// memoryTB.setValueAt(200, 1, 1);
-				// memoryTB.repaint();
-
-			}
-
-		});
-		OptionsPanel.add(debugBT);
-
-		// Run Button
-		runBT = new JButton("Run");
-		runBT.setBounds(442, 4, 85, 29);
-		runBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				runBT.setEnabled(false);
-				// debugBT.setEnabled(false);
-				if (validate()) {
-					showWarrnings();
-					setSimulatorVectors();
-					int memoryAccessTime = Integer.parseInt(memoAccessTimeTF
-							.getText());
-					ArrayList<HashMap<String, Integer>> input_caches = getCaches();
-					int instruction_starting_address = getStartingAddress();
-					HashMap<String, Integer> inputReservationStations = getinputReservationStations();
-					HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
-					int ROB_Size = Integer.parseInt(robSizeTF.getText());
-
-					simulator = new Simulator(data, instructions, input_caches,
-							instruction_starting_address, memoryAccessTime,
-							inputReservationStations, ROB_Size,
-							inputinstructionsLatencies, 1);
-					try {
-						simulator.Initialize();
-						simulator.getInstructionsToRun();
-						simulator.printMemory();
-						showMessages(simulator.output());
-						setMamoryData(simulator.getMemoryValues());
-						setRegisterData(simulator.getRegistersValues());
-					} catch (IOException ea) {
-						ea.printStackTrace();
-					}
-				} else {
-					showErrors();
-				}
-
-				// debugBT.setEnabled(true);
-				runBT.setEnabled(true);
-			}
-		});
-		OptionsPanel.add(runBT);
-
-		stopBT = new JButton("Stop");
-		stopBT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				runBT.setEnabled(true);
-				debugBT.setEnabled(true);
-				stopBT.setEnabled(false);
-				nextBT.setEnabled(false);
-				printE("******* **** Session has been terminated by the user **** *******");
-			}
-		});
-		stopBT.setBounds(345, 3, 85, 30);
-		stopBT.setEnabled(false);
-		OptionsPanel.add(stopBT);
-
-		nextBT = new JButton("");
-		nextBT.setEnabled(false);
-//		nextBT.setIcon(new ImageIcon(
-//				Window.class
-//						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
-		nextBT.setBounds(299, 8, 28, 20);
-		nextBT.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-		OptionsPanel.add(nextBT);
-		OptionsPanel.setFocusTraversalPolicy(new FocusTraversalOnArray(
-				new Component[] { loadBT, saveBT, runBT }));
 
 		JTabbedPane MemoRegTab = new JTabbedPane(JTabbedPane.TOP);
 		MemoRegTab.setBounds(1025, 38, 245, 579);
@@ -338,19 +188,11 @@ public class Window {
 		memoryTB.setEnabled(false);
 		memoryTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		memoryTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		MemoryPane.add(memoryTB);
 
 		JScrollPane memoryS = new JScrollPane(memoryTB,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		// memoryTB.add(memoryS);
-
 		MemoryPane.add(memoryS);
-
-		String[] CoLNames = { "Location", "Value" };
-		Integer[][] memroyData = new Integer[1][2];
-		memroyData[0][0] = 0;
-		memroyData[0][1] = 0;
 
 		JTabbedPane SettingsTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		SettingsTabbedPane.setBounds(741, 38, 276, 579);
@@ -423,6 +265,7 @@ public class Window {
 		memoryCacheSettingsTab.add(panel_1);
 
 		JLabel label_4 = new JLabel("L2-Cache");
+		label_4.setForeground(Color.GRAY);
 		label_4.setBounds(6, 6, 69, 16);
 		panel_1.add(label_4);
 
@@ -514,6 +357,7 @@ public class Window {
 		memoryCacheSettingsTab.add(panel_2);
 
 		JLabel label_8 = new JLabel("L1-Cache");
+		label_8.setForeground(Color.GRAY);
 		label_8.setBounds(6, 6, 69, 16);
 		panel_2.add(label_8);
 
@@ -605,6 +449,7 @@ public class Window {
 		memoryCacheSettingsTab.add(panel_3);
 
 		JLabel label_12 = new JLabel("L3-Cache");
+		label_12.setForeground(Color.GRAY);
 		label_12.setBounds(6, 6, 69, 16);
 		panel_3.add(label_12);
 
@@ -717,7 +562,7 @@ public class Window {
 		robSizeTF.setColumns(10);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(6, 38, 243, 220);
+		tabbedPane.setBounds(6, 80, 243, 220);
 		TomasuloSettingsTab.add(tabbedPane);
 
 		JLayeredPane layeredPane = new JLayeredPane();
@@ -781,7 +626,7 @@ public class Window {
 		layeredPane.add(latLogicTF);
 
 		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_1.setBounds(6, 260, 243, 196);
+		tabbedPane_1.setBounds(6, 312, 243, 196);
 		TomasuloSettingsTab.add(tabbedPane_1);
 
 		JLayeredPane layeredPane_1 = new JLayeredPane();
@@ -842,34 +687,65 @@ public class Window {
 		rsLogicTFDoc.setDocumentFilter(new NumbersFilter());
 		layeredPane_1.add(rsLogicTF);
 
-		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_2.setBounds(0, 303, 750, 209);
-		frame.getContentPane().add(tabbedPane_2);
+		JLabel lblMultiissuesNo = new JLabel("Multi-Issues No.:");
+		lblMultiissuesNo.setBounds(6, 50, 130, 16);
+		TomasuloSettingsTab.add(lblMultiissuesNo);
+
+		nWayTF = new JTextField();
+		nWayTF.setColumns(10);
+		nWayTF.setBounds(142, 44, 107, 28);
+		PlainDocument nWayTFDoc = (PlainDocument) nWayTF.getDocument();
+		nWayTFDoc.setDocumentFilter(new NumbersFilter());
+		TomasuloSettingsTab.add(nWayTF);
+
+		JTabbedPane ResTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		ResTabbedPane.setBounds(0, 303, 750, 209);
+		frame.getContentPane().add(ResTabbedPane);
 
 		JLayeredPane layeredPane_2 = new JLayeredPane();
-		tabbedPane_2.addTab("Reservation Stations", null, layeredPane_2, null);
+		ResTabbedPane.addTab("Reservation Stations", null, layeredPane_2, null);
 		layeredPane_2.setLayout(new BorderLayout(0, 0));
 
-		reservationStationsTB = new JTable();
-		layeredPane_2.add(reservationStationsTB, BorderLayout.CENTER);
+		reservationStationsTB = new JTable(RSDM);
+		reservationStationsTB.setGridColor(Color.LIGHT_GRAY);
+		reservationStationsTB.setSurrendersFocusOnKeystroke(true);
+		reservationStationsTB.setFillsViewportHeight(true);
+		reservationStationsTB.setEnabled(false);
+		reservationStationsTB
+				.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		reservationStationsTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		JScrollPane scrollRSTB = new JScrollPane(reservationStationsTB,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		layeredPane_2.add(scrollRSTB, BorderLayout.CENTER);
 
-		JTabbedPane tabbedPane_3 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_3.setBounds(0, 498, 750, 177);
-		frame.getContentPane().add(tabbedPane_3);
+		JTabbedPane RobTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		RobTabbedPane.setBounds(0, 513, 750, 151);
+		frame.getContentPane().add(RobTabbedPane);
 
 		JLayeredPane layeredPane_3 = new JLayeredPane();
-		tabbedPane_3.addTab("ROB", null, layeredPane_3, null);
+		RobTabbedPane.addTab("ROB", null, layeredPane_3, null);
 		layeredPane_3.setLayout(new BorderLayout(0, 0));
 
-		robTB = new JTable();
-		layeredPane_3.add(robTB, BorderLayout.CENTER);
+		robTB = new JTable(ROBDM);
+		robTB.setGridColor(Color.LIGHT_GRAY);
+		robTB.setSurrendersFocusOnKeystroke(true);
+		robTB.setFillsViewportHeight(true);
+		robTB.setEnabled(false);
+		robTB.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		robTB.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		JScrollPane robScroll = new JScrollPane(robTB,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		layeredPane_3.add(robScroll, BorderLayout.CENTER);
 
-		JTabbedPane tabbedPane_4 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_4.setBounds(0, 670, 750, 102);
-		frame.getContentPane().add(tabbedPane_4);
+		JTabbedPane RegStatusTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		RegStatusTabbedPane.setBounds(0, 665, 750, 102);
+		frame.getContentPane().add(RegStatusTabbedPane);
 
 		JLayeredPane layeredPane_4 = new JLayeredPane();
-		tabbedPane_4.addTab("Registers status", null, layeredPane_4, null);
+		RegStatusTabbedPane.addTab("Registers status", null, layeredPane_4,
+				null);
 		layeredPane_4.setLayout(new BorderLayout(0, 0));
 
 		registersStatusTB = new JTable(RegisterStatusDV, RegisterStatusCN);
@@ -887,6 +763,192 @@ public class Window {
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		layeredPane_4.add(registerStatusScrollPane);
 
+		// Run Button
+		runBT = new JButton("Run");
+		runBT.setBounds(1185, 6, 85, 29);
+		frame.getContentPane().add(runBT);
+		runBT.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				runBT.setEnabled(false);
+				debugBT.setEnabled(false);
+
+				if (validate()) {
+					try {
+						basicStartConfigurations();
+						simulator.getInstructionsToRun();
+
+						showMessages(simulator.output());
+						setMamoryData(simulator.getMemoryValues());
+						setRegisterData(simulator.getRegistersValues());
+						setRegisterStatusData(simulator
+								.getRegisterStatusValues());
+						setROBTable(simulator.getROBTable());
+
+					} catch (IOException ea) {
+						ea.printStackTrace();
+					}
+				} else {
+					showErrors();
+				}
+
+				debugBT.setEnabled(true);
+				runBT.setEnabled(true);
+			}
+
+		});
+
+		stopBT = new JButton("Stop");
+		stopBT.setEnabled(false);
+		stopBT.setBounds(1088, 6, 85, 30);
+		frame.getContentPane().add(stopBT);
+		stopBT.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				runBT.setEnabled(true);
+				debugBT.setEnabled(true);
+				stopBT.setEnabled(false);
+				nextBT.setEnabled(false);
+				printE("******* **** Session has been terminated by the user **** *******");
+			}
+		});
+
+		// Save Button
+		saveBT = new JButton("Save");
+		saveBT.setBounds(850, 6, 85, 29);
+		frame.getContentPane().add(saveBT);
+		saveBT.setEnabled(false);
+		saveBT.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onClickSaveBT();
+			}
+		});
+
+		debugBT = new JButton("Debug");
+		debugBT.setBounds(947, 6, 85, 29);
+		frame.getContentPane().add(debugBT);
+
+		nextBT = new JButton("");
+		nextBT.setBounds(1044, 10, 28, 20);
+		frame.getContentPane().add(nextBT);
+		nextBT.setEnabled(false);
+		nextBT.setIcon(new ImageIcon(
+				Window.class
+						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
+
+		// Load Button
+		loadBT = new JButton("Load");
+		loadBT.setBounds(752, 6, 85, 29);
+		frame.getContentPane().add(loadBT);
+		loadBT.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser chooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+						FILE_TYPE_Viewed, FILE_TYPE);
+				chooser.setFileFilter(filter);
+				int returnVal = chooser.showOpenDialog(frame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					String ParentDirectory = chooser.getSelectedFile().getParentFile().getPath();
+					String fileName = chooser.getSelectedFile().getName();
+					
+					MainFilePath = ParentDirectory+"/"+fileName;
+					SettingsFilePath = ParentDirectory+"/."+fileName;
+					FilePath = chooser.getSelectedFile().getPath();
+//					loadFile();
+					readFile(FilePath);
+				}
+			}
+		});
+		nextBT.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
+		debugBT.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (validate()) {
+					showWarrnings();
+					runBT.setEnabled(false);
+					debugBT.setEnabled(false);
+					stopBT.setEnabled(true);
+					nextBT.setEnabled(true);
+
+					try {
+						basicStartConfigurations();
+						/**
+						 * Calling the Simulator start debug function
+						 * **/
+						// showMessages(simulator.output());
+						// setMamoryData(simulator.getMemoryValues());
+						// setRegisterData(simulator.getRegistersValues());
+						// setRegisterStatusData(simulator
+						// .getRegisterStatusValues());
+						// setROBTable(simulator.getROBTable());
+
+					} catch (IOException ea) {
+						ea.printStackTrace();
+					}
+
+				} else {
+					showErrors();
+					runBT.setEnabled(true);
+					debugBT.setEnabled(true);
+					stopBT.setEnabled(false);
+					nextBT.setEnabled(false);
+				}
+			}
+		});
+	}
+	
+	private void loadFile() {
+		LoadMainFile();
+		if (!LoadSettingsFile())
+			SaveSettingsFile();
+	}
+	
+//	private void saveFile() {
+//		LoadMainFile();
+//		if (!LoadSettingsFile())
+//			SaveSettingsFile();
+//	}
+
+	private boolean LoadMainFile() {
+		return true;
+	}
+	
+	private boolean LoadSettingsFile() {
+		return true;
+		
+	}
+	
+	private void SaveMainFile() {
+		
+	}
+	
+	private void SaveSettingsFile() {
+		
+	}
+	
+	private void basicStartConfigurations() throws IOException {
+		showWarrnings();
+		setSimulatorVectors();
+		int memoryAccessTime = Integer.parseInt(memoAccessTimeTF.getText());
+		ArrayList<HashMap<String, Integer>> input_caches = getCaches();
+		int instruction_starting_address = getStartingAddress();
+		HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
+		int ROB_Size = Integer.parseInt(robSizeTF.getText());
+		int nWay = Integer.parseInt(nWayTF.getText());
+		
+		
+		
+		
+		simulator = new Simulator(data, instructions, input_caches,
+				instruction_starting_address, memoryAccessTime,
+				inputReservationStations, ROB_Size, inputinstructionsLatencies,
+				nWay);
+		
+		simulator.Initialize();
 	}
 
 	private void onClickSaveBT() {
@@ -902,6 +964,7 @@ public class Window {
 			fileChooser.setFileFilter(filter);
 			if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
 				FilePath = fileChooser.getSelectedFile().getPath();
+
 				if (!FilePath.toLowerCase().endsWith(".txt"))
 					FilePath += "." + FILE_TYPE;
 				if (saveFile())
@@ -910,6 +973,7 @@ public class Window {
 		}
 	}
 
+	
 	private void EnableCacheLevel(int level, boolean status) {
 		switch (level) {
 		case 1:
@@ -971,7 +1035,7 @@ public class Window {
 
 	private void createConsolePanel() {
 		JTabbedPane bottomPart = new JTabbedPane(JTabbedPane.TOP);
-		bottomPart.setBounds(741, 605, 529, 174);
+		bottomPart.setBounds(741, 619, 529, 155);
 		frame.getContentPane().add(bottomPart);
 
 		JLayeredPane consolePannel = new JLayeredPane();
@@ -1034,16 +1098,23 @@ public class Window {
 		InputPanel.setBounds(6, 6, 734, 295);
 		frame.getContentPane().add(InputPanel);
 		InputPanel.setLayout(new BoxLayout(InputPanel, BoxLayout.X_AXIS));
+
 		codeInput = new RSyntaxTextArea();
-		SyntaxConstants s = new SyntaxConstants() {
-		};
-		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ASSEMBLER_X86);
+		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ACM);
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
-		// StyledDocument doc = codeInput.getStyledDocument();
-		// doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 
+		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
+		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+		InputPanel.add(Rscroll);
+
+		CompletionProvider provider = createCompletionProvider();
+		AutoCompletion ac = new AutoCompletion(provider);
+		ac.install(codeInput);
+
+		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
 			}
@@ -1060,111 +1131,33 @@ public class Window {
 				saveBT.setEnabled(true);
 			}
 		});
-		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
-		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-		InputPanel.add(Rscroll);
-		// one.start();
-		// JScrollPane scroll = new JScrollPane(codeInput,
-		// JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-		// ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		//
-		// InputPanel.add(scroll);
-		CompletionProvider provider = createCompletionProvider();
-		AutoCompletion ac = new AutoCompletion(provider);
-		ac.install(codeInput);
 	}
 
 	private CompletionProvider createCompletionProvider() {
 
-		// A DefaultCompletionProvider is the simplest concrete implementation
-		// of CompletionProvider. This provider has no understanding of
-		// language semantics. It simply checks the text entered up to the
-		// caret position for a match against known completions. This is all
-		// that is needed in the majority of cases.
 		DefaultCompletionProvider provider = new DefaultCompletionProvider();
 
-		// Add completions for all Java keywords. A BasicCompletion is just
-		// a straightforward word completion.
-//		provider.addCompletion(new BasicCompletion(provider, "A"));
-//		provider.addCompletion(new BasicCompletion(provider, "assert"));
-//		provider.addCompletion(new BasicCompletion(provider, "break"));
-//		provider.addCompletion(new BasicCompletion(provider, "case"));
-//		provider.addCompletion(new BasicCompletion(provider, "catch"));
-//		provider.addCompletion(new BasicCompletion(provider, "class"));
-//		provider.addCompletion(new BasicCompletion(provider, "const"));
-//		provider.addCompletion(new BasicCompletion(provider, "continue"));
-//		provider.addCompletion(new BasicCompletion(provider, "default"));
-//		provider.addCompletion(new BasicCompletion(provider, "do"));
-//		provider.addCompletion(new BasicCompletion(provider, "else"));
-//		provider.addCompletion(new BasicCompletion(provider, "enum"));
-//		provider.addCompletion(new BasicCompletion(provider, "extends"));
-//		provider.addCompletion(new BasicCompletion(provider, "final"));
-//		provider.addCompletion(new BasicCompletion(provider, "finally"));
-//		provider.addCompletion(new BasicCompletion(provider, "for"));
-//		provider.addCompletion(new BasicCompletion(provider, "goto"));
-//		provider.addCompletion(new BasicCompletion(provider, "if"));
-//		provider.addCompletion(new BasicCompletion(provider, "implements"));
-//		provider.addCompletion(new BasicCompletion(provider, "import"));
-//		provider.addCompletion(new BasicCompletion(provider, "instanceof"));
-//		provider.addCompletion(new BasicCompletion(provider, "interface"));
-//		provider.addCompletion(new BasicCompletion(provider, "native"));
-//		provider.addCompletion(new BasicCompletion(provider, "new"));
-//		provider.addCompletion(new BasicCompletion(provider, "package"));
-//		provider.addCompletion(new BasicCompletion(provider, "private"));
-//		provider.addCompletion(new BasicCompletion(provider, "protected"));
-//		provider.addCompletion(new BasicCompletion(provider, "public"));
-//		provider.addCompletion(new BasicCompletion(provider, "return"));
-//		provider.addCompletion(new BasicCompletion(provider, "static"));
-//		provider.addCompletion(new BasicCompletion(provider, "strictfp"));
-//		provider.addCompletion(new BasicCompletion(provider, "super"));
-//		provider.addCompletion(new BasicCompletion(provider, "switch"));
-//		provider.addCompletion(new BasicCompletion(provider, "synchronized"));
-//		provider.addCompletion(new BasicCompletion(provider, "this"));
-//		provider.addCompletion(new BasicCompletion(provider, "throw"));
-//		provider.addCompletion(new BasicCompletion(provider, "throws"));
-//		provider.addCompletion(new BasicCompletion(provider, "transient"));
-//		provider.addCompletion(new BasicCompletion(provider, "try"));
-//		provider.addCompletion(new BasicCompletion(provider, "void"));
-//		provider.addCompletion(new BasicCompletion(provider, "volatile"));
-//		provider.addCompletion(new BasicCompletion(provider, "while"));
-
-		// Add a couple of "shorthand" completions. These completions don't
-		// require the input text to be the same thing as the replacement text.
-		provider.addCompletion(new ShorthandCompletion(provider, "ADD",
-				"ADD "));
-		provider.addCompletion(new ShorthandCompletion(provider, "SUB",
-				"SUB "));
-		provider.addCompletion(new ShorthandCompletion(provider, "MUL",
-				"MUL "));
+		provider.addCompletion(new BasicCompletion(provider, "ADD",
+				"ADD RI, RS, RD"));
+		provider.addCompletion(new BasicCompletion(provider, "SUB"));
+		provider.addCompletion(new BasicCompletion(provider, "NAND"));
+		provider.addCompletion(new BasicCompletion(provider, "BEQ"));
+		provider.addCompletion(new BasicCompletion(provider, "JALR"));
+		provider.addCompletion(new BasicCompletion(provider, "JMP"));
+		provider.addCompletion(new BasicCompletion(provider, "LW"));
+		provider.addCompletion(new BasicCompletion(provider, "NOP"));
+		provider.addCompletion(new BasicCompletion(provider, "RET"));
+		provider.addCompletion(new BasicCompletion(provider, "SW"));
 		provider.addCompletion(new ShorthandCompletion(provider, "ADDI",
-				"ADDI "));
-		provider.addCompletion(new ShorthandCompletion(provider, "NAND",
-				"NAND "));
-		provider.addCompletion(new ShorthandCompletion(provider, "BEQ",
-				"BEQ "));
-		provider.addCompletion(new ShorthandCompletion(provider, "JALR",
-				"JALR "));
-		provider.addCompletion(new ShorthandCompletion(provider, "JMP",
-				"JMP "));
-		provider.addCompletion(new ShorthandCompletion(provider, "LW",
-				"LW "));
-		provider.addCompletion(new ShorthandCompletion(provider, "NOP",
-				"NOP "));
-		provider.addCompletion(new ShorthandCompletion(provider, "RET",
-				"RET "));
-		provider.addCompletion(new ShorthandCompletion(provider, "SW",
-				"SW "));
-//		provider.addCompletion(new ShorthandCompletion(provider, "syserr",
-//				"System.err.println(", "System.err.println("));
-
+				"ADDI\t", "ADDI RI, RS, RD"));
+		provider.addCompletion(new ShorthandCompletion(provider, "MUL",
+				"MUL\t", "MUL RI, RS, RD"));
+		provider.addCompletion(new ShorthandCompletion(provider, "#",
+				"instructions:\n\t"));
+		provider.addCompletion(new ShorthandCompletion(provider, "#",
+				"data:\n\t"));
 		return provider;
-
 	}
-
-	// private void createRegisterPanel() {
-	// }
 
 	/*************************************
 	 ******** Other Methods ********
@@ -1176,7 +1169,6 @@ public class Window {
 	private boolean saveFile() {
 		File file = new File(FilePath);
 		FileWriter fw = null;
-
 		try {
 			fw = new FileWriter(file.getAbsoluteFile(), false);
 			codeInput.write(fw);
@@ -1222,9 +1214,7 @@ public class Window {
 				e.printStackTrace();
 			}
 		}
-
 		modified = false;
-
 	}
 
 	private void appendCode(String line) {
@@ -1247,7 +1237,27 @@ public class Window {
 		HITPOLISYS.add("WT");
 		MISSPOLISYS.add("WA");
 		MISSPOLISYS.add("WL");
-		CreateData();
+		ROBCN.add("Head");
+		ROBCN.add("Tail");
+		ROBCN.add("#");
+		ROBCN.add("Type");
+		ROBCN.add("Dest");
+		ROBCN.add("Value");
+		ROBCN.add("Ready");
+		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+
+		RSCN.add("Wait");
+		RSCN.add("Name");
+		RSCN.add("Busy");
+		RSCN.add("Op");
+		RSCN.add("Vj");
+		RSCN.add("Vk");
+		RSCN.add("Qj");
+		RSCN.add("Qk");
+		RSCN.add("Dest");
+		RSCN.add("A");
+		RSDM = new DefaultTableModel(RSDV, RSCN);
+
 		CreateMemoryData();
 		CreateRegisterStatusData();
 	}
@@ -1263,7 +1273,8 @@ public class Window {
 	private void setRegisterStatusData(HashMap<Integer, Integer> data) {
 		for (Entry<Integer, Integer> entry : data.entrySet()) {
 			int col = (int) entry.getKey();
-			registersStatusTB.setValueAt(entry.getValue().toString(), 0, col);
+			registersStatusTB.setValueAt("#" + entry.getValue().toString(), 0,
+					col);
 		}
 		registersStatusTB.repaint();
 	}
@@ -1277,15 +1288,6 @@ public class Window {
 			counter++;
 		}
 		memoryTB.repaint();
-	}
-
-	private void CreateData() {
-		// Create data for each element
-		dataValues = new String[8][2];
-		for (int i = 0; i < 8; i++)
-			dataValues[i][0] = "R" + i;
-		for (int i = 0; i < 8; i++)
-			dataValues[i][1] = "0";
 	}
 
 	private void CreateMemoryData() {
@@ -1352,8 +1354,11 @@ public class Window {
 	private void setSimulatorVectors() {
 		boolean dataFound = false, instructionFound = false;
 		for (String line : codeInput.getText().split("\\n")) {
-			if (line.trim().isEmpty())
-				continue;
+			if (line.trim().isEmpty() || line.trim().contains("//")) {
+				String[] tmp = line.trim().split("//");
+				if (tmp[0].isEmpty())
+					continue;
+			}
 			if (line.toLowerCase().contains("#data")) {
 				dataFound = true;
 				instructionFound = false;
@@ -1371,6 +1376,76 @@ public class Window {
 				instructions.add(line.trim());
 		}
 		System.out.println(Arrays.toString(instructions.toArray()));
+	}
+
+	/**
+	 * Called While debugging .. Needs more work.
+	 * */
+	private void initROBTableDebbuging() {
+		ROBDV = new Vector<String>();
+		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+		robTB.setModel(ROBDM);
+
+		int Rows = Integer.parseInt(robSizeTF.getText());
+		for (int i = 0; i < Rows; i++) {
+			Vector<String> dataTmp = new Vector<String>();
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add("#" + (i + 1));
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			ROBDM.addRow(dataTmp);
+		}
+		ROBDM.setValueAt("Head", 0, 0);
+		ROBDM.setValueAt("Tail", 0, 1);
+		robTB.repaint();
+	}
+
+	private void setROBTable(ArrayList<Vector<String>> data) {
+		ROBDV = new Vector<String>();
+		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
+		robTB.setModel(ROBDM);
+
+		for (Vector<String> vec : data) {
+			ROBDM.addRow(vec);
+		}
+
+		Pair<Integer, Integer> status = simulator.getHeadTail();
+		ROBDM.setValueAt("Head", status.getKey(), 0);
+		ROBDM.setValueAt("Tail", status.getValue(), 1);
+		robTB.repaint();
+	}
+
+	private void createRowsRS(String name, int count) {
+		for (int i = 0; i < count; i++) {
+			Vector<String> dataTmp = new Vector<String>();
+			dataTmp.add(" ");
+			dataTmp.add(name + "_" + (i + 1));
+			dataTmp.add("N");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			dataTmp.add(" ");
+			RSDM.addRow(dataTmp);
+		}
+		robTB.repaint();
+	}
+
+	private void initRSTable() {
+		RSDV = new Vector<String>();
+		RSDM = new DefaultTableModel(RSDV, RSCN);
+		reservationStationsTB.setModel(RSDM);
+
+		createRowsRS("LOAD", Integer.parseInt(rsLdTF.getText()));
+		createRowsRS("STORE", Integer.parseInt(rsStTF.getText()));
+		createRowsRS("LOGIC", Integer.parseInt(rsLogicTF.getText()));
+		createRowsRS("MULT", Integer.parseInt(rsMultTF.getText()));
+		createRowsRS("INTEGER", Integer.parseInt(rsAddSubTF.getText()));
 	}
 
 	/**
@@ -1464,18 +1539,18 @@ public class Window {
 		errors = new ArrayList<String>();
 		warrnings = new ArrayList<String>();
 		if (codeInput.getText().trim().isEmpty()) {
-			errors.add("Can't run, Please Enter code first \n ====================================");
+			errors.add("Can't run, Please Enter code first ");
 			return false;
 		}
 		if (modified)
 			onClickSaveBT();
 
 		if (startAdressTF.getText().trim().isEmpty())
-			errors.add("- Starting Address can't be blank. \n ====================================");
+			errors.add("- Starting Address can't be blank. ");
 		if (memoAccessTimeTF.getText().trim().isEmpty())
-			errors.add("- Memory Access Time can't be blank. \n ====================================");
+			errors.add("- Memory Access Time can't be blank. ");
 		if (cacheLevelsCB.getSelectedIndex() == 0)
-			errors.add("- Select the number of caches levels needed \n ====================================");
+			errors.add("- Select the number of caches levels needed ");
 		else if (cacheLevelsCB.getSelectedIndex() > 0) {
 			if (l1CacheSizeTF.getText().trim().isEmpty())
 				errors.add("- L1-Cache: Cache-Size can't be blank");
@@ -1483,7 +1558,6 @@ public class Window {
 				errors.add("- L1-Cache: Block-Size can't be blank");
 			if (l1AssociativityTF.getText().trim().isEmpty())
 				errors.add("- L1-Cache: Associativity can't be blank");
-			// errors.add("====================================");
 			if (cacheLevelsCB.getSelectedIndex() > 1) {
 				if (l2CacheSizeTF.getText().trim().isEmpty())
 					errors.add("- L2-Cache: Cache-Size can't be blank");
@@ -1491,7 +1565,6 @@ public class Window {
 					errors.add("- L2-Cache: Block-Size can't be blank");
 				if (l2AssociativityTF.getText().trim().isEmpty())
 					errors.add("- L2-Cache: Associativity can't be blank");
-				// errors.add("====================================");
 				if (cacheLevelsCB.getSelectedIndex() > 2) {
 					if (l3CacheSizeTF.getText().trim().isEmpty())
 						errors.add("- L3-Cache: Cache-Size can't be blank");
@@ -1499,24 +1572,34 @@ public class Window {
 						errors.add("- L3-Cache: Block-Size can't be blank");
 					if (l3AssociativityTF.getText().trim().isEmpty())
 						errors.add("- L3-Cache: Associativity can't be blank");
-					// errors.add("====================================");
 				}
 			}
 		}
+
+		if (robSizeTF.getText().trim().isEmpty())
+			errors.add("- ROB Size can't be blank. ");
+		else if (Integer.parseInt(robSizeTF.getText()) == 0)
+			errors.add("- ROB Size can't be 0");
+
+		if (nWayTF.getText().trim().isEmpty())
+			errors.add("- Multi-Iussing can't be blank. ");
+		else if (Integer.parseInt(nWayTF.getText()) == 0)
+			errors.add("- Multi-Iusseing can't be 0");
+
 		if (latAddSubTF.getText().trim().isEmpty()
 				|| latLDTF.getText().trim().isEmpty()
 				|| latLogicTF.getText().trim().isEmpty()
 				|| latMultTF.getText().trim().isEmpty()
-				|| latSTTF.getText().trim().isEmpty()) {
-			errors.add("- Latencies can't be blank. \n ====================================");
-		}
+				|| latSTTF.getText().trim().isEmpty())
+			errors.add("- Latencies can't be blank. ");
+
 		if (rsAddSubTF.getText().trim().isEmpty()
 				|| rsLdTF.getText().trim().isEmpty()
 				|| rsLogicTF.getText().trim().isEmpty()
 				|| rsMultTF.getText().trim().isEmpty()
-				|| rsStTF.getText().trim().isEmpty()) {
-			errors.add("- Reservation Stations can't be blank. \n ====================================");
-		}
+				|| rsStTF.getText().trim().isEmpty())
+			errors.add("- Reservation Stations can't be blank. ");
+
 		return errors.isEmpty() ? true : false;
 	}
 }

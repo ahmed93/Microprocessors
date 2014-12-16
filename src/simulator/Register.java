@@ -1,5 +1,4 @@
 package simulator;
-import java.util.HashMap;
 
 
 public class Register {

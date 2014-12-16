@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
+
+import javafx.util.Pair;
 import speculation.ReorderBuffer;
 import speculation.ReservationStation;
 import Abstracts.Cache;
@@ -708,7 +710,37 @@ public class Simulator {
 		}
 		return result;
 	}
-
+	public ArrayList<Vector<String>> getROBTable() {
+		HashMap<String, String>[] rob = this.rob.getEntries();
+//		Vector<String>[] returnedData = new Vector<String>[rob.length];
+		ArrayList<Vector<String>> returnedData = new ArrayList<Vector<String>>(); 
+		for (int i = 1; i < rob.length; i++) {
+			Vector<String> tmp = new Vector<String>();
+			tmp.add(" ");
+			tmp.add(" ");
+			tmp.add("#"+i);
+			String type = (rob[i].get("Type") == null) ? "  " : rob[i]
+					.get("Type");
+			tmp.add(type);
+			
+			String destination = (rob[i].get("Destination") == null) ? "  "
+					: rob[i].get("Destination");
+			tmp.add(destination);
+			String value = (rob[i].get("Value") == null) ? "  " : rob[i]
+					.get("Value");
+			tmp.add(value);
+			String ready = (rob[i].get("Ready") == null) ? "  " : rob[i]
+					.get("Ready").toLowerCase().equals("true")?"Y":"N";
+			tmp.add(ready);
+			returnedData.add(tmp);
+		}
+		return returnedData;
+	}
+	
+	public Pair<Integer, Integer> getHeadTail() {
+		return new Pair<Integer, Integer>(this.rob.getHead(), this.rob.getTail());
+	}
+	
 	public String printROB() {
 		String result = "\n________________________________________________\n";
 		HashMap<String, String>[] rob = this.rob.getEntries();
@@ -730,6 +762,14 @@ public class Simulator {
 		return result;
 	}
 
+	public HashMap<Integer, Integer> getRegisterStatusValues() {
+		HashMap<Integer, Integer> returned = new HashMap<Integer, Integer>();
+		for (Entry<String, Integer> entry : registers_status.entrySet()) {
+			returned.put(Integer.parseInt(entry.getKey().replaceAll("[^0-9]", ""))+1, entry.getValue());
+		}
+		return returned;
+	}
+	
 	public String printRegisterStatus() {
 		String result = "";
 		for (Map.Entry<String, Integer> entry : registers_status.entrySet()) {
