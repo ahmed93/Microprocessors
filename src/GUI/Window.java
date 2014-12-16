@@ -5,8 +5,6 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -34,7 +32,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -53,14 +50,11 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
-import org.fife.ui.rsyntaxtextarea.CodeTemplateManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rsyntaxtextarea.templates.CodeTemplate;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import simulator.Simulator;
-import GUI.utilities.ArtemisCodeTemplate;
 import GUI.utilities.NumbersFilter;
 
 public class Window {
@@ -85,9 +79,11 @@ public class Window {
 	 ****************************/
 	private ArrayList<String> errors;
 	private ArrayList<String> warrnings;
-	private ArrayList<String> output;
+	// private ArrayList<String> output;
 	private boolean modified;
 	private String FilePath;
+	
+	private String MainFilePath, SettingsFilePath;
 	private static Simulator simulator;
 
 	private final String MemoryColumnNames[] = { "Location", "value" };
@@ -850,7 +846,13 @@ public class Window {
 				chooser.setFileFilter(filter);
 				int returnVal = chooser.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					String ParentDirectory = chooser.getSelectedFile().getParentFile().getPath();
+					String fileName = chooser.getSelectedFile().getName();
+					
+					MainFilePath = ParentDirectory+"/"+fileName;
+					SettingsFilePath = ParentDirectory+"/."+fileName;
 					FilePath = chooser.getSelectedFile().getPath();
+//					loadFile();
 					readFile(FilePath);
 				}
 			}
@@ -897,7 +899,36 @@ public class Window {
 			}
 		});
 	}
+	
+	private void loadFile() {
+		LoadMainFile();
+		if (!LoadSettingsFile())
+			SaveSettingsFile();
+	}
+	
+//	private void saveFile() {
+//		LoadMainFile();
+//		if (!LoadSettingsFile())
+//			SaveSettingsFile();
+//	}
 
+	private boolean LoadMainFile() {
+		return true;
+	}
+	
+	private boolean LoadSettingsFile() {
+		return true;
+		
+	}
+	
+	private void SaveMainFile() {
+		
+	}
+	
+	private void SaveSettingsFile() {
+		
+	}
+	
 	private void basicStartConfigurations() throws IOException {
 		showWarrnings();
 		setSimulatorVectors();
@@ -908,11 +939,15 @@ public class Window {
 		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
 		int ROB_Size = Integer.parseInt(robSizeTF.getText());
 		int nWay = Integer.parseInt(nWayTF.getText());
-
+		
+		
+		
+		
 		simulator = new Simulator(data, instructions, input_caches,
 				instruction_starting_address, memoryAccessTime,
 				inputReservationStations, ROB_Size, inputinstructionsLatencies,
 				nWay);
+		
 		simulator.Initialize();
 	}
 
@@ -929,6 +964,7 @@ public class Window {
 			fileChooser.setFileFilter(filter);
 			if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
 				FilePath = fileChooser.getSelectedFile().getPath();
+
 				if (!FilePath.toLowerCase().endsWith(".txt"))
 					FilePath += "." + FILE_TYPE;
 				if (saveFile())
@@ -937,6 +973,7 @@ public class Window {
 		}
 	}
 
+	
 	private void EnableCacheLevel(int level, boolean status) {
 		switch (level) {
 		case 1:
@@ -1073,20 +1110,10 @@ public class Window {
 
 		InputPanel.add(Rscroll);
 
-//		RSyntaxTextArea.setTemplatesEnabled(true);
-//		CodeTemplateManager ctm = RSyntaxTextArea.getCodeTemplateManager();
-//		ctm.setInsertTrigger(KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,
-//				InputEvent.CTRL_DOWN_MASK));
-//		System.out.println(ctm.getInsertTriggerString());
-//		CodeTemplate ct = new ArtemisCodeTemplate("s", "System.out.println(","<replaceme>", ");");
-//		
-//		
-//		ctm.addTemplate(ct);
+		CompletionProvider provider = createCompletionProvider();
+		AutoCompletion ac = new AutoCompletion(provider);
+		ac.install(codeInput);
 
-		 CompletionProvider provider = createCompletionProvider();
-		 AutoCompletion ac = new AutoCompletion(provider);
-		 ac.install(codeInput);
-		
 		codeInput.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
@@ -1125,9 +1152,9 @@ public class Window {
 				"ADDI\t", "ADDI RI, RS, RD"));
 		provider.addCompletion(new ShorthandCompletion(provider, "MUL",
 				"MUL\t", "MUL RI, RS, RD"));
-		provider.addCompletion(new ShorthandCompletion(provider,
-				"#Instructions", "Instructions:\n\t"));
-		provider.addCompletion(new ShorthandCompletion(provider, "#data",
+		provider.addCompletion(new ShorthandCompletion(provider, "#",
+				"instructions:\n\t"));
+		provider.addCompletion(new ShorthandCompletion(provider, "#",
 				"data:\n\t"));
 		return provider;
 	}
@@ -1327,8 +1354,11 @@ public class Window {
 	private void setSimulatorVectors() {
 		boolean dataFound = false, instructionFound = false;
 		for (String line : codeInput.getText().split("\\n")) {
-			if (line.trim().isEmpty())
-				continue;
+			if (line.trim().isEmpty() || line.trim().contains("//")) {
+				String[] tmp = line.trim().split("//");
+				if (tmp[0].isEmpty())
+					continue;
+			}
 			if (line.toLowerCase().contains("#data")) {
 				dataFound = true;
 				instructionFound = false;
@@ -1351,7 +1381,7 @@ public class Window {
 	/**
 	 * Called While debugging .. Needs more work.
 	 * */
-	private void initROBTableDebuging() {
+	private void initROBTableDebbuging() {
 		ROBDV = new Vector<String>();
 		ROBDM = new DefaultTableModel(ROBDV, ROBCN);
 		robTB.setModel(ROBDM);
