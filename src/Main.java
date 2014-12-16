@@ -70,18 +70,22 @@ public class Main {
 		Simulator simulator = new Simulator(data, instructions,
 				cache_information, instruction_starting_address, memoryAccessTime,
 				inputReservationStations, ROB_Size,
-				inputinstructionsLatencies, 2);
+				inputinstructionsLatencies, 1);
 				
 		simulator.Initialize();
 		simulator.getInstructionsToRun();
-		simulator.runInstructions();
-		for (int i = 0; i < simulator.caches.length; i++) {
-			simulator.caches[i].printCache();
-		}
-		simulator.printMemory();
-		simulator.printRegisters();
-		System.out.println(simulator.instructions_executed);
-		System.out.println(simulator.output().toString());
+		boolean x;
+		do {
+			x = simulator.runInstructions();
+		
+		} while (x);
+//		for (int i = 0; i < simulator.caches.length; i++) {
+//			simulator.caches[i].printCache();
+//		}
+//		simulator.printMemory();
+//		simulator.printRegisters();
+//		System.out.println(simulator.instructions_executed);
+//		System.out.println(simulator.output().toString());
 
 	}
 

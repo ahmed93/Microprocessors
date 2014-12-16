@@ -54,6 +54,10 @@ public class Simulator {
 	boolean cdbAvailable;
 	int nWay;
 	ArrayList<Integer> storeBuffer = new ArrayList<Integer>();
+	int instructionsCommited = 0;
+	int instructionsToCommit;
+	int cycles = 0;
+
 
 	public int getMemoryAccessTime() {
 		return memoryAccessTime;
@@ -97,6 +101,8 @@ public class Simulator {
 		this.nWay = nWay;
 		rob = new ReorderBuffer(ROB_Size);
 		this.cdbAvailable = true;
+		this.pc = instruction_starting_address;
+
 	}
 
 	public void InitailizeRegistersStatus() {
@@ -198,6 +204,8 @@ public class Simulator {
 			// instruction.execute();
 			// instructions_executed++;
 		}
+		instructionsToCommit = instructionsToRun.size();
+
 		// for (int i = instruction_starting_address; i<=
 		// instructions_ending_address; i++){
 		// System.out.println("Getting instruction at " + i + " : " +
@@ -206,12 +214,8 @@ public class Simulator {
 		// }
 	}
 
-	public void runInstructions() {
-		int instructionsCommited = 0;
-		int instructionsToCommit = instructionsToRun.size();
-		pc = instruction_starting_address;
-		int cycles = 0;
-		while (instructionsCommited < instructionsToCommit) {
+	public boolean runInstructions() {
+		if (instructionsCommited < instructionsToCommit) {
 			cycles++;
 			int instructionsToIssue = nWay;
 			ArrayList<Instruction> issuedNow = new ArrayList<Instruction>();
@@ -276,39 +280,11 @@ public class Simulator {
 			System.out.println("####");
 			System.out.println(this.printROB());
 			System.out.println(this.printRegisterStatus());
+			return true;
+		}else {
+			return false;
 		}
 
-		// loop until all instructions are written
-		// int instructionsCommited = 0;
-		// int instructionsToCommit = instructionsToRun.size();
-		// pc = instructions_addresses.firstElement();
-		// int instructionPointer = pc;
-		// while(instructionsCommited <= instructionsToCommit){
-		// Instruction instruction = instructionsToRun.get(instructionPointer);
-		// if (issuable(instruction)){
-		// for (int i = 0; i < nWay; i++){
-		// instruction = instructionsToRun.get(instructionPointer);
-		// if (issuable(instruction)){
-		// issue(instruction);
-		// pc++;
-		// }else {
-		// break;
-		// }
-		// }ad
-		// }else if (executable(inhetruction)){
-		// if (instruction.getExecutionCycles() == 1){
-		// execute(instruction);
-		// }else {
-		// instruction.setExecutionCycles(instruction.getExecutionCycles() - 1);
-		// }
-		// }else if (writable(instruction) && instruction.getExecutionCycles()
-		// == 0){
-		// write(instruction);
-		// }else if (commitable(instruction)){
-		// commit(instruction);
-		// }
-		//
-		// }
 	}
 
 	public void updateInstructionInHigherCaches(int cacheIndex,
