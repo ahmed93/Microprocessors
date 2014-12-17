@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import javafx.util.Pair;
 import speculation.ReorderBuffer;
 import speculation.ReservationStation;
 import Abstracts.Cache;
@@ -701,6 +700,26 @@ public class Simulator {
 		registers_status.put(i.getRi(), 0);
 	}
 
+	public ArrayList<Vector<String>> getResStationTable() {
+		ArrayList<Vector<String>> returnedData = new ArrayList<Vector<String>>();
+		for (int i = 0; i < reservationStations.size(); i++) {
+			ReservationStation rs = reservationStations.get(i);
+			Vector<String> tmp = new Vector<String>();
+			tmp.add(" ");
+			tmp.add(rs.getName());
+			tmp.add(rs.isBusy()?"Y":"N");
+			tmp.add(rs.getOP());
+			tmp.add("#"+rs.getVj());
+			tmp.add("#"+rs.getVk());
+			tmp.add("#"+rs.getQj());
+			tmp.add("#"+rs.getQk());
+			tmp.add(""+rs.getDest());
+			tmp.add(""+rs.getA());
+			returnedData.add(tmp);
+		}
+		return returnedData;
+	}
+	
 	public String printrs() {
 		String result = "Name|OP|Dest| Qj | Qk | Vj | Vk\n";
 		for (int i = 0; i < reservationStations.size(); i++) {
@@ -738,8 +757,8 @@ public class Simulator {
 		return returnedData;
 	}
 	
-	public Pair<Integer, Integer> getHeadTail() {
-		return new Pair<Integer, Integer>(this.rob.getHead(), this.rob.getTail());
+	public Integer[] getHeadTail() {
+		return new Integer[]{this.rob.getHead(),this.rob.getTail()};
 	}
 	
 	public String printROB() {

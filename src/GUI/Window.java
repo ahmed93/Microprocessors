@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import javafx.util.Pair;
-
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,7 +41,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
@@ -60,7 +57,6 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import simulator.Simulator;
-import speculation.ReorderBuffer;
 import GUI.utilities.NumbersFilter;
 import GUI.utilities.Setting;
 
@@ -110,7 +106,7 @@ public class Window {
 
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
-	
+
 	private boolean debuggingStatus = true;
 
 	/*************************
@@ -856,7 +852,7 @@ public class Window {
 						boolean x;
 						do {
 							x = simulator.runInstructions();
-						
+
 						} while (x);
 						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());
@@ -884,10 +880,7 @@ public class Window {
 		frame.getContentPane().add(stopBT);
 		stopBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				runBT.setEnabled(true);
-				debugBT.setEnabled(true);
-				stopBT.setEnabled(false);
-				nextBT.setEnabled(false);
+				debugStop();
 				printE("******* **** Session has been terminated by the user **** *******");
 			}
 		});
@@ -910,7 +903,7 @@ public class Window {
 		nextBT = new JButton("");
 		nextBT.setBounds(1044, 10, 28, 20);
 		frame.getContentPane().add(nextBT);
-//		nextBT.setEnabled(false);
+		 nextBT.setEnabled(false);
 		nextBT.setIcon(new ImageIcon(
 				Window.class
 						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
@@ -944,13 +937,13 @@ public class Window {
 		nextBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(debuggingStatus)
+				if (debuggingStatus)
 					debugRun();
-				
+
 				if (!debuggingStatus) {
 					debugStop();
 				}
-				
+
 			}
 		});
 		debugBT.addActionListener(new ActionListener() {
@@ -958,15 +951,11 @@ public class Window {
 			public void actionPerformed(ActionEvent e) {
 				if (validate()) {
 					showWarrnings();
-					runBT.setEnabled(false);
-					debugBT.setEnabled(false);
-					stopBT.setEnabled(true);
-					nextBT.setEnabled(true);
-
+					debugStart();
 					try {
 						basicStartConfigurations();
-						if(debuggingStatus)
-							debuggingStatus = simulator.runInstructions();
+						if (debuggingStatus)
+							debugRun();
 					} catch (IOException ea) {
 						ea.printStackTrace();
 					}
@@ -978,18 +967,87 @@ public class Window {
 			}
 		});
 	}
-	
+
+	int cacheNoTmp = 0;
+
+	private void debugStart() {
+		runBT.setEnabled(false);
+		debugBT.setEnabled(false);
+		stopBT.setEnabled(true);
+		nextBT.setEnabled(true);
+		codeInput.setEnabled(false);
+		disableCachingInput();
+		disableLataincyInput(false);
+		disableReservationsInput(false);
+		codeInput.setCaretPosition(0);
+	}
+
+	private void disableCachingInput() {
+		cacheNoTmp = cacheLevelsCB.getSelectedIndex();
+		cacheLevelsCB.setEnabled(false);
+		EnableCacheLevel(1, false);
+		EnableCacheLevel(2, false);
+		EnableCacheLevel(3, false);
+	}
+
+	private void EnableCachingInput() {
+		cacheLevelsCB.setEnabled(true);
+		if (cacheNoTmp == 1) {
+			EnableCacheLevel(1, true);
+		} else if (cacheNoTmp == 2) {
+			EnableCacheLevel(1, true);
+			EnableCacheLevel(2, true);
+		} else if (cacheNoTmp == 3) {
+			EnableCacheLevel(1, true);
+			EnableCacheLevel(2, true);
+			EnableCacheLevel(3, true);
+		}
+	}
+
+	private void disableLataincyInput(boolean status) {
+		TF_LatAdd.setEditable(status);
+		TF_LatLW.setEditable(status);
+		TF_LatAddi.setEditable(status);
+		TF_LatMul.setEditable(status);
+		TF_LatSW.setEditable(status);
+		TF_LatSub.setEditable(status);
+		TF_LatRet.setEditable(status);
+		TF_LatBeq.setEditable(status);
+		TF_LatNand.setEditable(status);
+		TF_LatNop.setEditable(status);
+		TF_LatJmp.setEditable(status);
+		TF_LatJalr.setEditable(status);
+	}
+
+	private void disableReservationsInput(boolean status) {
+		rsAddSubTF.setEditable(status);
+		rsLdTF.setEditable(status);
+		rsLogicTF.setEditable(status);
+		rsMultTF.setEditable(status);
+		rsStTF.setEditable(status);
+	}
+
 	private void debugRun() {
+		codeInput.setCaretPosition(codeInput.getCaretLineNumber()+1);
 		debuggingStatus = simulator.runInstructions();
 		
+		setMamoryData(simulator.getMemoryValues());
+		setRegisterData(simulator.getRegistersValues());
+		setRegisterStatusData(simulator.getRegisterStatusValues());
+		setROBTable(simulator.getROBTable());
+		setReservationTable(simulator.getResStationTable());
 	}
-	
+
 	private void debugStop() {
 		runBT.setEnabled(true);
 		debugBT.setEnabled(true);
 		stopBT.setEnabled(false);
 		nextBT.setEnabled(false);
-		codeInput.setEditable(false);
+		codeInput.setEnabled(true);
+		debuggingStatus = true;
+		EnableCachingInput();
+		disableLataincyInput(true);
+		disableReservationsInput(true);
 	}
 
 	private void basicStartConfigurations() throws IOException {
@@ -1009,7 +1067,7 @@ public class Window {
 				nWay);
 
 		simulator.Initialize();
-		simulator.getInstructionsToRun();		
+		simulator.getInstructionsToRun();
 	}
 
 	private void onClickSaveBT() {
@@ -1560,10 +1618,22 @@ public class Window {
 			ROBDM.addRow(vec);
 		}
 
-		Pair<Integer, Integer> status = simulator.getHeadTail();
-		ROBDM.setValueAt("Head", status.getKey(), 0);
-		ROBDM.setValueAt("Tail", status.getValue(), 1);
+		Integer[] status = simulator.getHeadTail();
+		
+		ROBDM.setValueAt("Head", status[0]-1, 0);
+		ROBDM.setValueAt("Tail", status[1]-1, 1);
 		robTB.repaint();
+	}
+	
+	private void setReservationTable(ArrayList<Vector<String>> data) {
+		RSDV = new Vector<String>();
+		RSDM = new DefaultTableModel(RSDV, RSCN);
+		reservationStationsTB.setModel(RSDM);
+
+		for (Vector<String> vec : data)
+			RSDM.addRow(vec);
+		
+		reservationStationsTB.repaint();
 	}
 
 	private void createRowsRS(String name, int count) {
