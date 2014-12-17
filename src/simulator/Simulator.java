@@ -659,7 +659,8 @@ public class Simulator {
 				int rob_index = i.getROBIndex();
 				int value = Integer.parseInt(rob.getEntryAt(rob_index).get(
 						"Value"));
-				i.getRegA().set_value(value);
+				if(i.getClass() != BEQ.class)
+					i.getRegA().set_value(value);
 				rob.moveHead();
 				i.setStatus(Instruction.COMMITED);
 			} else {
