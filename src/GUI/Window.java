@@ -7,9 +7,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +43,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Style;
@@ -55,7 +60,9 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import simulator.Simulator;
+import speculation.ReorderBuffer;
 import GUI.utilities.NumbersFilter;
+import GUI.utilities.Setting;
 
 public class Window {
 
@@ -103,6 +110,8 @@ public class Window {
 
 	private Vector<String> data = new Vector<>();
 	private Vector<String> instructions = new Vector<>();
+	
+	private boolean debuggingStatus = true;
 
 	/*************************
 	 ** Static Variables **
@@ -844,8 +853,11 @@ public class Window {
 				if (validate()) {
 					try {
 						basicStartConfigurations();
-						simulator.getInstructionsToRun();
-
+						boolean x;
+						do {
+							x = simulator.runInstructions();
+						
+						} while (x);
 						showMessages(simulator.output());
 						setMamoryData(simulator.getMemoryValues());
 						setRegisterData(simulator.getRegistersValues());
@@ -898,7 +910,7 @@ public class Window {
 		nextBT = new JButton("");
 		nextBT.setBounds(1044, 10, 28, 20);
 		frame.getContentPane().add(nextBT);
-		nextBT.setEnabled(false);
+//		nextBT.setEnabled(false);
 		nextBT.setIcon(new ImageIcon(
 				Window.class
 						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
@@ -920,17 +932,25 @@ public class Window {
 					String fileName = chooser.getSelectedFile().getName();
 
 					MainFilePath = ParentDirectory + "/" + fileName;
-					SettingsFilePath = ParentDirectory + "/." + fileName;
+					SettingsFilePath = ParentDirectory + "/." + fileName
+							+ ".ser";
 					FilePath = chooser.getSelectedFile().getPath();
 					// loadFile();
-					readFile(FilePath);
+					// readFile(FilePath);
+					loadFile();
 				}
 			}
 		});
 		nextBT.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				if(debuggingStatus)
+					debugRun();
+				
+				if (!debuggingStatus) {
+					debugStop();
+				}
+				
 			}
 		});
 		debugBT.addActionListener(new ActionListener() {
@@ -945,87 +965,31 @@ public class Window {
 
 					try {
 						basicStartConfigurations();
-						/**
-						 * Calling the Simulator start debug function
-						 * **/
-						// showMessages(simulator.output());
-						// setMamoryData(simulator.getMemoryValues());
-						// setRegisterData(simulator.getRegistersValues());
-						// setRegisterStatusData(simulator
-						// .getRegisterStatusValues());
-						// setROBTable(simulator.getROBTable());
-
+						if(debuggingStatus)
+							debuggingStatus = simulator.runInstructions();
 					} catch (IOException ea) {
 						ea.printStackTrace();
 					}
 
 				} else {
 					showErrors();
-					runBT.setEnabled(true);
-					debugBT.setEnabled(true);
-					stopBT.setEnabled(false);
-					nextBT.setEnabled(false);
+					debugStop();
 				}
 			}
 		});
 	}
-
-	private void loadFile() {
-		LoadMainFile();
-		if (!LoadSettingsFile())
-			SaveSettingsFile();
+	
+	private void debugRun() {
+		debuggingStatus = simulator.runInstructions();
+		
 	}
-
-	// private void saveFile() {
-	// LoadMainFile();
-	// if (!LoadSettingsFile())
-	// SaveSettingsFile();
-	// }
-
-	private boolean LoadMainFile() {
-		return true;
-	}
-
-	private boolean LoadSettingsFile() {
-		return true;
-
-	}
-
-	private void SaveMainFile() {
-
-	}
-
-	private void SaveSettingsFile() {
-		int memoryAccessTime = Integer.parseInt(memoAccessTimeTF.getText());
-		ArrayList<HashMap<String, Integer>> input_caches = getCaches();
-		int instruction_starting_address = getStartingAddress();
-		HashMap<String, Integer> inputReservationStations = getinputReservationStations();
-		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
-		int ROB_Size = Integer.parseInt(robSizeTF.getText());
-		int nWay = Integer.parseInt(nWayTF.getText());
-
-		File file = new File(SettingsFilePath);
-		FileWriter fw = null;
-		try {
-			fw = new FileWriter(file.getAbsoluteFile(), false);
-			fw.write("######################################### \n#### This is the Settings for the code for quick loading of the code Settings.\n #### DON'T Edit THIS FILE\n#########################################\n\n\n");
-			fw.write(memoryAccessTime);
-			fw.write(ROB_Size);
-			fw.write(nWay);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (fw != null) {
-				try {
-					fw.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
+	
+	private void debugStop() {
+		runBT.setEnabled(true);
+		debugBT.setEnabled(true);
+		stopBT.setEnabled(false);
+		nextBT.setEnabled(false);
+		codeInput.setEditable(false);
 	}
 
 	private void basicStartConfigurations() throws IOException {
@@ -1045,6 +1009,7 @@ public class Window {
 				nWay);
 
 		simulator.Initialize();
+		simulator.getInstructionsToRun();		
 	}
 
 	private void onClickSaveBT() {
@@ -1198,7 +1163,6 @@ public class Window {
 		codeInput.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ACM);
 		codeInput.setCodeFoldingEnabled(true);
 		codeInput.setAntiAliasingEnabled(true);
-
 		RTextScrollPane Rscroll = new RTextScrollPane(codeInput);
 		Rscroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		Rscroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -1261,8 +1225,77 @@ public class Window {
 	 * saveFile: Saving the Text to a file if not exist parameters: file: The
 	 * File to be saved in. return: none
 	 * */
+
+	private void loadFile() {
+		LoadMainFile();
+		LoadSettingsFile();
+	}
+
 	private boolean saveFile() {
-		File file = new File(FilePath);
+		if (SaveMainFile()) {
+			SaveSettingsFile();
+			return true;
+		}
+
+		return false;
+
+	}
+
+	private boolean LoadMainFile() {
+		File file = new File(MainFilePath);
+		BufferedReader reader = null;
+		codeInput.setText("");
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			while (reader.ready())
+				appendCode(reader.readLine());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			try {
+				if (reader != null)
+					reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		modified = false;
+		return true;
+	}
+
+	private boolean LoadSettingsFile() {
+		Setting setting = null;
+		try {
+			FileInputStream fileIn = new FileInputStream(SettingsFilePath);
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			setting = (Setting) in.readObject();
+			in.close();
+			fileIn.close();
+		} catch (IOException i) {
+			i.printStackTrace();
+			return false;
+		} catch (ClassNotFoundException c) {
+			System.out.println("Setting class not found");
+			c.printStackTrace();
+			return false;
+		}
+
+		startAdressTF.setText(setting.getInstruction_starting_address() + "");
+		memoAccessTimeTF.setText(setting.getMemoryAccessTime() + "");
+		cacheLevelsCB.setSelectedIndex(setting.getCacheLevels());
+
+		robSizeTF.setText(setting.getROB_Size() + "");
+		nWayTF.setText(setting.getnWay() + "");
+
+		setinputLatencies(setting.getInputinstructionsLatencies());
+		setinputReservationStations(setting.getInputReservationStations());
+		return true;
+	}
+
+	private boolean SaveMainFile() {
+		File file = new File(MainFilePath);
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(file.getAbsoluteFile(), false);
@@ -1286,30 +1319,31 @@ public class Window {
 		return true;
 	}
 
-	/**
-	 * readFile: Reading a Text File and add it to the Editor parameters: path:
-	 * The File Path return: none
-	 * */
-	private void readFile(String path) {
-		File file = new File(path);
-		BufferedReader reader = null;
-		codeInput.setText("");
-		try {
-			reader = new BufferedReader(new FileReader(file));
+	private void SaveSettingsFile() {
+		int memoryAccessTime = Integer.parseInt(memoAccessTimeTF.getText());
+		ArrayList<HashMap<String, Integer>> input_caches = getCaches();
+		int instruction_starting_address = getStartingAddress();
+		HashMap<String, Integer> inputReservationStations = getinputReservationStations();
+		HashMap<String, Integer> inputinstructionsLatencies = getinputLatencies();
+		int ROB_Size = Integer.parseInt(robSizeTF.getText());
+		int nWay = Integer.parseInt(nWayTF.getText());
 
-			while (reader.ready())
-				appendCode(reader.readLine());
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (reader != null)
-					reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		Setting setting = new Setting(SettingsFilePath,
+				instruction_starting_address, memoryAccessTime, input_caches,
+				ROB_Size, nWay, inputReservationStations,
+				inputinstructionsLatencies, cacheLevelsCB.getSelectedIndex());
+
+		try {
+			FileOutputStream fileOut = new FileOutputStream(SettingsFilePath);
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(setting);
+			out.close();
+			fileOut.close();
+			System.out.printf(String.format("Serialized data is saved in %s",
+					SettingsFilePath));
+		} catch (IOException i) {
+			i.printStackTrace();
 		}
-		modified = false;
 	}
 
 	private void appendCode(String line) {
@@ -1418,6 +1452,14 @@ public class Window {
 		return tmp;
 	}
 
+	private void setinputReservationStations(HashMap<String, Integer> data) {
+		rsAddSubTF.setText(data.get(Simulator.INTEGER) + "");
+		rsLogicTF.setText(data.get(Simulator.LOGIC) + "");
+		rsMultTF.setText(data.get(Simulator.MULT) + "");
+		rsStTF.setText(data.get(Simulator.STORE) + "");
+		rsLdTF.setText(data.get(Simulator.LOAD) + "");
+	}
+
 	/**
 	 * Getting Input Latencies
 	 * **/
@@ -1438,16 +1480,20 @@ public class Window {
 		return tmp;
 	}
 
-	// private HashMap<String, Integer> getRegisterStatusData() {
-	// HashMap<String, Integer> registerDataTmp = new HashMap<String,
-	// Integer>();
-	// for (int i = 0; i < RegisterStatusDV.length; i++) {
-	// String data = RegisterStatusDV[i].toString();
-	// data = data.substring(1, data.length());
-	// registerDataTmp.put(RegisterStatusCN[i], Integer.parseInt(data));
-	// }
-	// return registerDataTmp;
-	// }
+	private void setinputLatencies(HashMap<String, Integer> data) {
+		TF_LatAdd.setText(data.get("ADD") + "");
+		TF_LatAddi.setText(data.get("ADDI") + "");
+		TF_LatMul.setText(data.get("MUL") + "");
+		TF_LatSW.setText(data.get("SW") + "");
+		TF_LatLW.setText(data.get("LW") + "");
+		TF_LatBeq.setText(data.get("BEQ") + "");
+		TF_LatJalr.setText(data.get("JALR") + "");
+		TF_LatJmp.setText(data.get("JMP") + "");
+		TF_LatNand.setText(data.get("NAND") + "");
+		TF_LatNop.setText(data.get("NOP") + "");
+		TF_LatRet.setText(data.get("RET") + "");
+		TF_LatSub.setText(data.get("RUB") + "");
+	}
 
 	/**
 	 * Data and Instruction Settings initializing Both data and instruction
