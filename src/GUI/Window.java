@@ -84,7 +84,7 @@ public class Window {
 	private ArrayList<String> warrnings;
 	// private ArrayList<String> output;
 	private boolean modified;
-	private String FilePath;
+//	private String FilePath;
 
 	private String MainFilePath, SettingsFilePath;
 	private static Simulator simulator;
@@ -860,6 +860,7 @@ public class Window {
 						setRegisterStatusData(simulator
 								.getRegisterStatusValues());
 						setROBTable(simulator.getROBTable());
+						setReservationTable(simulator.getResStationTable());
 
 					} catch (IOException ea) {
 						ea.printStackTrace();
@@ -903,7 +904,7 @@ public class Window {
 		nextBT = new JButton("");
 		nextBT.setBounds(1044, 10, 28, 20);
 		frame.getContentPane().add(nextBT);
-		 nextBT.setEnabled(false);
+		nextBT.setEnabled(false);
 		nextBT.setIcon(new ImageIcon(
 				Window.class
 						.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
@@ -923,13 +924,10 @@ public class Window {
 					String ParentDirectory = chooser.getSelectedFile()
 							.getParentFile().getPath();
 					String fileName = chooser.getSelectedFile().getName();
-
+					
 					MainFilePath = ParentDirectory + "/" + fileName;
 					SettingsFilePath = ParentDirectory + "/." + fileName
 							+ ".ser";
-					FilePath = chooser.getSelectedFile().getPath();
-					// loadFile();
-					// readFile(FilePath);
 					loadFile();
 				}
 			}
@@ -1028,14 +1026,15 @@ public class Window {
 	}
 
 	private void debugRun() {
-		codeInput.setCaretPosition(codeInput.getCaretLineNumber()+1);
+		codeInput.setCaretPosition(codeInput.getCaretLineNumber() + 1);
 		debuggingStatus = simulator.runInstructions();
-		
+
 		setMamoryData(simulator.getMemoryValues());
 		setRegisterData(simulator.getRegistersValues());
 		setRegisterStatusData(simulator.getRegisterStatusValues());
 		setROBTable(simulator.getROBTable());
 		setReservationTable(simulator.getResStationTable());
+		showMessages(simulator.output());
 	}
 
 	private void debugStop() {
@@ -1071,9 +1070,9 @@ public class Window {
 	}
 
 	private void onClickSaveBT() {
-		if (FilePath != null && !FilePath.equals(" ")) {
+		if (MainFilePath != null && !MainFilePath.equals(" ")) {
 			saveBT.setEnabled(false);
-			File file = new File(FilePath);
+			File file = new File(MainFilePath);
 			if (file != null)
 				saveFile();
 		} else if (modified) {
@@ -1082,10 +1081,17 @@ public class Window {
 					FILE_TYPE_Viewed, FILE_TYPE);
 			fileChooser.setFileFilter(filter);
 			if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				FilePath = fileChooser.getSelectedFile().getPath();
-
-				if (!FilePath.toLowerCase().endsWith(".txt"))
-					FilePath += "." + FILE_TYPE;
+				String fileName = fileChooser.getName();
+				if (!fileName.toLowerCase().endsWith(".txt"))
+					fileName += ","+FILE_TYPE;
+				
+				String ParentDirectory = fileChooser.getSelectedFile()
+						.getParentFile().getPath();
+				MainFilePath = ParentDirectory + "/" + fileName;
+				SettingsFilePath = ParentDirectory + "/." + fileName
+						+ ".ser";
+				
+				
 				if (saveFile())
 					modified = false;
 			}
@@ -1619,12 +1625,12 @@ public class Window {
 		}
 
 		Integer[] status = simulator.getHeadTail();
-		
-		ROBDM.setValueAt("Head", status[0]-1, 0);
-		ROBDM.setValueAt("Tail", status[1]-1, 1);
+
+		ROBDM.setValueAt("Head", status[0] - 1, 0);
+		ROBDM.setValueAt("Tail", status[1] - 1, 1);
 		robTB.repaint();
 	}
-	
+
 	private void setReservationTable(ArrayList<Vector<String>> data) {
 		RSDV = new Vector<String>();
 		RSDM = new DefaultTableModel(RSDV, RSCN);
@@ -1632,7 +1638,7 @@ public class Window {
 
 		for (Vector<String> vec : data)
 			RSDM.addRow(vec);
-		
+
 		reservationStationsTB.repaint();
 	}
 
